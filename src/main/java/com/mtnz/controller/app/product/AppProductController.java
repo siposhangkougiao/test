@@ -1295,17 +1295,18 @@ public class AppProductController extends BaseController{
             System.out.println(">>>>>"+JSONObject.toJSONString(list));
             if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){//这是减库存了
                 int in=cc;//实际操作的差值
+                System.out.println("实际操作的差值>>>>>>>"+JSONObject.toJSONString(in));
                 for(int i=0;i<list.size();i++){
                     if(in>Integer.valueOf(list.get(i).get("nums").toString())){
+                        Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(list.get(i).get("nums").toString());
                         list.get(i).put("nums","0");
                         kunCunService.editNum(list.get(i));
-                        Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(list.get(i).get("nums").toString());
                         in=Integer.valueOf(kuncuns.toString());
-                        continue;
+                        System.out.println("在减得操作里实际操作的差值>>>>>"+JSONObject.toJSONString(in));
                     }else {
+                        System.out.println("在加得操作里实际操作的差值>>>>>"+JSONObject.toJSONString(in));
                         list.get(i).put("nums",Integer.valueOf(list.get(i).get("nums").toString())-Integer.valueOf(in));
                         kunCunService.editNum(list.get(i));
-                        break;
                     }
                 }
             }else {//这个地方加库存
