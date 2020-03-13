@@ -15,6 +15,10 @@ import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 public class Watermark {
 
+	public static void main(String[] args) {
+
+	}
+
 	private static String strFWATERM, strIWATERM;
 
 	static {

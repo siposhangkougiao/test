@@ -317,4 +317,23 @@
         FROM kuncun
         WHERE order_info_id=#{order_info_id} and status='5' and jia='0'
     </select>
+    <select id="findListjin" parameterType="pd" resultType="pd">
+        SELECT
+            kuncun_id,
+            product_id,
+            store_id,
+            status,
+            num,
+            nums,
+            date,
+            total,
+            order_info_id,
+            purchase_price,
+            money,
+            supplier_id,
+            jia
+        FROM kuncun
+        WHERE store_id=#{store_id} and product_id=#{product_id} and status=2 and jia='0' and revokes='0'
+        ORDER BY kuncun_id ASC;
+    </select>
 </mapper>

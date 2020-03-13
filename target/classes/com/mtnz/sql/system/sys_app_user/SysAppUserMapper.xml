@@ -285,4 +285,8 @@
         SET login_date=#{login_date}
         where uid=#{uid}
     </update>
+
+    <select id="findcostor" parameterType="pd" resultType="pd">
+        select * from customer where name = #{name}
+    </select>
 </mapper>
