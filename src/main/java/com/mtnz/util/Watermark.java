@@ -1,5 +1,8 @@
 package com.mtnz.util;
 
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -10,8 +13,7 @@ import java.io.FileOutputStream;
 
 import javax.imageio.ImageIO;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
+
 
 public class Watermark {
 

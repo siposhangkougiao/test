@@ -260,6 +260,9 @@ public class AppCustomerController extends BaseController{
                     }
                 }
                 Map<String, Object> map = new HashedMap();
+                for (int i = 0; i < list.size(); i++) {
+                    list.get(i).remove("role");
+                }
                 if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
                     map.put("data", list);
                 }else{

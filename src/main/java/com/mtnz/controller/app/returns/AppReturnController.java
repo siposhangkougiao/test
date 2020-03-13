@@ -1,6 +1,5 @@
 package com.mtnz.controller.app.returns;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -103,7 +102,6 @@ public class AppReturnController extends BaseController{
             Gson gson = new Gson();
             List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
             }.getType());   //获取订单商品列表
-            System.out.println("》》》》》》》》》》》"+ JSONObject.toJSONString(list));
             for(int i=0;i<list.size();i++){
                 //list.get(i).put("purchase_price",list.get(i).get("product_price").toString());
                 list.get(i).put("return_order_info_id",pd_o.get("return_order_info_id").toString());

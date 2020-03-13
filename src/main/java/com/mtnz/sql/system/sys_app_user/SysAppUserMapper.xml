@@ -289,4 +289,28 @@
     <select id="findcostor" parameterType="pd" resultType="pd">
         select * from customer where name = #{name}
     </select>
+
+    <select id="findUserName" parameterType="pd" resultType="pd">
+        SELECT
+              uid,
+              username,
+              password,
+              salt,
+              name,
+              openid,
+              unionid,
+              status,
+              store_id,
+              province,
+              city,
+              district,
+              phone,
+              address,
+              corp,
+              identity,
+              diedstatus
+        FROM sys_app_user
+        where username=#{username}
+    </select>
+
 </mapper>

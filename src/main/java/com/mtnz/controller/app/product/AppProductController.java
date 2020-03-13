@@ -1,6 +1,5 @@
 package com.mtnz.controller.app.product;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
@@ -784,14 +783,12 @@ public class AppProductController extends BaseController{
                         kucun.put("product_id",list.get(i).get("product_id"));
                         kucun.put("store_id",list.get(i).get("store_id"));
                         List<PageData> pricelist = productService.findProductPrice(kucun);
-                        System.out.println(">>>>>>>"+JSONObject.toJSON(pricelist));
                         for (int j = 0; j <pricelist.size() ; j++) {
                             priceaa = priceaa.add(new BigDecimal((Long) pricelist.get(j).get("nums")).multiply(new BigDecimal((String) pricelist.get(j).get("purchase_price"))));
                         }
                     }
                 }
                 priceaa.setScale(2,BigDecimal.ROUND_HALF_UP);
-                moneg = JSONObject.toJSONString(priceaa);
                 System.out.println("计算出来的总价格>>>>"+moneg);
                 pd.clear();
                 pd.put("object",map);
@@ -1257,9 +1254,6 @@ public class AppProductController extends BaseController{
         try{
             // 查询商品的信息
             PageData pd_p=productService.findById(pd);
-            if(Integer.valueOf(pd_p.get("kucun").toString())<0||Integer.valueOf(pd.get("kucun").toString())>Integer.valueOf(pd_p.get("kucun").toString())){
-                throw new ServiceException("参数错误");
-            }
             //修改商品表库存
             productService.editNums(pd);
             pd_p.put("status","3");
@@ -1292,19 +1286,15 @@ public class AppProductController extends BaseController{
 
             //查询进货单
             List<PageData> list=kunCunService.findListjin(pd);
-            System.out.println(">>>>>"+JSONObject.toJSONString(list));
             if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){//这是减库存了
                 int in=cc;//实际操作的差值
-                System.out.println("实际操作的差值>>>>>>>"+JSONObject.toJSONString(in));
                 for(int i=0;i<list.size();i++){
                     if(in>Integer.valueOf(list.get(i).get("nums").toString())){
                         Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(list.get(i).get("nums").toString());
                         list.get(i).put("nums","0");
                         kunCunService.editNum(list.get(i));
                         in=Integer.valueOf(kuncuns.toString());
-                        System.out.println("在减得操作里实际操作的差值>>>>>"+JSONObject.toJSONString(in));
                     }else {
-                        System.out.println("在加得操作里实际操作的差值>>>>>"+JSONObject.toJSONString(in));
                         list.get(i).put("nums",Integer.valueOf(list.get(i).get("nums").toString())-Integer.valueOf(in));
                         kunCunService.editNum(list.get(i));
                     }
