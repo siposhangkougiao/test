@@ -72,4 +72,9 @@ public class SysAppUserService {
     public void editLoginDate(PageData pd) throws Exception {
         daoSupport.update("SysAppUserMapper.editLoginDate",pd);
     }
+
+    public List<PageData> findcostor(PageData pd) throws Exception {
+
+        return (List<PageData>) daoSupport.findForList("SysAppUserMapper.findcostor",pd);
+    }
 }

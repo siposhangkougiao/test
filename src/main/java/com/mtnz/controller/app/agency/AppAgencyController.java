@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+import javax.xml.rpc.ServiceException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -145,7 +146,13 @@ public class AppAgencyController extends BaseController{
                 pd.put("date",DateUtil.getTime());
                 pd.put("fstatus","0");
                 if(customer_id==null){
-                    pd.put("customer_id","0");
+                    //查询用户id
+                    PageData pds = new PageData();
+                    pds.put("name",name);
+                    List<PageData> us = sysAppUserService.findcostor(pds);
+                    if(us.size()<1){
+                        throw new ServiceException("用户未找到");
+                    }
                 }else{
                     pd.put("customer_id",customer_id);
                 }
