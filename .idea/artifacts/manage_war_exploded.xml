@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
-  <artifact type="exploded-war" name="manage:war exploded2">
-    <output-path>$PROJECT_DIR$/out/artifacts/manage_war_exploded2</output-path>
+  <artifact type="exploded-war" name="manage:war exploded">
+    <output-path>$PROJECT_DIR$/target</output-path>
     <root id="root">
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
@@ -92,7 +92,7 @@
           <element id="library" level="project" name="Maven: com.google.zxing:core:3.2.1" />
           <element id="library" level="project" name="Maven: com.beust:jcommander:1.48" />
           <element id="library" level="project" name="Maven: com.itextpdf:itextpdf:5.5.6" />
-          <element id="library" level="project" name="Maven: com.alibaba:fastjson:1.2.47" />
+          <element id="library" level="project" name="Maven: javax.api:java.api:1.7.0" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="manage/web/Web" />

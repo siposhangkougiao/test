@@ -25,6 +25,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -182,6 +184,7 @@ public class AppSupplierController extends BaseController{
                 page.setCurrentPage(Integer.parseInt(pageNum));
                 List<PageData> list=supplierService.datalistPage(page);
                 double total_money=0;
+                BigDecimal axx = new BigDecimal(0);
                 for(int i=0;i<list.size();i++){
                     PageData pd_c=productService.findCount(list.get(i));
                     list.get(i).put("count",pd_c.get("count").toString());
@@ -191,6 +194,7 @@ public class AppSupplierController extends BaseController{
                     if(pd_money!=null&&!pd_money.get("money").toString().equals("0.0")){
                         list.get(i).put("money",df.format(pd_money.get("money")));
                         total_money+=Double.valueOf(total_money)+Double.valueOf(pd_money.get("money").toString());
+                        axx = axx.add(new BigDecimal(pd_money.get("money").toString()));
                     }else{
                         list.get(i).put("money","0.0");
                     }
@@ -203,7 +207,7 @@ public class AppSupplierController extends BaseController{
 
                     list.get(i).put("return_money","0.0");
                 }
-
+                axx.setScale(2,BigDecimal.ROUND_HALF_UP);
                 Map<String, Object> map = new HashedMap();
                 if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
                     map.put("data", list);
@@ -216,7 +220,7 @@ public class AppSupplierController extends BaseController{
                 pd.put("message", message);
                 pd.put("code", "1");
                 pd.put("pageTotal",String.valueOf(page.getTotalPage()));
-                pd.put("total_money",total_money);
+                pd.put("total_money",axx);
             } catch (Exception e) {
                 pd.clear();
                 pd.put("code","2");
