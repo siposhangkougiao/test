@@ -1171,7 +1171,7 @@ public class AppOrderController extends BaseController{
      * @param  store_id     店面ID
      * @param medication_date 下次用药时间
      * @param remarks 备注
-     * @param uid 用户ID
+     * @param uid 用户IDxxx
      * @return
      */
     @RequestMapping(value = "saveOrders",produces = "text/html;charset=UTF-8")
