@@ -11,6 +11,7 @@ import com.mtnz.service.system.product.ProductService;
 import com.mtnz.service.system.product.WeProductService;
 import com.mtnz.util.*;
 import org.apache.commons.collections.map.HashedMap;
+import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -784,18 +785,20 @@ public class AppProductController extends BaseController{
                         kucun.put("store_id",list.get(i).get("store_id"));
                         List<PageData> pricelist = productService.findProductPrice(kucun);
                         for (int j = 0; j <pricelist.size() ; j++) {
-                            priceaa = priceaa.add(new BigDecimal((Long) pricelist.get(j).get("nums")).multiply(new BigDecimal((String) pricelist.get(j).get("purchase_price"))));
+                            System.out.println("數量："+pricelist.get(j).get("nums")+"单价是："+pricelist.get(j).get("purchase_price"));
+                            priceaa = priceaa.add(new BigDecimal(pricelist.get(j).get("nums").toString()).multiply(new BigDecimal(pricelist.get(j).get("purchase_price").toString())));
                         }
                     }
                 }
+                System.out.println("计算出来的总价格>>>>"+priceaa);
                 priceaa.setScale(2,BigDecimal.ROUND_HALF_UP);
-                System.out.println("计算出来的总价格>>>>"+moneg);
+                System.out.println("计算出来的总价格>>>>"+priceaa);
                 pd.clear();
                 pd.put("object",map);
                 pd.put("code","1");
                 pd.put("message",message);
                 pd.put("pageTotal",String.valueOf(pageTotal));
-                pd.put("money",moneg);
+                pd.put("money",priceaa);
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");
@@ -942,6 +945,7 @@ public class AppProductController extends BaseController{
                         pd_k.put("order_info_id","0");
                         pd_k.put("purchase_price",purchase_price);
                         pd_k.put("product_price",product_price);
+                        pd_k.put("nums",kucun);
                         kunCunService.save(pd_k);
                     }
                     pd.clear();
@@ -1281,6 +1285,7 @@ public class AppProductController extends BaseController{
                 pd_p.put("purchase_price",pd_p.getString("product_price"));
             }
             pd_p.put("product_price",pd_p.getString("product_price"));
+            pd_p.put("nums",0);
             kunCunService.save(pd_p);
             pd.put("store_id",pd_p.get("store_id").toString());
 

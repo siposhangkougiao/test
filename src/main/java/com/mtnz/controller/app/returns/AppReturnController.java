@@ -339,8 +339,10 @@ public class AppReturnController extends BaseController{
         logBefore(logger,"撤销退货订单");
         PageData pd=this.getPageData();
         try{
+            //查询退货单详情
             PageData pdReturn=returnOrderInfoService.findById(pd);
             pd.put("revokes","1");
+            //修改退货单状态 1已撤销
             returnOrderInfoService.editRevokes(pd);
             List<PageData> list=returnOrderProService.findList(pd);
             for(int i=0;i<list.size();i++){
@@ -348,21 +350,31 @@ public class AppReturnController extends BaseController{
                 PageData pdOrderpro=orderProService.findOrderInfoProduct(list.get(i));
                 List<PageData> listKun=orderKuncunService.findOrderProList(pdOrderpro);
                 String kucun=list.get(i).get("num").toString();
+                Integer aa = 0;
                 for(int j=0;j<listKun.size();j++){
+                    System.out.println("查询出来的库存id："+listKun.get(j).get("kuncun_id"));
                     int tuihuo=Integer.valueOf(listKun.get(j).get("num").toString())-Integer.valueOf(listKun.get(j).get("nums").toString());
                     if(tuihuo>=Integer.valueOf(kucun)){
                         listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+Integer.valueOf(kucun));
                         orderKuncunService.editNums(listKun.get(j));
-                        listKun.get(j).put("nums",Integer.valueOf(list.get(i).get("num").toString()));
+                        if(aa==1){
+                            System.out.println("走这里了");
+                            listKun.get(j).put("nums",Integer.valueOf(kucun));
+                        }else {
+                            listKun.get(j).put("nums",Integer.valueOf(list.get(i).get("num").toString()));
+                        }
+                        System.out.println(">>>>>>>1111111"+listKun.get(j).get("nums"));
                         kunCunService.editJianNumss(listKun.get(j));
                         kucun="0";
                     }else{
                         listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+tuihuo);
                         orderKuncunService.editNums(listKun.get(j));
                         listKun.get(j).put("nums",tuihuo);
+                        System.out.println(">>>>>>>222222"+listKun.get(j).get("nums"));
                         kunCunService.editJianNumss(listKun.get(j));
                         int kucuns=Integer.valueOf(kucun)-tuihuo;
                         kucun=String.valueOf(kucuns);
+                        aa = 1;
                     }
                 }
                 pdOrderpro.put("nums",list.get(i).get("num").toString());

@@ -31,7 +31,7 @@
             #{supplier_id},
             #{customer_id},
             #{jia},
-            #{num}
+            #{nums}
         )
     </insert>
 
@@ -190,6 +190,13 @@
         SET nums=nums-#{nums}
         where kuncun_id=#{kuncun_id}
     </update>
+
+    <update id="editJiahuiqu" parameterType="pd">
+        UPDATE  kuncun
+        SET nums=nums+#{nums}
+        where kuncun_id=#{kuncun_id}
+    </update>
+
 
     <select id="findSum" parameterType="pd" resultType="pd">
         SELECT

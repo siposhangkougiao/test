@@ -9,5 +9,8 @@
         <module name="manage" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="manage" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

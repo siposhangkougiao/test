@@ -141,4 +141,9 @@ public class KunCunService {
     public List<PageData> findListjin(PageData pd) throws Exception {
         return (List<PageData>) daoSupport.findForList("KunCunMapper.findListjin",pd);
     }
+
+    public void editJiahuiqu(PageData pd) throws Exception {
+
+        daoSupport.update("KunCunMapper.editJiahuiqu",pd);
+    }
 }
