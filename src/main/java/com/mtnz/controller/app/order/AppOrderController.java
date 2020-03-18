@@ -1172,14 +1172,14 @@ public class AppOrderController extends BaseController{
      * @param medication_date 下次用药时间
      * @param remarks 备注
      * @param uid 用户IDxxx
-     * @return
+     * @return isli是否拆拆袋儿销售
      */
     @RequestMapping(value = "saveOrders",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String saveOrders(String name,String phone,String status,
                             String total_money,String money,String discount_money,
                             String owe_money,String data,String customer_id,String store_id,
-                            String medication_date,String remarks,String uid,String open_bill,String date){
+                            String medication_date,String remarks,String uid,String open_bill,String date,Integer isli){
         PageData pd=new PageData();
         String str="";
         try {
@@ -1195,7 +1195,7 @@ public class AppOrderController extends BaseController{
             }
             str=orderKuncunService.saveOrder(name,phone,status,total_money,money,discount_money,
                     owe_money,data.trim(),customer_id,store_id,
-                    medication_date,remarks,uid,open_bill,date);
+                    medication_date,remarks,uid,open_bill,date,isli);
             return str;
         }catch (Exception e){
             pd.clear();

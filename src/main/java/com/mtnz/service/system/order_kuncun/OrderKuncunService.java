@@ -90,7 +90,7 @@ public class OrderKuncunService extends BaseController{
     public String saveOrder(String name,String phone,String status,
                             String total_money,String money,String discount_money,
                             String owe_money,String data,String customer_id,String store_id,
-                            String medication_date,String remarks,String uid,String open_bill ,String date) throws Exception {
+                            String medication_date,String remarks,String uid,String open_bill ,String date,Integer isli) throws Exception {
         logBefore(logger,"销售开单");
         java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
         PageData pd=this.getPageData();
@@ -100,14 +100,14 @@ public class OrderKuncunService extends BaseController{
             pd.put("code","2");
             pd.put("message","缺少参数");
         }else{
-                PageData pd_customer=new PageData();
+                PageData pd_customer=new PageData();//存放的是客户的信息
                 String statuss="0";
                 if(customer_id.length()==0){
                     //判断客户存在不存在
                     pd_customer=customerService.findNameCustomer(pd);
                     if(pd_customer!=null){
                         customer_id=pd_customer.get("customer_id").toString();
-                    }else{
+                    }else{//如果不存在的话就添加一个客户
                         pd_customer=new PageData();
                         pd_customer.put("name",name);
                         pd_customer.put("phone",phone);
@@ -129,7 +129,7 @@ public class OrderKuncunService extends BaseController{
                         statuss="1";
                     }
                 }else{
-                    pd_customer=customerService.findById(pd);
+                    pd_customer=customerService.findById(pd);//如果存在就查找出来客户
                 }
                 Date now = new Date();
                 SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmssSSS");
@@ -158,7 +158,7 @@ public class OrderKuncunService extends BaseController{
                 }else{
                     pd_o.put("open_bill","");
                 }
-                orderInfoService.save(pd_o);
+                orderInfoService.save(pd_o);//添加主表订单信息
                 data = DateUtil.delHTMLTag(data);
                 data = data.replace("\r", "");
                 data = data.replace("\n", "");
@@ -172,19 +172,19 @@ public class OrderKuncunService extends BaseController{
                 PageData pd_cc=new PageData();
                 pd_cc.put("customer_id",customer_id);
                 pd_cc.put("billing_date",pd_o.getString("date"));
-                customerService.updateBillingDate(pd_cc);
-                for (int i=0;i<list.size();i++){
+                customerService.updateBillingDate(pd_cc);//这里更新用户的最新下单时间
+                for (int i=0;i<list.size();i++){//遍历获取的商品信息
                     list.get(i).put("order_info_id",pd_o.get("order_info_id").toString());
                     list.get(i).put("orde_by","1");
-                    orderProService.save(list.get(i));
+                    orderProService.save(list.get(i));//添加商品详情表
                     list.get(i).put("product_id",(new Double(list.get(i).get("product_id").toString())).intValue());
                     list.get(i).put("store_id",store_id);
-                    List<PageData> lists=kunCunService.findList(list.get(i));
-                    String kucun=list.get(i).get("num").toString();
-                    if(lists!=null&&lists.size()!=0){
+                    List<PageData> lists=kunCunService.findList(list.get(i));//查找库存
+                    String kucun=list.get(i).get("num").toString();//商品购买的数量（这里是需要修改的）
+                    if(lists!=null&&lists.size()!=0){//遍历库存
                         for (int j=0;j<lists.size();j++){
                             int in=(new Double(kucun)).intValue();
-                            if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){
+                            if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){//现有库存大于实际购买的数量时
                                 lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                 lists.get(j).put("product_price",list.get(i).get("product_price").toString());
                                 lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
@@ -225,7 +225,7 @@ public class OrderKuncunService extends BaseController{
                                 }
                             }
                         }
-                    }else{
+                    }else{//如果商品没有库存信息
                         PageData pd_p=kunCunService.findByproduct_id(list.get(i));
                         if (pd_p!=null){
                             pd_p.put("order_pro_id",list.get(i).get("order_pro_id").toString());
@@ -249,17 +249,18 @@ public class OrderKuncunService extends BaseController{
                             pd_pp.put("order_info_id",pd_o.get("order_info_id").toString());
                             pd_pp.put("num",kucun);
                             pd_pp.put("date",date);
-                            save(pd_pp);
+                            save(pd_pp);//添加订单库存信息
                         }
                     }
-                    productService.editNum(list.get(i));
+                    productService.editNum(list.get(i));//更新商品库存信息
                 }
+                //添加库存记录
                 kunCunService.batchSavess(list,store_id,DateUtil.getTime(),"0",customer_id,pd_o.get("order_info_id").toString(),"1",pd_o.get("order_info_id").toString());
                 Double owe=0.0;
-                if(status.equals("1")){
+                if(status.equals("1")){// 状态 0实收款  1欠款
                     owe=Double.valueOf(pd_customer.get("owe").toString())+Double.valueOf(owe_money);
                     pd_customer.put("owe",df.format(owe));
-                    customerService.updateOwe(pd_customer);
+                    customerService.updateOwe(pd_customer);//更新客户欠款信息
                 }else{
                     owe=Double.valueOf(pd_customer.get("owe").toString());
                 }
@@ -274,7 +275,7 @@ public class OrderKuncunService extends BaseController{
                     pd.put("date", DateUtil.getTime());
                     pd.put("fstatus","0");
                     pd.put("customer_id",customer_id);
-                    agencyService.save(pd);
+                    agencyService.save(pd);//添加代办实行，提醒下次用药时间
                 }
                 pd.clear();
                 pd.put("code","1");
