@@ -803,6 +803,8 @@ public class AppCustomerController extends BaseController{
                 if(Integer.valueOf(pd_c.get("number").toString())>Integer.valueOf(count)){
                     SmsBao sms=new SmsBao();
                     System.out.println(data);
+                    System.out.println(message);
+                    System.out.println(pd_c.getString("name"));
                     String result= sms.sendSMSstord(data,message,pd_c.getString("name"));
                     System.out.println(">>>>>>"+result);
                     JSONObject json = JSONObject.fromObject(result);
@@ -1030,5 +1032,11 @@ public class AppCustomerController extends BaseController{
             e.printStackTrace();
         }
     }*/
+
+    public static void main(String[] args) throws Exception {
+        SmsBao sms=new SmsBao();
+        String result= sms.sendSMSstord("18910529165","消息","名称");
+        System.out.println(result);
+    }
 
 }
