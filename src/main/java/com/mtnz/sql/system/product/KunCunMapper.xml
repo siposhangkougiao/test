@@ -79,6 +79,30 @@
         </foreach>
     </insert>
 
+    <insert id="batchSavesli" parameterType="java.util.Map">
+        INSERT INTO kuncun(
+        product_id,
+        store_id,
+        status,
+        num,
+        date,
+        total,
+        purchase_price,
+        product_price,
+        money,
+        supplier_id,
+        order_info_id,
+        jia,
+        nums,
+        all_number,
+        now_number,
+        id
+        )VALUE
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.product_id},#{store_id},#{status},#{item.num},#{date},#{item.total},#{item.purchase_price},#{item.product_price},#{item.total},#{supplier_id},#{supplier_order_info_id},'0',#{item.num},#{item.all_number},#{item.now_number},#{id})
+        </foreach>
+    </insert>
+
     <insert id="batchSavess" parameterType="java.util.Map">
         INSERT INTO kuncun(
         product_id,
@@ -86,6 +110,9 @@
         status,
         num,
         nums,
+        likucun,
+        all_number,
+        now_number,
         date,
         total,
         order_info_id,
@@ -98,7 +125,35 @@
         id
         )VALUE
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.product_id},#{store_id},#{status},#{item.num},#{item.num},#{date},#{item.total},#{order_info_id},#{customer_id},#{item.product_price},#{item.product_price},"",'0',#{jia},#{id})
+            (#{item.product_id},#{store_id},#{status},#{item.num},#{item.num},
+            #{item.likucun},#{item.all_number},#{item.now_number},
+            #{date},#{item.total},#{order_info_id},#{customer_id},#{item.product_price},#{item.product_price},"",'0',#{jia},#{id})
+        </foreach>
+    </insert>
+
+    <insert id="batchSavessli" parameterType="java.util.Map">
+        INSERT INTO kuncun(
+        product_id,
+        store_id,
+        status,
+        num,
+        nums,
+        likucun,
+        all_number,
+        now_number,
+        date,
+        total,
+        order_info_id,
+        customer_id,
+        purchase_price,
+        product_price,
+        money,
+        supplier_id,
+        jia,
+        id
+        )VALUE
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.product_id},#{store_id},#{status},'0','0',#{item.likucun},#{item.all_number},#{item.now_number},#{date},#{item.total},#{order_info_id},#{customer_id},#{item.product_price},#{item.product_price},"",'0',#{jia},#{id})
         </foreach>
     </insert>
 
@@ -133,6 +188,7 @@
             status,
             num,
             nums,
+            likucun,
             date,
             total,
             order_info_id,
@@ -179,15 +235,27 @@
         where kuncun_id=#{kuncun_id}
     </update>
 
+    <update id="editNumli" parameterType="pd">
+        UPDATE kuncun
+        SET nums=#{nums},likucun=#{likucun}
+        where kuncun_id=#{kuncun_id}
+    </update>
+
     <update id="editJiaNums" parameterType="pd">
         UPDATE  kuncun
-        SET nums=nums+#{nums}
+        SET nums=nums+#{nums},likucun = likucun+#{now_number}
         where kuncun_id=#{kuncun_id}
     </update>
 
     <update id="editJianNumss" parameterType="pd">
         UPDATE  kuncun
         SET nums=nums-#{nums}
+        where kuncun_id=#{kuncun_id}
+    </update>
+
+    <update id="editJianNumssli" parameterType="pd">
+        UPDATE  kuncun
+        SET likucun=likucun-#{now_number}
         where kuncun_id=#{kuncun_id}
     </update>
 
@@ -320,7 +388,10 @@
             purchase_price,
             money,
             supplier_id,
-            jia
+            jia,
+            likucun,
+            all_number,
+            now_number
         FROM kuncun
         WHERE order_info_id=#{order_info_id} and status='5' and jia='0'
     </select>
@@ -343,4 +414,8 @@
         WHERE store_id=#{store_id} and product_id=#{product_id} and status=2 and jia='0' and revokes='0'
         ORDER BY kuncun_id ASC;
     </select>
+
+    <update id="editNumlikucun">
+        update kuncun set likucun = 0 where product_id = #{product_id} and status =2
+    </update>
 </mapper>

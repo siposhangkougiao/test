@@ -10,6 +10,8 @@
             purchase_price,
             num,
             nums,
+            all_number,
+            now_number,
             order_info_id,
             store_id,
             date
@@ -21,6 +23,8 @@
             #{purchase_price},
             #{num},
             #{num},
+            #{all_number},
+            #{now_number},
             #{order_info_id},
             #{store_id},
             #{date}
@@ -38,9 +42,29 @@
             purchase_price,
             num,
             nums,
+            all_number,
+            now_number,
             order_info_id
         FROM  order_kuncun
         WHERE order_pro_id=#{order_pro_id} and kuncun_id!=0 and nums>0
+        ORDER BY order_kucun_id DESC
+    </select>
+
+    <select id="findListli" parameterType="pd" resultType="pd">
+        SELECT
+            order_kucun_id,
+            order_pro_id,
+            product_id,
+            kuncun_id,
+            product_price,
+            purchase_price,
+            num,
+            nums,
+            all_number,
+            now_number,
+            order_info_id
+        FROM  order_kuncun
+        WHERE order_pro_id=#{order_pro_id} and kuncun_id!=0 and all_number>0
         ORDER BY order_kucun_id DESC
     </select>
 
@@ -66,6 +90,11 @@
     </update>
 
 
+    <update id="editNumsli" parameterType="pd">
+        UPDATE order_kuncun
+        SET now_number=#{now_number}
+        WHERE order_kucun_id=#{order_kucun_id}
+    </update>
 
 
 
@@ -100,6 +129,8 @@
             purchase_price,
             num,
             nums,
+            all_number,
+            now_number,
             order_info_id
         FROM  order_kuncun
         WHERE order_pro_id=#{order_pro_id}
@@ -130,8 +161,22 @@
             purchase_price,
             num,
             nums,
+            all_number,
+            now_number,
             order_info_id
         FROM order_kuncun
         WHERE order_pro_id=#{order_pro_id} and product_id=#{product_id}
+    </select>
+
+    <select id="findOrderKucunTsByIdAndTime" parameterType="pd" resultType="java.math.BigDecimal">
+        select COALESCE(sum(nums * product_price),0) as product_money
+        from order_kuncun
+        where product_id = #{product_id} and order_kuncun.date between #{beginTime} and #{endTime} and revokes = 0 and all_number = 0
+    </select>
+
+    <select id="findOrderKucunTsLiByIdAndTime" parameterType="pd" resultType="java.math.BigDecimal">
+        select COALESCE(sum(now_number * product_price),0) as product_money
+        from order_kuncun
+        where product_id = #{product_id} and order_kuncun.date between #{beginTime} and #{endTime} and revokes = 0 and nums = 0
     </select>
 </mapper>

@@ -69,7 +69,8 @@
             number as numbers,
             url,
             status,
-            type2
+            type2,
+            likucun
         FROM product
         WHERE product_id=#{product_id}
     </select>
@@ -107,7 +108,8 @@
                 number as numbers,
                 url,
                 status,
-                type2
+                type2,
+                likucun
             FROM product
             WHERE store_id=#{store_id} and status='0'
             ORDER BY date DESC
@@ -194,6 +196,12 @@
         WHERE product_id=#{product_id}
     </update>
 
+    <update id="editNumli" parameterType="pd">
+        UPDATE product
+        SET kucun=#{kucun},likucun=#{likucun}
+        WHERE product_id=#{product_id}
+    </update>
+
     <!--  加库存  -->
     <update id="editNumJia" parameterType="pd">
         UPDATE product
@@ -206,7 +214,13 @@
 
     <update id="editJiaNums" parameterType="pd">
         UPDATE product
-        SET kucun=kucun+#{num}
+        SET kucun=kucun+#{num},likucun = likucun+#{now_number}
+        WHERE product_id=#{product_id}
+    </update>
+
+    <update id="editJiaNumsli" parameterType="pd">
+        UPDATE product
+        SET kucun=kucun+#{num},likucun = likucun+#{now_number}
         WHERE product_id=#{product_id}
     </update>
 
@@ -221,6 +235,12 @@
     <update id="editJianNums" parameterType="pd">
         UPDATE product
         SET kucun=kucun-#{num}
+        WHERE product_id=#{product_id}
+    </update>
+
+    <update id="editJianNumsli" parameterType="pd">
+        UPDATE product
+        SET likucun=likucun-#{now_number}
         WHERE product_id=#{product_id}
     </update>
 
@@ -877,8 +897,12 @@
 
     <select id="findProductPrice" parameterType="pd" resultType="pd">
         select
-        nums,purchase_price
+        nums,purchase_price,likucun
         from kuncun
         where product_id = #{product_id} and store_id = #{store_id} and status = 2
     </select>
+
+    <update id="editNumslikucun">
+        update product set likucun = 0 where product_id=#{product_id}
+    </update>
 </mapper>

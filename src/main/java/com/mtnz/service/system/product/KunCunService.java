@@ -7,6 +7,7 @@ import com.mtnz.util.PageData;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,5 +146,45 @@ public class KunCunService {
     public void editJiahuiqu(PageData pd) throws Exception {
 
         daoSupport.update("KunCunMapper.editJiahuiqu",pd);
+    }
+
+    public void editNumli(PageData pd) throws Exception {
+        daoSupport.update("KunCunMapper.editNumli",pd);
+    }
+
+    public void batchSavessli(List<PageData> list, String store_id, String date, String status, String customer_id, String order_info_id, String jia, String id) throws Exception {
+        Map<String,Object> map=new HashMap<String, Object>();
+        map.put("list",list);
+        map.put("store_id",store_id);
+        map.put("date",date);
+        map.put("status",status);
+        map.put("customer_id",customer_id);
+        map.put("order_info_id",order_info_id);
+        map.put("jia",jia);
+        map.put("id",id);
+        map.put("num","0");
+        map.put("nums","0");
+        daoSupport.save("KunCunMapper.batchSavessli",map);
+    }
+
+    public void batchSavesli(List<PageData> list,String store_id,String date,String status,String supplier_id,String supplier_order_info_id,String id) throws Exception {
+        Map<String,Object> map=new HashMap<String, Object>();
+        map.put("list",list);
+        map.put("store_id",store_id);
+        map.put("date",date);
+        map.put("status",status);
+        map.put("supplier_id",supplier_id);
+        map.put("supplier_order_info_id",supplier_order_info_id);
+        map.put("id",id);
+        daoSupport.save("KunCunMapper.batchSavesli",map);
+    }
+
+    public void editJianNumssli(PageData pd) throws Exception {
+
+        daoSupport.update("KunCunMapper.editJianNumssli",pd);
+    }
+
+    public void editNumlikucun(PageData pd) throws Exception {
+        daoSupport.update("KunCunMapper.editNumlikucun",pd);
     }
 }

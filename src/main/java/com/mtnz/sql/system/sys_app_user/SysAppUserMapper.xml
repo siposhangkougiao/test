@@ -229,6 +229,9 @@
         FROM sys_app_user s
         LEFT JOIN store ss on ss.store_id=s.store_id
         where s.uid=#{uid}
+        <if test="store_id !=null">
+            and ss.store_id = #{store_id}
+        </if>
     </select>
     
     <update id="update" parameterType="pd">
@@ -312,5 +315,13 @@
         FROM sys_app_user
         where username=#{username}
     </select>
+
+    <select id="findall" parameterType="pd" resultType="pd">
+        select uid,store_id from sys_app_user
+    </select>
+
+    <update id="editStoreId">
+        update sys_app_user set store_id = #{store_id} where uid = #{user_id}
+    </update>
 
 </mapper>

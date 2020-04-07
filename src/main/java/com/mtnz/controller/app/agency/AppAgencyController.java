@@ -314,8 +314,9 @@ public class AppAgencyController extends BaseController{
      */
     @RequestMapping(value = "findAgencyCount",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String  findAgencyCount(String uid){
+    public String  findAgencyCount(String uid,Long store_id){
         logBefore(logger,"查询代办事项和首页版图");
+        System.out.println(">>>>>>>uid:"+uid + "store_id:" + store_id);
         PageData pd=this.getPageData();
         if(uid==null||uid.length()==0){
             pd.clear();
@@ -323,6 +324,9 @@ public class AppAgencyController extends BaseController{
             pd.put("message","缺少参数");
         }else{
             try{
+                if(store_id!=null){
+                    pd.put("store_id",store_id);
+                }
                 pd.put("month",DateUtil.getDay());
                 PageData pd_c=agencyService.findCount(pd);
                 List<PageData> list=bannerService.findList(pd);

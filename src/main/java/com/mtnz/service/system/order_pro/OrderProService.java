@@ -107,4 +107,19 @@ public class OrderProService {
         return (List<PageData>) daoSupport.findForList("OrderProMapper.findAdminQuanBu",pd);
     }
 
+    public void editOrderKuncunli(PageData pd) throws Exception {
+        daoSupport.update("OrderProMapper.editOrderKuncunli",pd);
+    }
+
+    public void editOrderKuncunsli(PageData pd) throws Exception {
+        daoSupport.update("OrderProMapper.editOrderKuncunsli",pd);
+    }
+
+    public List<PageData> findOrderProNowNumber(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("OrderProMapper.findOrderProNowNumber",pd);
+    }
+
+    public List<PageData> findOrderProList(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("OrderProMapper.findOrderProList",pd);
+    }
 }

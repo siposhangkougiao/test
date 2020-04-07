@@ -2,8 +2,10 @@ package com.mtnz.controller.app.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.base.BaseController;
+import com.mtnz.entity.Page;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
 import com.mtnz.service.system.customer.CustomerService;
+import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.service.system.yzm.YzmService;
@@ -46,6 +48,8 @@ public class AppUserController extends BaseController {
     private AdminRelationService adminRelationService;
     @Resource(name = "customerService")
     private CustomerService customerService;
+    @Resource(name = "integralService")
+    private IntegralService integralService;
 
 
     /**
@@ -204,7 +208,7 @@ public class AppUserController extends BaseController {
      */
     @RequestMapping(value = "login", produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String login(String username, String password) {
+    public String login(String username, String password,Integer type) {
         logBefore(logger, "用户登录");
         PageData pd = this.getPageData();
         Map<String, Object> map = new HashMap();
@@ -248,11 +252,28 @@ public class AppUserController extends BaseController {
                         map.put("name", pd_u.getString("name"));
                         map.put("identity", pd_u.get("identity").toString());
                         pd_u.put("login_date", DateUtil.getTime());
+                        PageData userpage = new PageData();
+                        userpage.put("user_id",pd_u.get("uid"));
+                        PageData user = integralService.findIntegralSetup(userpage);
+                        if(user!=null){
+                            map.put("integral", user.get("number"));
+                        }
                         sysAppUserService.editLoginDate(pd_u);
+                        if(type ==null||type!=1){
+                            PageData pdx = new PageData();
+                            pdx.put("phoneTow",username);
+                            PageData pageData = storeService.findStoreOneByUId(pdx);
+                            System.out.println(">>>>>>>>>>>>>>>>>"+pageData.get("store_id").toString());
+                            map.put("store_id", pageData.get("store_id"));
+                            map.put("saddress", pageData.getString("address"));
+                            map.put("sname", pageData.getString("name"));
+                            map.put("phone", pageData.getString("phone"));
+                        }
                         pd.clear();
                         pd.put("code", "1");
                         pd.put("message", "正确返回数据!");
                         pd.put("data", map);
+
                     } else {
                         pd.clear();
                         pd.put("code", "2");
@@ -899,4 +920,5 @@ public class AppUserController extends BaseController {
             e.printStackTrace();
         }
     }
+
 }

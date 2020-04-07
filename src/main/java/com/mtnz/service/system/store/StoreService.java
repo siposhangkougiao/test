@@ -57,4 +57,34 @@ public class StoreService {
     public void editPhoneTow(PageData pd) throws Exception {
         daoSupport.update("StoreMapper.editPhoneTow",pd);
     }
+
+
+    public List<PageData> findstorListById(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("StoreMapper.findstorListById",pd);
+    }
+
+    public void saveStoreUser(PageData pd) throws Exception {
+        daoSupport.save("StoreMapper.saveStoreUser",pd);
+    }
+
+    public void editCheckStore(PageData pd) throws Exception {
+        daoSupport.update("StoreMapper.editCheckStore",pd);
+    }
+
+    public void editCheckStoreById(PageData pd) throws Exception {
+        daoSupport.update("StoreMapper.editCheckStoreById",pd);
+    }
+
+    public void editStoreDetail(PageData pd) throws Exception {
+        daoSupport.update("StoreMapper.editStoreDetail",pd);
+    }
+
+    public void editStatus(PageData pd) throws Exception {
+
+        daoSupport.update("StoreMapper.editStatus",pd);
+    }
+
+    public PageData findStoreOneByUId(PageData pd) throws Exception {
+       return (PageData) daoSupport.findForObject("StoreMapper.findStoreOneByUId",pd);
+    }
 }

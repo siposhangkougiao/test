@@ -53,7 +53,6 @@ public class AppStoreController extends BaseController{
     @Resource(name = "customerService")
     public CustomerService customerService;
 
-
     /**
      *
      * @param status 修改status
@@ -723,6 +722,12 @@ public class AppStoreController extends BaseController{
                 pd_customer.put("identity","");
                 pd_customer.put("remarks","");
                 customerService.save(pd_customer);
+                PageData pageData = new PageData();
+                pageData.put("user_id",pd.get("uid"));
+                pageData.put("store_id",pd_s.get("store_id"));
+                pageData.put("status",0);
+                pageData.put("ismr",1);
+                storeService.saveStoreUser(pageData);
                 pd.clear();
                 pd.put("code","1");
                 pd.put("message","正确返回数据!");
@@ -755,6 +760,262 @@ public class AppStoreController extends BaseController{
             pd.put("code","1");
             pd.put("message","正确返回数据!");
             pd.put("data",lists);
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str=mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 查询店铺列表
+     * @param userId 用户id
+     * @return
+     */
+    @RequestMapping(value = "findstorList",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String findstorList(String userId){
+        logBefore(logger,"查询店铺列表");
+        PageData pd=this.getPageData();
+        try{
+            //查询关联表
+            List<PageData> list=storeService.findstorListById(pd);
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+            pd.put("data",list);
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str=mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 添加店铺
+     * @param storename  店铺名称
+     * @param province  省
+     * @param city  市
+     * @param county 区
+     * @param address  详细地址
+     * @param phone  电话
+     * @param qr_code  二维码地址
+     * @param user_id  用户id
+     * @return
+     */
+    @RequestMapping(value = "saveOtherStore",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String saveOtherStore(String storename,String province,String city,String county,String address,
+                                 String phone,String qr_code,String user_id){
+        logBefore(logger,"查询店铺列表");
+        PageData pd=this.getPageData();
+        try{
+            PageData pd_s=new PageData();
+            pd_s.put("name",storename);
+            pd_s.put("number","200");
+            pd_s.put("address",address);
+            pd_s.put("qr_code",qr_code);
+            pd_s.put("phone",phone);
+            pd_s.put("province",province);
+            pd_s.put("city",city);
+            pd_s.put("county",county);
+            pd_s.put("street","");
+            pd_s.put("business_img","");
+            pd_s.put("phoneTow",phone);
+            storeService.save(pd_s);    //先添加店
+
+            PageData pageData = new PageData();
+            pageData.put("user_id",user_id);
+            pageData.put("store_id",pd_s.get("store_id"));
+            pageData.put("status",0);
+            pageData.put("ismr",0);
+            storeService.saveStoreUser(pageData);
+
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str=mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 修改店铺信息
+     * @param storename  店铺名称
+     * @param province 省
+     * @param city 市
+     * @param county 区
+     * @param address 详细地址
+     * @param phone 电话
+     * @param qr_code 二维码
+     * @param store_id  店铺id
+     * @return
+     */
+    @RequestMapping(value = "editStoreDetail",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String saveOtherStore(String storename,String province,String city,String county,String address,
+                                 String phone,String qr_code,Long store_id){
+        logBefore(logger,"修改店铺信息");
+        PageData pd=this.getPageData();
+        try{
+            PageData pd_s=new PageData();
+            pd_s.put("name",storename);
+            pd_s.put("address",address);
+            pd_s.put("qr_code",qr_code);
+            pd_s.put("province",province);
+            pd_s.put("city",city);
+            pd_s.put("county",county);
+            pd_s.put("phoneTow",phone);
+            pd_s.put("store_id",store_id);
+
+            storeService.editStoreDetail(pd_s);
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str=mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 切换店铺
+     * @param user_id 用户id
+     * @param store_id 店铺id
+     * @return
+     */
+    @RequestMapping(value = "editcheckStore",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String saveOtherStore(Long user_id,Long store_id){
+        logBefore(logger,"查询店铺列表");
+        PageData pd=this.getPageData();
+        try{
+
+            pd.put("ismr",0);
+            //全部修改未0
+            storeService.editCheckStore(pd);
+
+            //修改默认的店铺
+            pd.put("ismr",1);
+            storeService.editCheckStoreById(pd);
+
+            sysAppUserService.editStoreId(pd);
+
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str=mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 停用  启用店铺
+     * @param status 0启用  1通用
+     * @param store_id  店铺id
+     * @return
+     */
+    @RequestMapping(value = "editStatus",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String editStatus(Integer status,Long store_id){
+        logBefore(logger,"查询店铺列表");
+        PageData pd=this.getPageData();
+        try{
+
+            storeService.editStatus(pd);
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str=mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 刷表程序
+     * @return
+     */
+    @RequestMapping(value = "shuabiao",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String findstorList(){
+        logBefore(logger,"刷表程序");
+        PageData pd=this.getPageData();
+        try{
+            //查询关联表
+            List<PageData> list=sysAppUserService.findall();
+            for (int i = 0; i < list.size(); i++) {
+                PageData pageData = new PageData();
+                pageData.put("user_id",list.get(i).get("uid"));
+                pageData.put("store_id",list.get(i).get("store_id"));
+                pageData.put("status",0);
+                pageData.put("ismr",1);
+                storeService.saveStoreUser(pageData);
+            }
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+            pd.put("data",list);
         }catch (Exception e){
             pd.clear();
             pd.put("code","2");

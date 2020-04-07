@@ -10,7 +10,9 @@ import com.mtnz.entity.Page;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
 import com.mtnz.service.system.agency.AgencyService;
 import com.mtnz.service.system.already.AlreadyService;
+import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
+import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
 import com.mtnz.service.system.order_pro.OrderProService;
@@ -31,8 +33,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
 import javax.xml.crypto.Data;
 import java.io.StringReader;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -65,12 +69,16 @@ public class AppOrderController extends BaseController{
     private ReturnOrderInfoService returnOrderInfoService;
     @Resource(name = "supplierOrderProService")
     private SupplierOrderProService supplierOrderProService;
+    @Resource(name = "integralService")
+    private IntegralService integralService;
+    @Resource(name = "balanceService")
+    private BalanceService balanceService;
 
 
 
 
     /**
-     *
+     * 查询销售单详情
      * @param order_info_id 订单ID
      * @return
      */
@@ -86,6 +94,19 @@ public class AppOrderController extends BaseController{
         }else{
             try{
                 PageData pd_o=orderInfoService.findById(pd);
+                //PageData pageData = integralService.findIntegralDetailByOrderId(pd);
+                List<PageData> listdata =  integralService.findIntegralDetailListByOrderId(pd);
+                BigDecimal aa = new BigDecimal(0);
+                if(listdata!=null&&listdata.size()>0){
+                    for (int i = 0; i < listdata.size(); i++) {
+                        if(Integer.valueOf(listdata.get(i).get("status").toString())==1){
+                            aa = aa.subtract(new BigDecimal(listdata.get(i).get("integral").toString()));
+                        }else {
+                            aa =aa.add(new BigDecimal(listdata.get(i).get("integral").toString()));
+                        }
+                    }
+                }
+                pd_o.put("integral",aa);
                 List<PageData> list=orderProService.findList(pd_o);
                 pd.clear();
                 pd.put("code","1");
@@ -140,13 +161,22 @@ public class AppOrderController extends BaseController{
                 for (int i = 0, len = list.size(); i < len; i++) {
                     List<PageData> list_pro=orderProService.findList(list.get(i));
                     list.get(i).put("pro",list_pro);
+                    PageData pageData = integralService.findIntegralDetailByOrderId(list.get(i));
+                    if(pageData!=null){
+                        list.get(i).put("integral",pageData.get("integral"));
+                    }
                 }
                 PageData pd_c=customerService.findById(pd);
                 PageData pd_o=orderInfoService.findSumMoney(pd);
-                if(pd_o!=null&&!"0.0".equals(pd_o.get("money").toString())){
+                /*if(pd_o!=null&&!"0.0".equals(pd_o.get("money").toString())){
                     pd_c.put("money",df.format(pd_o.get("money")));
                 }else{
                     pd_c.put("money","0.0");
+                }*/
+                if(new BigDecimal(pd_o.get("money").toString()).compareTo(new BigDecimal(0))>0){
+                    pd_c.put("money",new BigDecimal(pd_o.get("money").toString()).setScale(2,BigDecimal.ROUND_HALF_UP));
+                }else {
+                    pd_c.put("money",new BigDecimal(0));
                 }
                 Map<String, Object> map = new HashedMap();
                 if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
@@ -154,6 +184,14 @@ public class AppOrderController extends BaseController{
                 }else{
                     map.put("message",message);
                     map.put("data",new ArrayList());
+                }
+                PageData pdx = new PageData();
+                pdx.put("customer_id",customer_id);
+                PageData pageData = integralService.findUserIntegralByUserid(pdx);
+                if(pageData!=null){
+                    pd_c.put("integral",pageData.get("remain_integral"));
+                }else {
+                    pd_c.put("integral",new BigDecimal(0));
                 }
                 pd.clear();
                 pd.put("object",map);
@@ -205,6 +243,7 @@ public class AppOrderController extends BaseController{
         logBefore(logger,"销售开单");
        java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
         PageData pd=this.getPageData();
+
             if(name==null||name.length()==0||phone==null||phone.length()==0||status==null||status.length()==0){
                 pd.clear();
                 pd.put("code","2");
@@ -691,9 +730,9 @@ public class AppOrderController extends BaseController{
                 String total_money="0.0";
                 String money="0.0";
                 String owe_money="0.0";
-                String discount_money="0.0";
+                String discount_money="0.0";//优惠的金额
                 String return_money="0.0";
-                java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
+                java.text.DecimalFormat df = new java.text.DecimalFormat("########.0000");
                 PageData pd_money=orderInfoService.findSumAnalysisMoney(pd);
                 if(pd_money!=null){
                     if(pd_money.get("total_money").toString()!=null&&!"0.0".equals(pd_money.get("total_money").toString())){
@@ -721,6 +760,18 @@ public class AppOrderController extends BaseController{
                         receivable=df.format(pd_r.get("receivable"));
                     }
                 }
+                BigDecimal a = new BigDecimal(receivable);
+                List<PageData> list1 = orderProService.findOrderProNowNumber(pd);
+                for (int i = 0; i < list1.size(); i++) {
+                    PageData pdx = new PageData();
+                    pdx.put("product_id",list1.get(i).get("product_id"));
+                    PageData pageData = productService.findById(pdx);
+                    BigDecimal b = new BigDecimal(list1.get(i).get("now_number").toString());
+                    BigDecimal c = new BigDecimal(pageData.get("norms1").toString());
+                    BigDecimal d = new BigDecimal(list1.get(i).get("purchase_price").toString());
+                    a = a.add(b.divide(c,4,BigDecimal.ROUND_HALF_UP).multiply(d));
+                }
+                receivable = String.valueOf(a);
                 List<PageData> list_count=orderInfoService.findGroupCustomer(pd);
                 Map<String, Object> maps = new HashedMap();
                 if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
@@ -1088,6 +1139,11 @@ public class AppOrderController extends BaseController{
         return str;
     }
 
+    /**
+     * 撤销订单
+     * @param order_info_id
+     * @return
+     */
     @RequestMapping(value = "revokesOrderInfo",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String revokesOrderInfo(String order_info_id){
@@ -1095,13 +1151,40 @@ public class AppOrderController extends BaseController{
         PageData pd=this.getPageData();
         ObjectMapper mapper=new ObjectMapper();
         try{
+            //查询主订单信息
             PageData pd_o=orderInfoService.findById(pd);
+            //处理积分的问题
+
+            Integer count = integralService.findIntegralDetailCountByOrderId(pd_o);//查询订单是否产生了积分
+            if(count!=null&&count>0){
+                pd_o.put("undo",2);
+                integralService.editIntegralDetailByOrderId(pd_o);//撤销积分订单
+
+                PageData pageData = integralService.findIntegralDetailByOrderId(pd_o);//查询出来积分订单详情
+                PageData pdx = new PageData();
+                pdx.put("user_id",pageData.get("user_id"));
+                pdx.put("integral",pageData.get("integral"));
+                integralService.editIntegralUser(pdx);//把积分减去
+            }
+
+            //处理账户余额问题
+            PageData orderbalance =balanceService.findBalanceDetailByOrderId(pd);
+            if(orderbalance!=null){
+                PageData pageup = new PageData();
+                pageup.put("user_id",orderbalance.get("user_id"));
+                pageup.put("balance",orderbalance.get("balance"));
+                balanceService.editBalanceByUserIdUp(pageup);
+                orderbalance.put("is_pass",1);
+                balanceService.editBalanceDetailIsPassByOrderOId(orderbalance);
+            }
+
             if(!pd_o.getString("date").split(" ")[0].equals(DateUtil.getDay())){
                 pd.clear();
                 pd.put("code","2");
                 pd.put("message","订单不是今天订单不可撤销!");
                 return mapper.writeValueAsString(pd);
             }
+            //查询当时开单时候的信息
             List<PageData> returnOrder=kunCunService.findCheXiao(pd);
             if(returnOrder!=null&&returnOrder.size()!=0){
                 pd.clear();
@@ -1109,21 +1192,19 @@ public class AppOrderController extends BaseController{
                 pd.put("message","该订单有退货,不可撤销!");
                 return mapper.writeValueAsString(pd);
             }
-            //修改撤销状态
+            //修改主订单信息
             orderInfoService.editrevokes(pd);
+            //修改库存信息
             orderKuncunService.editrevokes(pd);
+            //修改oderpro表信息
             orderProService.editRevokes(pd);
             //修改用户欠款金额
             if(pd_o.get("status").toString().equals("1")){
                 java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
                 //查询自己的欠款
                 PageData byId = customerService.findById(pd_o);
-            //    System.err.println(byId.get("owe").toString());
                 Double owe=Double.valueOf(byId.get("owe").toString())-Double.valueOf(pd_o.get("owe_money").toString());
-           //     System.err.println(df.format(owe));
                 PageData pd_cc=new PageData();
-         //       System.err.println(pd_o.get("customer_id").toString());
-       //         System.err.println(pd_o.get("owe_money").toString());
                 pd_cc.put("customer_id",pd_o.get("customer_id").toString());
                 pd_cc.put("owe",df.format(owe));
                 customerService.updateOwe(pd_cc);
@@ -1132,8 +1213,12 @@ public class AppOrderController extends BaseController{
             for(int i=0;i<list.size();i++){
                 List<PageData> lists=orderKuncunService.findOrderIdList(list.get(i));
                 for(int j=0;j<lists.size();j++){
-                    kunCunService.editJiaNums(lists.get(i));
+                    if(lists.get(j).get("now_number")==null){
+                        lists.get(j).put("now_number",new BigDecimal(0));
+                    }
+                    kunCunService.editJiaNums(lists.get(j));
                 }
+                PageData pageData = new PageData();
                 productService.editJiaNums(list.get(i));
             }
             pd.clear();
@@ -1172,14 +1257,17 @@ public class AppOrderController extends BaseController{
      * @param medication_date 下次用药时间
      * @param remarks 备注
      * @param uid 用户IDxxx
-     * @return
+     * @return isli是否拆拆袋儿销售
+     * @return integral 赠送的积分
+     * @return open_user 开单人
      */
     @RequestMapping(value = "saveOrders",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String saveOrders(String name,String phone,String status,
                             String total_money,String money,String discount_money,
                             String owe_money,String data,String customer_id,String store_id,
-                            String medication_date,String remarks,String uid,String open_bill,String date){
+                            String medication_date,String remarks,String uid,String open_bill,String date,Integer isli
+                ,BigDecimal integral,Long open_user,String remark,BigDecimal balance){
         PageData pd=new PageData();
         String str="";
         try {
@@ -1195,7 +1283,7 @@ public class AppOrderController extends BaseController{
             }
             str=orderKuncunService.saveOrder(name,phone,status,total_money,money,discount_money,
                     owe_money,data.trim(),customer_id,store_id,
-                    medication_date,remarks,uid,open_bill,date);
+                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance);
             return str;
         }catch (Exception e){
             pd.clear();
@@ -1385,5 +1473,6 @@ public class AppOrderController extends BaseController{
             e.printStackTrace();
         }
     }
+
 
 }
