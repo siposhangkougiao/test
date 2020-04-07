@@ -804,6 +804,7 @@ public class AppCustomerController extends BaseController{
                     SmsBao sms=new SmsBao();
                     System.out.println(data);
                     String result= sms.sendSMSstord(data,message,pd_c.getString("name"));
+                    System.out.println(">>>>>>"+result);
                     JSONObject json = JSONObject.fromObject(result);
                     if(json.get("code").equals("0")){
                             pd_c.put("count",count);
