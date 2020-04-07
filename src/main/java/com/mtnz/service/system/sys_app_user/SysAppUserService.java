@@ -77,4 +77,13 @@ public class SysAppUserService {
 
         return (List<PageData>) daoSupport.findForList("SysAppUserMapper.findcostor",pd);
     }
+
+    public List<PageData> findall() throws Exception {
+        PageData pd = new PageData();
+        return (List<PageData>) daoSupport.findForList("SysAppUserMapper.findall",pd);
+    }
+
+    public void editStoreId(PageData pd) throws Exception {
+        daoSupport.update("SysAppUserMapper.editStoreId",pd);
+    }
 }

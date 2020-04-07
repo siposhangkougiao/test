@@ -149,14 +149,14 @@
         FROM customer c
         where c.store_id=#{pd.store_id} and c.status!='2' and c.status!='3'
         <if test="pd.state1!=null and pd.state1!='' and pd.state1==1">
-            and c.status='1'
+            and (c.status='1' or c.status='4')
         </if>
         <if test="pd.state2!=null and pd.state2!='' and pd.state2==1">
             and c.owe>0
         </if>
-        <if test="pd.state3!=null and pd.state3!='' and pd.state3==1">
+        <!--<if test="pd.state3!=null and pd.state3!='' and pd.state3==1">
             and c.prepayment>0
-        </if>
+        </if>-->
         <if test="pd.address!=null and pd.address!=''">
             and (
             POSITION(#{pd.address} IN `province`)
@@ -761,5 +761,17 @@ FROM
         FROM customer
         WHERE store_id=#{store_id} and (status='0' OR status='1')
   </select>
+
+    <update id="editOwnByCustomerId">
+        update customer set owe = #{owe} where customer_id  =#{customer_id}
+    </update>
+
+    <update id="editOwnByCustomerIdUp">
+        update customer set owe = owe + #{owe}  where customer_id  =#{customer_id}
+    </update>
+
+    <update id="editOwnByCustomerIdDown">
+        update customer set owe = owe - #{owe}  where customer_id  =#{customer_id}
+    </update>
 
 </mapper>

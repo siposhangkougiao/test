@@ -6,7 +6,9 @@ import com.google.gson.reflect.TypeToken;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.agency.AgencyService;
+import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
+import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.shortletter.ShortLetterService;
 import com.mtnz.service.system.store.StoreService;
@@ -19,10 +21,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 /*
     Created by xxj on 2018\3\21 0021.  
@@ -40,6 +40,10 @@ public class AppCustomerController extends BaseController{
     private ShortLetterService shortLetterService;
     @Resource(name = "agencyService")
     private AgencyService agencyService;
+    @Resource(name = "integralService")
+    private IntegralService integralService;
+    @Resource(name = "balanceService")
+    private BalanceService balanceService;
 
 
     /**
@@ -124,13 +128,13 @@ public class AppCustomerController extends BaseController{
         }else{
             String message="正确返回数据!";
             try{
-                PageData pdCustomer=customerService.findById(pd);
+                /*PageData pdCustomer=customerService.findById(pd);
                 if(pdCustomer.getString("status").equals("3")){
                     pd.clear();
                     pd.put("code","2");
                     pd.put("message","零散客户不可修改!");
                     return mapper.writeValueAsString(pd);
-                }
+                }*/
                 List<PageData> listName=customerService.findCustomerName(pd);
                 if(listName!=null&&listName.size()!=0){
                     pd.clear();
@@ -209,7 +213,7 @@ public class AppCustomerController extends BaseController{
         logBefore(logger,"查询客户");
         PageData pd=this.getPageData();
         Page page=new Page();
-        java.text.DecimalFormat df = new java.text.DecimalFormat("##########.0");
+        java.text.DecimalFormat df = new java.text.DecimalFormat("##########.00");
         if(store_id==null||store_id.length()==0||status==null||status.length()==0){
             pd.clear();
             pd.put("code","2");
@@ -224,7 +228,23 @@ public class AppCustomerController extends BaseController{
                 page.setShowCount(10);
                 page.setCurrentPage(Integer.parseInt(pageNum));
                 List<PageData> list=customerService.dataListPage(page);
-                for (PageData pageData : list) {
+                if(state3!=null&&state3.equals("1")){
+                    Iterator<PageData> iterator = list.iterator();
+                    while(iterator.hasNext()){
+                        PageData integer = iterator.next();
+                        PageData up = new PageData();
+                        up.put("user_id",integer.get("customer_id"));
+                        PageData ison = balanceService.findUserbalanceByUserId(up);
+                        if(ison==null||new BigDecimal(ison.get("balance").toString()).compareTo(new BigDecimal(0))<1){
+                            //list.remove(integer);
+                            iterator.remove();
+                        }
+
+                    }
+                }
+                BigDecimal totlepayment = new BigDecimal(0);
+                for (int i = 0; i < list.size(); i++) {
+                    PageData pageData = list.get(i);
                     Object customer_id = pageData.get("customer_id");
                     PageData pd1 = new PageData();
                     pd1.put("customer_id",customer_id);
@@ -234,17 +254,41 @@ public class AppCustomerController extends BaseController{
                         Object discountmoney = sumdiscountMoney.get("discountmoney");
                         pageData.put("discountmoney",discountmoney);
                     }else {
-                        pageData.put("discountmoney",0);
+                        pageData.put("discountmoney",String.valueOf(new BigDecimal(0).setScale(2,BigDecimal.ROUND_HALF_UP)));
                     }
                     if (sumMoney!=null && !"".equals(sumMoney)) {
                         Object money = sumMoney.get("money");
-                        pageData.put("totlemoney",money);
+                        pageData.put("totlemoney",String.valueOf(new BigDecimal(money.toString()).setScale(2,BigDecimal.ROUND_HALF_UP)));
                     }else {
-                        pageData.put("totlemoney",0);
+                        pageData.put("totlemoney",String.valueOf(new BigDecimal(0).setScale(2,BigDecimal.ROUND_HALF_UP)));
                     }
-
-
+                    pageData.put("owe",String.valueOf(new BigDecimal(pageData.get("owe").toString()).setScale(2,BigDecimal.ROUND_HALF_UP)));
+                    //查询用户积分
+                    PageData pageuser = integralService.findUserIntegralByUserid(pageData);
+                    if(pageuser!=null){
+                        list.get(i).put("integral",pageuser.get("remain_integral"));
+                    }else {
+                        list.get(i).put("integral",new BigDecimal(0));
+                    }
+                    //查询用户账户余额
+                    PageData ub = new PageData();
+                    ub.put("user_id",pageData.get("customer_id"));
+                    PageData balance = balanceService.findUserbalanceByUserId(ub);
+                    if(balance==null){
+                        PageData customer = customerService.findById(pageData);
+                        PageData pda = new PageData();
+                        pda.put("name",customer.get("name"));
+                        pda.put("balance",new BigDecimal(0));
+                        pda.put("user_id",pageData.get("customer_id"));
+                        balanceService.saveBalance(pda);
+                        list.get(i).put("prepayment",new BigDecimal(0));
+                    }else {
+                        list.get(i).put("prepayment",balance.get("balance"));
+                        totlepayment =totlepayment.add(new BigDecimal(balance.get("balance").toString()));
+                    }
                 }
+                /*for (PageData pageData : list) {
+                }*/
                 if(pageNum.equals("1")){
                     PageData pd_c=customerService.findLingSan(pd);
                     if(null!=pd_c&&pd_c.size()>0){
@@ -252,11 +296,11 @@ public class AppCustomerController extends BaseController{
                     }
                 }
                 PageData pd_c=customerService.findCount(pd);
-                String money="0.0";
+                String money="0.00";
                 PageData pd_m=customerService.findSumOwe(pd);
                 if(pd_m!=null){
                     if(!pd_m.get("total_owe").toString().equals("0.0")){
-                        money=df.format(pd_m.get("total_owe"));
+                        money=String.valueOf(new BigDecimal(pd_m.get("total_owe").toString()).setScale(2,BigDecimal.ROUND_HALF_UP));
                     }
                 }
                 Map<String, Object> map = new HashedMap();
@@ -281,6 +325,7 @@ public class AppCustomerController extends BaseController{
                 pd.put("pageTotal",String.valueOf(page.getTotalPage()));
                 pd.put("count",pd_c.get("count").toString());
                 pd.put("money",money);
+                pd.put("totlepayment",totlepayment);
             } catch (Exception e) {
                 pd.clear();
                 pd.put("code","2");
@@ -428,14 +473,23 @@ public class AppCustomerController extends BaseController{
                 PageData pd_m=orderInfoService.findSumMoney(pd);
                 PageData pd_d=orderInfoService.findSumdiscountMoney(pd);
                 if(pd_m!=null){
-                    pd_c.put("total",pd_m.get("money").toString());
+                    pd_c.put("total",String.valueOf(new BigDecimal(pd_m.get("money").toString()).setScale(2,BigDecimal.ROUND_HALF_UP)));
                 }else {
-                    pd_c.put("total", "0");
+                    pd_c.put("total",String.valueOf(new BigDecimal(0).setScale(2)));
                 }
                 if(pd_d!=null){
-                    pd_c.put("discountmoney",pd_d.get("discountmoney").toString());
+                    pd_c.put("discountmoney",String.valueOf(new BigDecimal(pd_d.get("discountmoney").toString()).setScale(2,BigDecimal.ROUND_HALF_UP)));
                 }else {
-                    pd_c.put("discountmoney", "0");
+                    pd_c.put("discountmoney", String.valueOf(new BigDecimal(0).setScale(2)));
+                }
+                pd_c.put("owe",String.valueOf(new BigDecimal(pd_c.get("owe").toString()).setScale(2,BigDecimal.ROUND_HALF_UP)));
+                PageData pdx = new PageData();
+                pdx.put("customer_id",customer_id);
+                PageData pageData = integralService.findUserIntegralByUserid(pdx);
+                if(pageData!=null){
+                    pd_c.put("integral",pageData.get("remain_integral"));
+                }else {
+                    pd_c.put("integral",new BigDecimal(0));
                 }
                 pd.clear();
                 pd.put("code","1");

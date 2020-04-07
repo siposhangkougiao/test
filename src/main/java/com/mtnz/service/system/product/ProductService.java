@@ -158,4 +158,21 @@ public class ProductService {
 
         return (List<PageData>) daoSupport.findForList("ProductMapper.findProductPrice",pc);
     }
+
+    public void editNumli(PageData pd) throws Exception {
+
+        daoSupport.update("ProductMapper.editNumli",pd);
+    }
+
+    public void editJiaNumsli(PageData pd) throws Exception {
+        daoSupport.update("ProductMapper.editJiaNumsli",pd);
+    }
+
+    public void editJianNumsli(PageData pd) throws Exception {
+        daoSupport.update("ProductMapper.editJianNumsli",pd);
+    }
+
+    public void editNumslikucun(PageData pd) throws Exception {
+        daoSupport.update("ProductMapper.editNumslikucun",pd);
+    }
 }

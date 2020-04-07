@@ -139,4 +139,62 @@
         SET phoneTow=#{username}
         WHERE store_id=#{store_id}
     </update>
+
+    <select id="findstorListById" parameterType="pd" resultType="pd">
+        select
+        s.*,
+        t.*
+        from store_user s
+        left join store t on s.store_id = t.store_id
+        where s.user_id = #{userId}
+    </select>
+
+    <insert id="saveStoreUser" parameterType="pd" useGeneratedKeys="true" keyProperty="id">
+        insert into store_user(
+        user_id,store_id,status,ismr) values (#{user_id},#{store_id},#{status},#{ismr});
+    </insert>
+
+    <update id="editCheckStore">
+        update store_user set ismr = #{ismr} where user_id = #{user_id}
+    </update>
+
+    <update id="editCheckStoreById">
+        update store_user set ismr = #{ismr} where store_id = #{store_id}
+    </update>
+
+    <update id="editStoreDetail">
+        update store
+        <set>
+            <if test="name !=null and name !=''">
+                name = #{name},
+            </if>
+            <if test="address !=null and address !=''">
+                address = #{address},
+            </if>
+            <if test="qr_code !=null and qr_code !=''">
+                qr_code = #{qr_code},
+            </if>
+            <if test="province !=null and province !=''">
+                province = #{province},
+            </if>
+            <if test="city !=null and city !=''">
+                city = #{city},
+            </if>
+            <if test="phoneTow !=null and phoneTow !=''">
+                phoneTow = #{phoneTow},
+            </if>
+            <if test="county !=null and county !=''">
+                county = #{county}
+            </if>
+        </set>
+        where store_id = #{store_id}
+    </update>
+
+    <update id="editStatus">
+        update store_user set status = #{status} where store_id = #{store_id}
+    </update>
+
+    <select id="findStoreOneByUId" parameterType="pd" resultType="pd">
+        select * from store where phoneTow = #{phoneTow} order by store_id asc limit 1
+    </select>
 </mapper>

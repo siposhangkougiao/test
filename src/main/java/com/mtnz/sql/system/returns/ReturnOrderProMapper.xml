@@ -7,6 +7,7 @@
         product_name,
         product_price,
         num,
+        li_num,
         total,
         product_id,
         norms1,
@@ -17,6 +18,7 @@
         #{product_name},
         #{product_price},
         #{num},
+        #{li_num},
         #{total},
         #{product_id},
         #{norms1},
@@ -55,7 +57,8 @@
           norms1,
           norms2,
           norms3,
-          product_id
+          product_id,
+          li_num
         FROM return_order_pro
         WHERE return_order_info_id=#{return_order_info_id}
         ORDER BY return_order_pro_id

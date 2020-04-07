@@ -1242,7 +1242,7 @@ public class AppSupplierController extends BaseController{
             page.setShowCount(100);
             page.setCurrentPage(Integer.parseInt(pageNum));
             List<PageData> list=supplierService.owelistPage(page);
-            java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
+            java.text.DecimalFormat df = new java.text.DecimalFormat("########.0000");
             for(int i=0;i<list.size();i++){
                 PageData pd_money=supplierOrderInfoService.findSumMoney(list.get(i));
                 if(pd_money!=null&&!pd_money.get("money").toString().equals("0.0")){

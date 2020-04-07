@@ -5,6 +5,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
+import com.mtnz.service.system.balance.BalanceService;
+import com.mtnz.service.system.customer.CustomerService;
+import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
 import com.mtnz.service.system.order_pro.OrderProService;
@@ -24,6 +27,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,25 +56,48 @@ public class AppReturnController extends BaseController{
     private OrderKuncunService orderKuncunService;
     @Resource(name = "productService")
     private ProductService productService;
+    @Resource(name = "integralService")
+    private IntegralService integralService;
+    @Resource(name = "balanceService")
+    private BalanceService balanceService;
+    @Resource(name = "customerService")
+    private CustomerService customerService;
 
 
     /**
-     *
+     *退货操作
      * @param order_info_id 订单ID
      * @param data (order_pro_id 订单商品ID,product_name(商品名称),product_price(商品价格)
      *             ,num(数量),total(总价),norms1(规格1),norms2(规格2),norms3(规格3),product_id(商品ID))
      * @param money 总价
      * @param store_id 店ID
      * @param remarks 备注
+     * @Param       user_id 客户id
      * @return
      */
     @RequestMapping(value = "returnOrderInfos",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String returnOrderInfos(String order_info_id,String data,String money,String store_id,
-                                   String remarks,String open_bill){
+                                   String remarks,String open_bill,BigDecimal integral,Long customer_id,Integer isBalance){
         logBefore(logger,"订单退货");
         PageData pd=this.getPageData();
         try{
+            //处理积分的问题
+            if(integral!=null){
+                PageData inorder = integralService.findIntegralDetailByOrderId(pd);
+                if(inorder!=null){
+                    pd.put("user_id",customer_id);
+                    integralService.editIntegralUser(pd);
+                    PageData pdr = new PageData();
+                    pdr.put("order_id",order_info_id);
+                    pdr.put("status",1);
+                    pdr.put("integral",integral);
+                    pdr.put("user_id",customer_id);
+                    pdr.put("type",1);
+                    pdr.put("open_user",open_bill);
+                    integralService.saveIntegralReturn(pdr);
+                }
+            }
             //查询订单信息对象
             PageData pd_o=orderInfoService.findById(pd);
             if(remarks==null||remarks.length()==0){
@@ -94,6 +122,105 @@ public class AppReturnController extends BaseController{
             pd_o.put("status","0");
             //添加退货信息对象
             returnOrderInfoService.save(pd_o);
+            //开始处理退款冲抵问题
+            PageData p3 = new PageData();
+            p3.put("customer_id",customer_id);
+            PageData puser = customerService.findById(p3);//查询客户的欠款金额
+            PageData pd_s = pd_o;
+            //比例
+            BigDecimal bili = new BigDecimal(money).divide(new BigDecimal(pd_s.get("total_money").toString()),4,BigDecimal.ROUND_HALF_UP);
+            //需要减去的欠款
+            BigDecimal qiankuan = new BigDecimal(pd_s.get("owe_money").toString()).multiply(bili);
+            //把钱先给用户减去
+            if(qiankuan.compareTo(new BigDecimal(0))==1){
+                PageData p4 = new PageData();
+                p4.put("customer_id",customer_id);
+                p4.put("owe",new BigDecimal(puser.get("owe").toString()).subtract(qiankuan));
+                customerService.editOwnByCustomerId(p4);//减去欠款金额
+                //记录退款是的账户变动
+                PageData pp4 = new PageData();
+                pp4.put("return_order_info_id",pd_o.get("return_order_info_id"));
+                pp4.put("number",qiankuan);
+                pp4.put("type",1);
+                pp4.put("customer_id",customer_id);
+                balanceService.saveBalanceReturn(pp4);
+            }
+            //要退的付的钱
+            BigDecimal tuiqian = new BigDecimal(pd_s.get("total_money").toString()).subtract(new BigDecimal(pd_s.get("owe_money").toString())).multiply(bili);
+            //要退的账户余额
+            BigDecimal yue = new BigDecimal(0);
+            PageData p1 = new PageData();
+            p1.put("order_info_id",order_info_id);
+            PageData badetail = balanceService.findBalanceDetailByOrderId(p1);//查询下单时用的账户余额
+            if(badetail!=null){
+                yue = new BigDecimal(badetail.get("balance").toString()).multiply(bili);
+            }
+            //客户现在欠的钱
+            BigDecimal own = new BigDecimal(puser.get("owe").toString()).subtract(qiankuan);
+            BigDecimal be_own = own;
+            BigDecimal be_yue = yue;
+            BigDecimal be_tuiqian = tuiqian;
+            if(yue.compareTo(new BigDecimal(0))>0){//判断是否有余额可扣
+                if(own.compareTo(yue)>-1){//大于等于
+                    own = own.subtract(yue);
+                    yue = new BigDecimal(0);
+                }else {
+                    yue = yue.subtract(own);
+                    own = new BigDecimal(0);
+                }
+            }
+            //如果还有欠款要还
+            if(own.compareTo(new BigDecimal(0))==1){
+                if(own.compareTo(tuiqian)>-1){
+                    own = own.subtract(tuiqian);
+                    tuiqian = new BigDecimal(0);
+                }else {
+                    tuiqian = tuiqian.subtract(own);
+                    own = new BigDecimal(0);
+                }
+            }
+            PageData last_p4 = new PageData();
+            last_p4.put("customer_id",customer_id);
+            last_p4.put("owe",own);
+            customerService.editOwnByCustomerId(last_p4);//减去欠款金额
+
+            PageData pc6 = new PageData();
+            pc6.put("return_order_info_id",pd_o.get("return_order_info_id"));
+            pc6.put("number",be_own.subtract(own));
+            pc6.put("type",1);
+            pc6.put("customer_id",customer_id);
+            balanceService.saveBalanceReturn(pc6);//记录退款是的账户变动
+
+
+
+            if(yue.compareTo(new BigDecimal(0))==1){
+                PageData p7 = new PageData();
+                p7.put("user_id",customer_id);
+                p7.put("balance",yue);
+                balanceService.editBalanceByUserIdUp(p7);
+
+                PageData pp6 = new PageData();
+                pp6.put("return_order_info_id",pd_o.get("return_order_info_id"));
+                pp6.put("number",be_yue.subtract(yue));
+                pp6.put("type",2);
+                pp6.put("customer_id",customer_id);
+                balanceService.saveBalanceReturn(pp6);//记录退款是的账户变动
+            }
+            if(isBalance!=null&&isBalance==1){//选择退回余额
+                PageData p8 = new PageData();
+                p8.put("user_id",customer_id);
+                p8.put("balance",tuiqian);
+                balanceService.editBalanceByUserIdUp(p8);
+
+                //记录退单明细
+                PageData pp7 = new PageData();
+                pp7.put("return_order_info_id",pd_o.get("return_order_info_id"));
+                pp7.put("number",tuiqian);
+                pp7.put("type",2);
+                pp7.put("customer_id",customer_id);
+                balanceService.saveBalanceReturn(pp7);
+            }
+
             data = DateUtil.delHTMLTag(data);
             data = data.replace("\r", "");
             data = data.replace("\n", "");
@@ -103,46 +230,109 @@ public class AppReturnController extends BaseController{
             List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
             }.getType());   //获取订单商品列表
             for(int i=0;i<list.size();i++){
+
                 //list.get(i).put("purchase_price",list.get(i).get("product_price").toString());
-                list.get(i).put("return_order_info_id",pd_o.get("return_order_info_id").toString());
-                list.get(i).put("order_info_id",order_info_id);
-                list.get(i).put("order_pro_id",new Double(list.get(i).get("order_pro_id").toString()).intValue());
-                list.get(i).put("product_id",new Double(list.get(i).get("product_id").toString()).intValue());
-                //添加退货产品信息详情
-                returnOrderProService.save(list.get(i));
-                //查询订单库存的信息
-                List<PageData> lists=orderKuncunService.findList(list.get(i));
-                String kucun=list.get(i).get("num").toString();//需要退货的数量
-                if(lists!=null&&lists.size()!=0){
-                    for(int j=0;j<lists.size();j++){
-                        int in=(new Double(kucun)).intValue();//需要退货的数量
-                        //如果订单数量大于等于要退货的数量
-                        if(Integer.valueOf(lists.get(j).get("nums").toString())>in){
-                            lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-in);
-                            //修改订单的库存
-                            orderKuncunService.editNums(lists.get(j));
-                            lists.get(j).put("nums",in);
-                            //修改库存表的数据
-                            kunCunService.editJiaNums(lists.get(j));
-                            kucun="0";
-                        }else{//全部退货
-                            Integer kuncuns=in-Integer.valueOf(lists.get(j).get("nums").toString());
-                            kucun=kuncuns.toString();
-                            //修改库存表的数据
-                            kunCunService.editJiaNums(lists.get(j));
-                            lists.get(j).put("nums",0);
-                            //修改订单的库存
-                            orderKuncunService.editNums(lists.get(j));
+                if(new BigDecimal(list.get(i).get("isli").toString()).compareTo(new BigDecimal(0))>0){// isli 0是没有拆单  1拆单
+                    //原来退货的数量
+                    BigDecimal backnumber = new BigDecimal(list.get(i).get("num").toString());
+                    BigDecimal kucun = new BigDecimal(list.get(i).get("num").toString());//需要退货的数量
+                    list.get(i).put("return_order_info_id",pd_o.get("return_order_info_id").toString());
+                    list.get(i).put("order_info_id",order_info_id);
+                    list.get(i).put("order_pro_id",new Double(list.get(i).get("order_pro_id").toString()).intValue());
+                    list.get(i).put("product_id",new Double(list.get(i).get("product_id").toString()).intValue());
+                    list.get(i).put("num","0");
+                    list.get(i).put("li_num",backnumber);
+                    //添加退货产品信息详情
+                    returnOrderProService.save(list.get(i));
+                    //查询订单库存的信息
+                    //List<PageData> lists=orderKuncunService.findList(list.get(i));.
+                    List<PageData> lists=orderKuncunService.findListli(list.get(i));
+                    if(lists!=null&&lists.size()!=0){
+                        for(int j=0;j<lists.size();j++){
+                            BigDecimal in=kucun;//需要退货的数量
+                            //如果订单数量大于等于要退货的数量
+                            if(new BigDecimal(lists.get(j).get("now_number").toString()).compareTo(in)>0){//部分退货
+                                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>走第一步");
+                                lists.get(j).put("now_number",new BigDecimal(lists.get(j).get("now_number").toString()).subtract(in));
+                                //修改订单的库存
+                                orderKuncunService.editNumsli(lists.get(j));
+                                lists.get(j).put("nums","0");
+                                //修改库存表的数据
+                                lists.get(j).put("now_number",in);
+                                kunCunService.editJiaNums(lists.get(j));
+                                kucun=new BigDecimal(0);
+                            }else{//全部退货
+                                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>走第二步");
+                                BigDecimal kuncuns=in.subtract(new BigDecimal(lists.get(j).get("nums").toString()));
+                                kucun=kuncuns;
+                                //修改订单的库存
+                                lists.get(j).put("now_number",new BigDecimal(0));
+                                orderKuncunService.editNumsli(lists.get(j));
+                                lists.get(j).put("nums","0");
+                                lists.get(j).put("now_number",in);
+                                //修改库存表的数据
+                                kunCunService.editJiaNums(lists.get(j));
+                                lists.get(j).put("nums",0);
+
+                            }
                         }
                     }
+                    list.get(i).put("now_number",backnumber);
+                    //修改订单详情表数据
+                    orderProService.editOrderKuncunli(list.get(i));
+                    //修改商品库存数量
+                    productService.editJiaNumsli(list.get(i));
+                    list.get(i).put("all_number",backnumber);
+                    List<PageData> pageDataList = new ArrayList<>();
+                    pageDataList.add(list.get(i));
+                    //添加库存表记录  status=5表示退货加数量
+                    kunCunService.batchSavesli(pageDataList,store_id,DateUtil.getTime(),"5","0",order_info_id,pd_o.get("return_order_info_id").toString());
+
+                }else {//没有拆单的商品
+                    list.get(i).put("return_order_info_id",pd_o.get("return_order_info_id").toString());
+                    list.get(i).put("order_info_id",order_info_id);
+                    list.get(i).put("order_pro_id",new Double(list.get(i).get("order_pro_id").toString()).intValue());
+                    list.get(i).put("product_id",new Double(list.get(i).get("product_id").toString()).intValue());
+                    //添加退货产品信息详情
+                    list.get(i).put("li_num",new BigDecimal(0));
+                    returnOrderProService.save(list.get(i));
+                    //查询订单库存的信息
+                    List<PageData> lists=orderKuncunService.findList(list.get(i));
+                    String kucun=list.get(i).get("num").toString();//需要退货的数量
+                    if(lists!=null&&lists.size()!=0){
+                        for(int j=0;j<lists.size();j++){
+                            int in=(new Double(kucun)).intValue();//需要退货的数量
+                            //如果订单数量大于等于要退货的数量
+                            if(Integer.valueOf(lists.get(j).get("nums").toString())>in){
+                                lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-in);
+                                //修改订单的库存
+                                orderKuncunService.editNums(lists.get(j));
+                                lists.get(j).put("nums",in);
+                                //修改库存表的数据
+                                kunCunService.editJiaNums(lists.get(j));
+                                kucun="0";
+                            }else{//全部退货
+                                Integer kuncuns=in-Integer.valueOf(lists.get(j).get("nums").toString());
+                                kucun=kuncuns.toString();
+                                //修改库存表的数据
+                                kunCunService.editJiaNums(lists.get(j));
+                                lists.get(j).put("nums",0);
+                                //修改订单的库存
+                                orderKuncunService.editNums(lists.get(j));
+                            }
+                        }
+                    }
+                    //修改订单详情表数据
+                    orderProService.editOrderKuncun(list.get(i));
+                    //修改商品库存数量
+                    list.get(i).put("now_number",new BigDecimal(0));
+                    productService.editJiaNums(list.get(i));
+                    List<PageData> pageDataList = new ArrayList<>();
+                    pageDataList.add(list.get(i));
+                    //添加库存表记录  status=5表示退货加数量
+                    kunCunService.batchSaves(pageDataList,store_id,DateUtil.getTime(),"5","0",order_info_id,pd_o.get("return_order_info_id").toString());
                 }
-                //修改订单详情表数据
-                orderProService.editOrderKuncun(list.get(i));
-                //修改商品库存数量
-                productService.editJiaNums(list.get(i));
             }
-            //添加库存表记录  status=5表示退货加数量
-            kunCunService.batchSaves(list,store_id,DateUtil.getTime(),"5","0",order_info_id,pd_o.get("return_order_info_id").toString());
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
@@ -214,6 +404,11 @@ public class AppReturnController extends BaseController{
         return str;
     }
 
+    /**
+     * 查询退货单详情
+     * @param return_order_info_id
+     * @return
+     */
     @RequestMapping(value = "findReturnOrderInfoId",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findReturnOrderInfoId(String return_order_info_id){
@@ -222,7 +417,12 @@ public class AppReturnController extends BaseController{
         try{
             PageData pd_o=returnOrderInfoService.findById(pd);
             List<PageData> list=returnOrderProService.findList(pd_o);
+            pd.put("order_info_id",pd_o.get("order_info_id"));
+            PageData pageData = integralService.findIntegralDetailReturnByOrderId(pd);
             pd.clear();
+            if(pageData!=null){
+                pd.put("integral",new BigDecimal(pageData.get("integral").toString()));
+            }
             pd.put("code","1");
             pd.put("message","正确返回数据!");
             pd.put("order",pd_o);
@@ -333,6 +533,11 @@ public class AppReturnController extends BaseController{
         return str;
     }
 
+    /**
+     * 撤销退货
+     * @param return_order_info_id
+     * @return
+     */
     @RequestMapping(value = "revokesReturnOrderInfo",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String revokesReturnOrderInfo(String return_order_info_id){
@@ -341,45 +546,124 @@ public class AppReturnController extends BaseController{
         try{
             //查询退货单详情
             PageData pdReturn=returnOrderInfoService.findById(pd);
+            //处理积分问题
+            pd.put("is_pass",0);
+            pd.put("order_info_id",pdReturn.get("order_info_id"));
+            Integer aax = integralService.findIntegralDetailsCountByOrderId(pd);
+            if(aax<0){
+                PageData pad = integralService.findIntegralDetailByOrderIdAndType(pd);
+                pad.put("status",2);
+                pad.put("customer_id",pad.get("user_id"));
+                integralService.saveIntegralDetail(pad);
+                pad.put("is_pass",1);
+                integralService.editIntegralDetailPassById(pad);
+                PageData pageData = new PageData();
+                pageData.put("customer_id",pad.get("user_id"));
+                pageData.put("integral",pad.get("integral"));
+                integralService.editIntegral(pageData);
+            }
+            //处理账户余额问题
+            PageData pp2 = new PageData();
+            pp2.put("return_order_info_id",return_order_info_id);
+            List<PageData> balancelist = balanceService.findBalanceRetuenByOrderId(pp2);
+            if(balancelist!=null&&balancelist.size()>0){
+                for (int i = 0; i < balancelist.size(); i++) {
+                    Integer ac = Integer.valueOf(balancelist.get(i).get("type").toString());
+                    if(ac==1){
+                        PageData pa = new PageData();
+                        pa.put("customer_id",balancelist.get(i).get("customer_id"));
+                        pa.put("owe",balancelist.get(i).get("number"));
+                        customerService.editOwnByCustomerIdUp(pa);
+                    }else if(ac==2){
+                        PageData pa = new PageData();
+                        pa.put("user_id",balancelist.get(i).get("customer_id"));
+                        pa.put("balance",balancelist.get(i).get("number"));
+                        balanceService.editBalanceByUserIdDown(pa);
+                    }
+                }
+            }
             pd.put("revokes","1");
             //修改退货单状态 1已撤销
             returnOrderInfoService.editRevokes(pd);
             List<PageData> list=returnOrderProService.findList(pd);
             for(int i=0;i<list.size();i++){
-                list.get(i).put("order_info_id",pdReturn.get("order_info_id").toString());
-                PageData pdOrderpro=orderProService.findOrderInfoProduct(list.get(i));
-                List<PageData> listKun=orderKuncunService.findOrderProList(pdOrderpro);
-                String kucun=list.get(i).get("num").toString();
-                Integer aa = 0;
-                for(int j=0;j<listKun.size();j++){
-                    System.out.println("查询出来的库存id："+listKun.get(j).get("kuncun_id"));
-                    int tuihuo=Integer.valueOf(listKun.get(j).get("num").toString())-Integer.valueOf(listKun.get(j).get("nums").toString());
-                    if(tuihuo>=Integer.valueOf(kucun)){
-                        listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+Integer.valueOf(kucun));
-                        orderKuncunService.editNums(listKun.get(j));
-                        if(aa==1){
-                            System.out.println("走这里了");
-                            listKun.get(j).put("nums",Integer.valueOf(kucun));
-                        }else {
-                            listKun.get(j).put("nums",Integer.valueOf(list.get(i).get("num").toString()));
+                if(new BigDecimal(list.get(i).get("li_num").toString()).compareTo(new BigDecimal(0))>0){//表示拆袋的
+                    list.get(i).put("order_info_id",pdReturn.get("order_info_id").toString());
+                    PageData pdOrderpro=orderProService.findOrderInfoProduct(list.get(i));
+                    List<PageData> listKun=orderKuncunService.findOrderProList(pdOrderpro);
+                    //String kucun=list.get(i).get("num").toString();
+                    BigDecimal kucun = new BigDecimal(list.get(i).get("li_num").toString());
+                    Integer aa = 0;
+                    for(int j=0;j<listKun.size();j++){
+                        System.out.println("查询出来的库存id："+listKun.get(j).get("kuncun_id"));
+
+                        //int tuihuo=Integer.valueOf(listKun.get(j).get("num").toString())-Integer.valueOf(listKun.get(j).get("nums").toString());
+                        //现有的库存的数量
+                        BigDecimal tuihuo = new BigDecimal(listKun.get(j).get("now_number").toString());
+                        if(tuihuo.compareTo(kucun)>-1){//
+                            listKun.get(j).put("now_number",tuihuo.add(kucun));
+                            orderKuncunService.editNumsli(listKun.get(j));
+                            if(aa==1){
+                                System.out.println("走这里了");
+                                listKun.get(j).put("now_number",kucun);
+                            }else {
+                                listKun.get(j).put("now_number",new BigDecimal(list.get(i).get("li_num").toString()));
+                            }
+                            kunCunService.editJianNumssli(listKun.get(j));
+                            kucun=new BigDecimal(0);
+                        }else{
+                            //listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+tuihuo);
+                            listKun.get(j).put("now_number",new BigDecimal(listKun.get(j).get("now_number").toString()).add(tuihuo));
+                            orderKuncunService.editNumsli(listKun.get(j));
+                            listKun.get(j).put("now_number",tuihuo);
+                            System.out.println(">>>>>>>222222"+listKun.get(j).get("li_num"));
+                            kunCunService.editJianNumssli(listKun.get(j));
+                            //int kucuns=Integer.valueOf(kucun)-tuihuo;
+                            BigDecimal kucuns = kucun.subtract(tuihuo);
+                            kucun=kucuns;
+                            aa = 1;
                         }
-                        System.out.println(">>>>>>>1111111"+listKun.get(j).get("nums"));
-                        kunCunService.editJianNumss(listKun.get(j));
-                        kucun="0";
-                    }else{
-                        listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+tuihuo);
-                        orderKuncunService.editNums(listKun.get(j));
-                        listKun.get(j).put("nums",tuihuo);
-                        System.out.println(">>>>>>>222222"+listKun.get(j).get("nums"));
-                        kunCunService.editJianNumss(listKun.get(j));
-                        int kucuns=Integer.valueOf(kucun)-tuihuo;
-                        kucun=String.valueOf(kucuns);
-                        aa = 1;
                     }
+                    pdOrderpro.put("now_number",new BigDecimal(list.get(i).get("li_num").toString()));
+                    orderProService.editOrderKuncunsli(pdOrderpro);
+                    productService.editJianNumsli(pdOrderpro);
+                }else {
+                    list.get(i).put("order_info_id",pdReturn.get("order_info_id").toString());
+                    PageData pdOrderpro=orderProService.findOrderInfoProduct(list.get(i));
+                    List<PageData> listKun=orderKuncunService.findOrderProList(pdOrderpro);
+                    String kucun=list.get(i).get("num").toString();
+                    Integer aa = 0;
+                    for(int j=0;j<listKun.size();j++){
+                        System.out.println("查询出来的库存id："+listKun.get(j).get("kuncun_id"));
+                        int tuihuo=Integer.valueOf(listKun.get(j).get("num").toString())-Integer.valueOf(listKun.get(j).get("nums").toString());
+                        if(tuihuo>=Integer.valueOf(kucun)){
+                            listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+Integer.valueOf(kucun));
+                            orderKuncunService.editNums(listKun.get(j));
+                            if(aa==1){
+                                System.out.println("走这里了");
+                                listKun.get(j).put("nums",Integer.valueOf(kucun));
+                            }else {
+                                listKun.get(j).put("nums",Integer.valueOf(list.get(i).get("num").toString()));
+                            }
+                            System.out.println(">>>>>>>1111111"+listKun.get(j).get("nums"));
+                            kunCunService.editJianNumss(listKun.get(j));
+                            kucun="0";
+                        }else{
+                            listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+tuihuo);
+                            orderKuncunService.editNums(listKun.get(j));
+                            listKun.get(j).put("nums",tuihuo);
+                            System.out.println(">>>>>>>222222"+listKun.get(j).get("nums"));
+                            kunCunService.editJianNumss(listKun.get(j));
+                            int kucuns=Integer.valueOf(kucun)-tuihuo;
+                            kucun=String.valueOf(kucuns);
+                            aa = 1;
+                        }
+                    }
+                    pdOrderpro.put("nums",list.get(i).get("num").toString());
+                    orderProService.editOrderKuncuns(pdOrderpro);
+                    productService.editJianNums(pdOrderpro);
                 }
-                pdOrderpro.put("nums",list.get(i).get("num").toString());
-                orderProService.editOrderKuncuns(pdOrderpro);
-                productService.editJianNums(pdOrderpro);
+
             }
             pd.clear();
             pd.put("code","1");
@@ -410,6 +694,13 @@ public class AppReturnController extends BaseController{
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        BigDecimal a = new BigDecimal(1);
+        BigDecimal b = new BigDecimal(3);
+        BigDecimal c= a.divide(b,5,BigDecimal.ROUND_HALF_UP);
+        System.out.println(String.valueOf(c));
     }
 
 }

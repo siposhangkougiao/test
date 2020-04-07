@@ -758,9 +758,14 @@ public class AppProductController extends BaseController{
                 //查询店铺一共有多少个商品
                 PageData pd_c=productService.findProductCount(pd);
                 for (int i=0,len=list.size();i<len;i++){
-                    //查询店铺的图片
+                    //查询店铺的图片norms1
                     List<PageData> list_img=productImgService.findList(list.get(i));
                     list.get(i).put("img",list_img);
+                    BigDecimal a = new BigDecimal(list.get(i).get("likucun").toString());
+                    BigDecimal b = new BigDecimal(list.get(i).get("norms1").toString());
+                    BigDecimal c = a.divide(b,4);
+                    BigDecimal kus = new BigDecimal(list.get(i).get("kucun").toString()).add(c);
+                    list.get(i).put("kucun",kus);
                 }
                 Integer pageTotal;
                 if (Integer.valueOf(pd_c.get("count").toString()) % 10 == 0){
@@ -779,7 +784,8 @@ public class AppProductController extends BaseController{
                 //开始计算总价
                 BigDecimal priceaa = new BigDecimal(0);
                 for (int i = 0; i <list.size() ; i++) {
-                    if(Integer.valueOf(String.valueOf(list.get(i).get("kucun")))>0){
+                    //if(Integer.valueOf(String.valueOf(list.get(i).get("kucun")))>0){
+                    if(new BigDecimal(String.valueOf(list.get(i).get("kucun"))).compareTo(new BigDecimal(0))>0){
                         PageData kucun= new PageData();
                         kucun.put("product_id",list.get(i).get("product_id"));
                         kucun.put("store_id",list.get(i).get("store_id"));
@@ -787,6 +793,12 @@ public class AppProductController extends BaseController{
                         for (int j = 0; j <pricelist.size() ; j++) {
                             System.out.println("數量："+pricelist.get(j).get("nums")+"单价是："+pricelist.get(j).get("purchase_price"));
                             priceaa = priceaa.add(new BigDecimal(pricelist.get(j).get("nums").toString()).multiply(new BigDecimal(pricelist.get(j).get("purchase_price").toString())));
+                            if(pricelist.get(j).get("likucun")!=null){
+                                BigDecimal a = new BigDecimal(pricelist.get(j).get("likucun").toString());
+                                BigDecimal b = new BigDecimal(list.get(i).get("norms1").toString());
+                                BigDecimal c = new BigDecimal(pricelist.get(j).get("purchase_price").toString());
+                                priceaa = priceaa.add(a.divide(b,4).multiply(c));
+                            }
                         }
                     }
                 }
@@ -1248,7 +1260,12 @@ public class AppProductController extends BaseController{
         return str;
     }
 
-
+    /**
+     * 调整库存
+     * @param product_id
+     * @param kucun
+     * @return
+     */
     @RequestMapping(value = "editKunCun",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String editKunCun(String product_id,String kucun){
@@ -1260,6 +1277,10 @@ public class AppProductController extends BaseController{
             PageData pd_p=productService.findById(pd);
             //修改商品表库存
             productService.editNums(pd);
+            if(new BigDecimal(kucun).compareTo(new BigDecimal(0))==0){//如果清楚库存
+                productService.editNumslikucun(pd);
+                kunCunService.editNumlikucun(pd);
+            }
             pd_p.put("status","3");
             pd_p.put("supplier_id","0");
             pd_p.put("customer_id","0");

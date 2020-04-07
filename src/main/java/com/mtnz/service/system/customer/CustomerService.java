@@ -135,4 +135,15 @@ public class CustomerService {
     }
 
 
+    public void editOwnByCustomerId(PageData pd) throws Exception {
+        daoSupport.update("CustomerMapper.editOwnByCustomerId",pd);
+    }
+
+    public void editOwnByCustomerIdUp(PageData pd) throws Exception {
+        daoSupport.update("CustomerMapper.editOwnByCustomerIdUp",pd);
+    }
+
+    public void editOwnByCustomerIdDown(PageData pd) throws Exception {
+        daoSupport.update("CustomerMapper.editOwnByCustomerIdDown",pd);
+    }
 }

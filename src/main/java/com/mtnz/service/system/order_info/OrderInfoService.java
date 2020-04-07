@@ -140,4 +140,7 @@ public class OrderInfoService {
         return (List<PageData>) daoSupport.findForList("OrderInfoMapper.AdminlistPage",page);
     }
 
+    public List<PageData> findOwnOrder(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("OrderInfoMapper.findOwnOrder",pd);
+    }
 }

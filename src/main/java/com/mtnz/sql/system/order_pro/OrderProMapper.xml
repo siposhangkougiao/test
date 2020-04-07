@@ -15,6 +15,8 @@
             norms3,
             product_id,
             order_kuncun,
+            all_number,
+            now_number,
             date
         )VALUE (
             #{order_info_id},
@@ -28,7 +30,9 @@
             #{norms2},
             #{norms3},
             #{product_id},
-            #{num},
+            #{order_kuncun},
+            #{all_number},
+            #{now_number},
             now()
         )
     </insert>
@@ -91,7 +95,9 @@
                 norms2,
                 norms3,
                 product_id,
-                order_kuncun
+                order_kuncun,
+                all_number,
+                now_number
             FROM order_pro
             WHERE order_info_id=#{order_info_id}
             ORDER BY orde_by
@@ -199,6 +205,19 @@
         </if>
     </select>
 
+    <select id="findOrderProNowNumber" parameterType="pd" resultType="pd">
+        select * from order_kuncun where store_id = #{store_id} and revokes='0' and now_number>0
+        <if test="status==1 or status==2">
+            and Date(date) &gt;=#{date}
+        </if>
+        <if test="status==3">
+            and Date(date) &gt;=#{startTime} and Date(date) &lt;=#{endTime}
+        </if>
+        <if test="status==4">
+            and Date(date) =#{date}
+        </if>
+    </select>
+
     
     <update id="editStatus" parameterType="pd">
         UPDATE order_pro
@@ -215,9 +234,21 @@
         WHERE order_pro_id=#{order_pro_id}
     </update>
 
+    <update id="editOrderKuncunli" parameterType="pd">
+        UPDATE order_pro
+        SET now_number=now_number-#{now_number}
+        WHERE order_pro_id=#{order_pro_id}
+    </update>
+
     <update id="editOrderKuncuns" parameterType="pd">
         UPDATE order_pro
         SET order_kuncun=order_kuncun+#{num}
+        WHERE order_pro_id=#{order_pro_id}
+    </update>
+
+    <update id="editOrderKuncunsli" parameterType="pd">
+        UPDATE order_pro
+        SET now_number=now_number+#{now_number}
         WHERE order_pro_id=#{order_pro_id}
     </update>
 
@@ -330,7 +361,9 @@
             norms2,
             norms3,
             product_id,
-            order_kuncun
+            order_kuncun,
+            all_number,
+            now_number
         FROM  order_pro
         WHERE order_info_id=#{order_info_id} and product_id=#{product_id}
     </select>
@@ -423,5 +456,9 @@
             and Date(oi.date) &lt;=#{endTime}
         </if>
         ORDER BY oi.date DESC
+    </select>
+
+    <select id="findOrderProList" parameterType="pd" resultType="pd">
+        select * from order_pro where order_info_id = #{order_info_id} and revokes = 0
     </select>
 </mapper>

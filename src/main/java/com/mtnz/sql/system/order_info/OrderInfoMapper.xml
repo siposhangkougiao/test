@@ -254,6 +254,11 @@
         SELECT SUM(owe_money) as money FROM `order_info` WHERE customer_id=#{customer_id} and status='1' and revokes='0'
     </select>
 
+    <select id="findOwnOrder" parameterType="pd" resultType="pd">
+        select * from order_info where  customer_id=#{customer_id} and status='1' and revokes='0' and owe_money>0
+        order by order_info_id desc
+    </select>
+
 
     <select id="findkinglist" parameterType="page" resultType="pd">
         SELECT
