@@ -1,5 +1,6 @@
 package com.mtnz.controller.app.customer;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -11,7 +12,6 @@ import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.shortletter.ShortLetterService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.util.*;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -807,8 +807,10 @@ public class AppCustomerController extends BaseController{
                     System.out.println(pd_c.getString("name"));
                     String result= sms.sendSMSstord(data,message,pd_c.getString("name"));
                     System.out.println(">>>>>>返回的数据是"+result);
-                    JSONObject json = JSONObject.fromObject(result);
-                    if(json.get("code").equals("0")){
+                    //JSONObject json = JSONObject.fromObject(result);
+                    //JSONObject json = JSONObject.parseObject(result);
+                    String [] aa = result.split(",");
+                    if(aa[0].equals("0")){
                             pd_c.put("count",count);
                             storeService.updateNumber(pd);
                             PageData shortletter=new PageData();
@@ -1035,7 +1037,7 @@ public class AppCustomerController extends BaseController{
 
     public static void main(String[] args) throws Exception {
         SmsBao sms=new SmsBao();
-        String result= sms.sendSMSstord("18910529165","消息","名称");
+        String result= sms.sendSMSstord("17638567709,18515155792","你好，商品ABC在促销！快来买吧1！回T退订","名称");
         System.out.println(result);
     }
 

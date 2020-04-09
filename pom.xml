@@ -27,11 +27,8 @@
   <dependencies>
     <!--单元测试依赖 -->
     <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
-    <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>fastjson</artifactId>
-      <version>1.2.68</version>
-    </dependency>
+
+
 
     <dependency>
       <groupId>junit</groupId>
@@ -128,6 +125,12 @@
       <version>3.1</version>
     </dependency>
     <!-- AOP end -->
+
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.68</version>
+    </dependency>
 
     <!-- mybatis核心包 -->
     <dependency>
