@@ -806,7 +806,7 @@ public class AppCustomerController extends BaseController{
                     System.out.println(message);
                     System.out.println(pd_c.getString("name"));
                     String result= sms.sendSMSstord(data,message,pd_c.getString("name"));
-                    System.out.println(">>>>>>"+result);
+                    System.out.println(">>>>>>返回的数据是"+result);
                     JSONObject json = JSONObject.fromObject(result);
                     if(json.get("code").equals("0")){
                             pd_c.put("count",count);
