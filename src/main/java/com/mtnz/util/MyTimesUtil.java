@@ -1,11 +1,14 @@
 package com.mtnz.util;
 
+import org.apache.commons.collections.map.HashedMap;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class MyTimesUtil {
 
@@ -39,16 +42,6 @@ public class MyTimesUtil {
         return rangeSet;
     }
 
-    public static void main(String[] args) {
-        List<String> list = getRangeSet("2017-01","2018-01");
-        for (int i = 0; i < list.size(); i++) {
-            String [] a = list.get(i).split("-");
-            Date start = getBeginTime(Integer.valueOf(a[0]),Integer.valueOf(a[1]));//开始时间
-            Date end = getEndTime(Integer.valueOf(a[0]),Integer.valueOf(a[1]));//结束时间
-
-        }
-    }
-
     /**
      * 获取某月的开始时间
      * @param year
@@ -78,4 +71,63 @@ public class MyTimesUtil {
         return Date.from(zonedDateTime.toInstant());
     }
 
+    /**
+     * 获取当天的开始时间
+     * @return
+     */
+    public static Date getStartTime() {
+        Calendar todayStart = Calendar.getInstance();
+        todayStart.set(Calendar.HOUR, 0);
+        todayStart.set(Calendar.MINUTE, 0);
+        todayStart.set(Calendar.SECOND, 0);
+        todayStart.set(Calendar.MILLISECOND, 0);
+        return todayStart.getTime();
+    }
+
+    /**
+     * 获取当天的结束时间
+     * @return
+     */
+    public static Date getEndTime() {
+        Calendar todayEnd = Calendar.getInstance();
+        todayEnd.set(Calendar.HOUR, 23);
+        todayEnd.set(Calendar.MINUTE, 59);
+        todayEnd.set(Calendar.SECOND, 59);
+        todayEnd.set(Calendar.MILLISECOND, 999);
+        return todayEnd.getTime();
+    }
+
+
+    /**
+     * 获得最近七天的开始时间和结束时间
+     * @return
+     */
+    public static Map getDaySevenRange(){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Map condition=new HashedMap();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        calendar.set(Calendar.HOUR_OF_DAY,24);
+        condition.put("endDate",df.format(calendar.getTime()));
+        calendar.set(Calendar.HOUR_OF_DAY,-168);
+        condition.put("startDate",df.format(calendar.getTime()));
+        return condition;
+    }
+
+
+    /**
+     * 获得近一月的开始时间和结束时间
+     * @return
+     */
+    public static Map getDayTRange(){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Map condition=new HashedMap();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        calendar.set(Calendar.HOUR_OF_DAY,24);
+        condition.put("endDate",df.format(calendar.getTime()));
+        calendar.set(Calendar.HOUR_OF_DAY,-720);
+        condition.put("startDate",df.format(calendar.getTime()));
+        return condition;
+    }
 }

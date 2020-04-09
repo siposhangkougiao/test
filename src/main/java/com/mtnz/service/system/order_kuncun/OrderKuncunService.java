@@ -3,12 +3,14 @@ package com.mtnz.service.system.order_kuncun;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mtnz.controller.app.order.pojo.OrderGift;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.dao.DaoSupport;
 import com.mtnz.service.system.agency.AgencyService;
 import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
+import com.mtnz.service.system.order_info.OrderGiftService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_pro.OrderProService;
 import com.mtnz.service.system.product.KunCunService;
@@ -58,6 +60,8 @@ public class OrderKuncunService extends BaseController{
     private IntegralService integralService;
     @Resource(name = "balanceService")
     private BalanceService balanceService;
+    @Resource(name = "orderGiftService")
+    private OrderGiftService orderGiftService;
 
 
     public void save(PageData pd) throws Exception {
@@ -103,12 +107,11 @@ public class OrderKuncunService extends BaseController{
                             String total_money,String money,String discount_money,
                             String owe_money,String data,String customer_id,String store_id,
                             String medication_date,String remarks,String uid,String open_bill ,String date
-            ,Integer isli,BigDecimal integral,Long open_user,String remark,BigDecimal balance) throws Exception {
+            ,Integer isli,BigDecimal integral,Long open_user,String remark,BigDecimal balance, List<OrderGift> orderGifts) throws Exception {
         logBefore(logger,"销售开单");
-        java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
+        java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");
         PageData pd=this.getPageData();
         ObjectMapper mapper=new ObjectMapper();
-        String strr = "";
         if(name==null||name.length()==0||status==null||status.length()==0){
             pd.clear();
             pd.put("code","2");
@@ -173,6 +176,11 @@ public class OrderKuncunService extends BaseController{
                 pd_o.put("open_bill","");
             }
             orderInfoService.save(pd_o);//添加主表订单信息
+            //处理赠品
+            if(orderGifts!=null&&orderGifts.size()>0){
+                orderGiftService.saveGift(orderGifts);
+            }
+            /**/
             // 下面处理积分的问题
             if(integral!=null){
                 PageData pageda = new PageData();

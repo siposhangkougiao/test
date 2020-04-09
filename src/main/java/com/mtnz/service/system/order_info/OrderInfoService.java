@@ -143,4 +143,8 @@ public class OrderInfoService {
     public List<PageData> findOwnOrder(PageData pd) throws Exception {
         return (List<PageData>) daoSupport.findForList("OrderInfoMapper.findOwnOrder",pd);
     }
+
+    public List<PageData> findorderByOpenBill(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("OrderInfoMapper.findorderByOpenBill",pd);
+    }
 }

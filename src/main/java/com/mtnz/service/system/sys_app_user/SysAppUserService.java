@@ -86,4 +86,5 @@ public class SysAppUserService {
     public void editStoreId(PageData pd) throws Exception {
         daoSupport.update("SysAppUserMapper.editStoreId",pd);
     }
+
 }

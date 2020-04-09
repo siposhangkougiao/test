@@ -1364,5 +1364,4 @@ public class AppStoreController extends BaseController{
         return xml;
     }
 
-
 }

@@ -74,4 +74,42 @@ public class BaseController {
 		logger.info("");
 	}
 
+	/**
+	 * @param code 错误代码
+	 * @param message  错误信息
+	 * @return
+	 */
+	public String getMessage(String code,String message){
+		PageData pd = new PageData();
+		pd.put("code",code);
+		pd.put("message",message);
+		ObjectMapper mapper=new ObjectMapper();
+		String str="";
+		try {
+			str= mapper.writeValueAsString(pd);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return str;
+	}
+
+	Integer pageNumber = 1;
+
+	Integer pageSize = 10;
+
+	public Integer getPageNumber() {
+		return pageNumber;
+	}
+
+	public void setPageNumber(Integer pageNumber) {
+		this.pageNumber = pageNumber;
+	}
+
+	public Integer getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(Integer pageSize) {
+		this.pageSize = pageSize;
+	}
 }

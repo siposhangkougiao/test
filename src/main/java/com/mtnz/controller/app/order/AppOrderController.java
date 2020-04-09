@@ -1,10 +1,12 @@
 package com.mtnz.controller.app.order;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+import com.mtnz.controller.app.order.pojo.OrderGift;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
@@ -27,6 +29,7 @@ import com.mtnz.util.ExcelUtil_Extend;
 import com.mtnz.util.PageData;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -1178,12 +1181,12 @@ public class AppOrderController extends BaseController{
                 balanceService.editBalanceDetailIsPassByOrderOId(orderbalance);
             }
 
-            if(!pd_o.getString("date").split(" ")[0].equals(DateUtil.getDay())){
+            /*if(!pd_o.getString("date").split(" ")[0].equals(DateUtil.getDay())){
                 pd.clear();
                 pd.put("code","2");
                 pd.put("message","订单不是今天订单不可撤销!");
                 return mapper.writeValueAsString(pd);
-            }
+            }*/
             //查询当时开单时候的信息
             List<PageData> returnOrder=kunCunService.findCheXiao(pd);
             if(returnOrder!=null&&returnOrder.size()!=0){
@@ -1263,14 +1266,15 @@ public class AppOrderController extends BaseController{
      */
     @RequestMapping(value = "saveOrders",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String saveOrders(String name,String phone,String status,
-                            String total_money,String money,String discount_money,
-                            String owe_money,String data,String customer_id,String store_id,
-                            String medication_date,String remarks,String uid,String open_bill,String date,Integer isli
-                ,BigDecimal integral,Long open_user,String remark,BigDecimal balance){
+    public String saveOrders(String name, String phone, String status,
+                             String total_money, String money, String discount_money,
+                             String owe_money, String data, String customer_id, String store_id,
+                             String medication_date, String remarks, String uid, String open_bill, String date, Integer isli
+                , BigDecimal integral, Long open_user, String remark, BigDecimal balance,String orderGifts){
         PageData pd=new PageData();
         String str="";
         try {
+            List<OrderGift> orderGift = JSONObject.parseArray(orderGifts,OrderGift.class);
             /*String myJson=gson.toJson(data.trim());
             myJson = DateUtil.delHTMLTag(data);
             myJson = myJson.replace("\r", "");
@@ -1283,7 +1287,7 @@ public class AppOrderController extends BaseController{
             }
             str=orderKuncunService.saveOrder(name,phone,status,total_money,money,discount_money,
                     owe_money,data.trim(),customer_id,store_id,
-                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance);
+                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance,orderGift);
             return str;
         }catch (Exception e){
             pd.clear();

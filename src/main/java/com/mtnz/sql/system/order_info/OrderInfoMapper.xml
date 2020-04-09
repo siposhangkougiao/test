@@ -823,4 +823,12 @@
         ORDER BY date DESC
     </select>
 
+    <select id="findorderByOpenBill" parameterType="pd" resultType="pd">
+        select op.*,oi.owe_money,oi.discount_money
+        from order_pro op
+        left join order_info oi on op.order_info_id = oi.order_info_id
+        where oi.date between #{start_time} and #{end_time} and oi.open_bill = #{username} and oi.revokes = 0
+        order by oi.order_info_id desc
+    </select>
+
 </mapper>

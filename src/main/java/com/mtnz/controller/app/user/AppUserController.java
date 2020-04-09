@@ -6,6 +6,7 @@ import com.mtnz.entity.Page;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
+import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.service.system.yzm.YzmService;
@@ -50,6 +51,8 @@ public class AppUserController extends BaseController {
     private CustomerService customerService;
     @Resource(name = "integralService")
     private IntegralService integralService;
+    @Resource(name = "orderInfoService")
+    private OrderInfoService orderInfoService;
 
 
     /**
@@ -259,16 +262,15 @@ public class AppUserController extends BaseController {
                             map.put("integral", user.get("number"));
                         }
                         sysAppUserService.editLoginDate(pd_u);
-                        if(type ==null||type!=1){
+                        /*if(type ==null||type!=1){
                             PageData pdx = new PageData();
                             pdx.put("phoneTow",username);
                             PageData pageData = storeService.findStoreOneByUId(pdx);
-                            System.out.println(">>>>>>>>>>>>>>>>>"+pageData.get("store_id").toString());
                             map.put("store_id", pageData.get("store_id"));
                             map.put("saddress", pageData.getString("address"));
                             map.put("sname", pageData.getString("name"));
                             map.put("phone", pageData.getString("phone"));
-                        }
+                        }*/
                         pd.clear();
                         pd.put("code", "1");
                         pd.put("message", "正确返回数据!");
@@ -863,6 +865,7 @@ public class AppUserController extends BaseController {
             pd.clear();
             pd.put("code", "1");
             pd.put("message", "正确返回数据!");
+            pd.put("qr_code",qr_code);
         } catch (Exception e) {
             pd.clear();
             pd.put("code", "2");

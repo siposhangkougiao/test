@@ -860,7 +860,7 @@
             p.product_id,
             p.product_name,
             '0' as revokes,
-        IFNULL((SELECT SUM(ok.nums*ok.product_price) from order_kuncun ok
+        IFNULL((SELECT SUM(ok.nums*ok.product_price)  from order_kuncun ok
         LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
         where ok.product_id=p.product_id and op.revokes='0'
         <if test="startTime!=null and startTime!=''">
@@ -878,7 +878,7 @@
         <if test="endTime!=null and endTime!=''">
             and DATE(ok.date) &lt;= #{endTime}
         </if>),0) as receivable,
-        IFNULL((SELECT SUM(ok.nums) from order_kuncun ok
+        IFNULL((SELECT SUM(ok.nums) as saledec from order_kuncun ok
         LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
         where ok.product_id=p.product_id and op.revokes='0'
         <if test="startTime!=null and startTime!=''">
@@ -892,7 +892,14 @@
         <if test="product_name!=null and product_name!=''">
             and POSITION(#{product_name} IN p.product_name)
         </if>
-        ORDER BY p.date DESC
+        <if test="type !=null and type ==1">
+            ORDER BY num DESC
+        </if>
+        <if test="type !=null and type ==2">
+            ORDER BY profit DESC
+        </if>
+
+        limit #{pageNumber},#{pageSize}
     </select>
 
     <select id="findProductPrice" parameterType="pd" resultType="pd">

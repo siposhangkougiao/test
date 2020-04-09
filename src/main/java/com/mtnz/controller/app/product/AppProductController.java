@@ -47,9 +47,18 @@ public class AppProductController extends BaseController{
     @RequestMapping(value = "findProductFeiXis",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findProductFeiXis(String store_id,String status,String product_id,
-                                    String startTime,String endTime,String product_name){
+                                    String startTime,String endTime,String product_name,Integer pageNumber,Integer pageSize,Integer type){
         logBefore(logger,"查询详情");
         PageData pd=this.getPageData();
+        if(pageNumber!=null&&pageSize!=null){
+            pd.put("pageNumber",pageNumber);
+            pd.put("pageSize",pageSize);
+        }else {
+            pageNumber = getPageNumber();
+            pageSize = getPageSize();
+            pd.put("pageNumber",pageNumber);
+            pd.put("pageSize",pageSize);
+        }
         try{
             if("0".equals(status)){
                 pd.put("startTime","");
@@ -72,7 +81,9 @@ public class AppProductController extends BaseController{
             pd.put("code","1");
             pd.put("message","正确返回数据!");
             pd.put("data",list);
-            pd.put("pageTotal","1");
+            pd.put("pageTotal",list.size());
+            pd.put("pageNumber",pageNumber);
+            pd.put("pageNumber",pageSize);
         }catch (Exception e){
             pd.clear();
             pd.put("code","2");

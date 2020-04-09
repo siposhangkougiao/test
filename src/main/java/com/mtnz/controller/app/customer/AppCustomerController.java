@@ -845,6 +845,7 @@ public class AppCustomerController extends BaseController{
     public String MassShort(String data,String message,String count,String store_id,String customer){
         logBefore(logger,"群发短信");
         PageData pd=this.getPageData();
+        System.out.println(">>>>>>"+ com.alibaba.fastjson.JSONObject.toJSONString(pd));
         String messages="正确返回数据!";
         String code="1";
         if(message==null||message.length()==0){
@@ -860,8 +861,8 @@ public class AppCustomerController extends BaseController{
                     System.out.println(message);
                     System.out.println(pd_c.getString("name"));
                     String result= sms.sendSMSstord(data,message,pd_c.getString("name"));
-                    System.out.println(">>>>>>"+result);
-                    JSONObject json = JSONObject.fromObject(result);
+                    //JSONObject json = JSONObject.fromObject(result);
+                    com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject("result");
                     if(json.get("code").equals("0")){
                             pd_c.put("count",count);
                             storeService.updateNumber(pd);
@@ -1089,7 +1090,7 @@ public class AppCustomerController extends BaseController{
 
     public static void main(String[] args) throws Exception {
         SmsBao sms=new SmsBao();
-        String result= sms.sendSMSstord("18910529165","消息","名称");
+        String result= sms.sendSMSstord("17638567709","消息","名称");
         System.out.println(result);
     }
 
