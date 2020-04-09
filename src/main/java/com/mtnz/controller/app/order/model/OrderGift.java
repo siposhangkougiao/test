@@ -1,4 +1,4 @@
-package com.mtnz.controller.app.order.pojo;
+package com.mtnz.controller.app.order.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
