@@ -1091,7 +1091,7 @@ public class AppCustomerController extends BaseController{
 
     public static void main(String[] args) throws Exception {
         SmsBao sms=new SmsBao();
-        String result= sms.sendSMSstord("17638567709,18515155792","你好，商品ABC在促销！快来买吧1！回T退订","名称");
+        String result= sms.sendSMSstord("17638567709,18515155792","老李农资店，地膜35元一卷，三月十二最后一天。电话：18515155792，回T退订","名称");
         System.out.println(result);
     }
 
