@@ -7,6 +7,8 @@
         <setting name="cacheEnabled" value="true" /><!-- 全局映射器启用缓存 -->
         <setting name="useGeneratedKeys" value="true" />
         <setting name="defaultExecutorType" value="REUSE" />
+        <!-- 配置控制台输出 -->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
     </settings>
 
     <typeAliases>
@@ -22,6 +24,10 @@
         <plugin interceptor="com.mtnz.plugin.PagePlugin">
             <property name="dialect" value="mysql"/>
             <property name="pageSqlId" value=".*listPage.*"/>
+        </plugin>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!--分页参数合理化  -->
+            <property name="reasonable" value="false"/>
         </plugin>
     </plugins>
 

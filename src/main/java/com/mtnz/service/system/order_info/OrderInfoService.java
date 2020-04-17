@@ -147,4 +147,8 @@ public class OrderInfoService {
     public List<PageData> findorderByOpenBill(PageData pd) throws Exception {
         return (List<PageData>) daoSupport.findForList("OrderInfoMapper.findorderByOpenBill",pd);
     }
+
+    public List<PageData> findorderByOpenBillOnlyInfo(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("OrderInfoMapper.findorderByOpenBillOnlyInfo",pd);
+    }
 }

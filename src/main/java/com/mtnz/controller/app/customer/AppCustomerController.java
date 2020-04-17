@@ -854,31 +854,28 @@ public class AppCustomerController extends BaseController{
         }else{
             try {
                 PageData pd_c=storeService.findById(pd);
+                count = MessageSend.getCount(message).toString();
                 if(Integer.valueOf(pd_c.get("number").toString())>Integer.valueOf(count)){
-                    SmsBao sms=new SmsBao();
-                    System.out.println(data);
-                    System.out.println(message);
-                    System.out.println(pd_c.getString("name"));
-                    String result= sms.sendSMSstord(data,message,pd_c.getString("name"));
-                    System.out.println(">>>>>>返回的数据是"+result);
-                    //JSONObject json = JSONObject.fromObject(result);
-                    //JSONObject json = JSONObject.parseObject(result);
-                    String [] aa = result.split(",");
-                    if(aa[0].equals("0")){
-                            pd_c.put("count",count);
-                            storeService.updateNumber(pd);
-                            PageData shortletter=new PageData();
-                            shortletter.put("message",message);
-                            shortletter.put("store_id",store_id);
-                            shortletter.put("customer",customer);
-                            shortletter.put("date",DateUtil.getTime());
-                            shortletter.put("number",count);
-                            shortletter.put("phone",data);
-                            shortLetterService.save(shortletter);
-                        }else {
-                            code = "2";
-                            messages = "发送失败!";
-                        }
+                    /*SmsBao sms=new SmsBao();
+                    String result= sms.sendSMSstord(data,message,pd_c.getString("name"));*/
+                    SendMessageResult messageResult = MessageSend.sendMessage(data,message+",回T退订");
+                    System.out.println(">>>>>>返回的数据是"+messageResult);
+                    if(messageResult.getResult().equals("0")){
+
+                        pd_c.put("count",count);
+                        storeService.updateNumber(pd);
+                        PageData shortletter=new PageData();
+                        shortletter.put("message",message);
+                        shortletter.put("store_id",store_id);
+                        shortletter.put("customer",customer);
+                        shortletter.put("date",DateUtil.getTime());
+                        shortletter.put("number",count);
+                        shortletter.put("phone",data);
+                        shortLetterService.save(shortletter);
+                    }else {
+                        code = "2";
+                        messages = "发送失败!";
+                    }
                 }else{
                     code = "2";
                     messages = "短信不够!";

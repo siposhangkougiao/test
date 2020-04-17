@@ -41,4 +41,8 @@
             </if>
         </where>
     </select>
+
+    <select id="selectResult" parameterType="pd" resultType="pd">
+        select is_pass from store where store_id = #{store_id}
+    </select>
 </mapper>

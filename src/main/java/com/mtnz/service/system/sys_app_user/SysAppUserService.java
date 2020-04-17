@@ -87,4 +87,7 @@ public class SysAppUserService {
         daoSupport.update("SysAppUserMapper.editStoreId",pd);
     }
 
+    public void saveLevel(PageData pd) throws Exception {
+        daoSupport.save("ShopperSaleMapper.saveLevel",pd);
+    }
 }

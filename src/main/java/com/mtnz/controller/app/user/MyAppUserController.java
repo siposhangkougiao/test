@@ -1,11 +1,15 @@
 package com.mtnz.controller.app.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
+import com.mtnz.service.system.order_pro.OrderProService;
+import com.mtnz.service.system.product.ProductService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.service.system.yzm.YzmService;
@@ -50,6 +54,10 @@ public class MyAppUserController extends BaseController {
     private IntegralService integralService;
     @Resource(name = "orderInfoService")
     private OrderInfoService orderInfoService;
+    @Resource(name = "productService")
+    private ProductService productService;
+    @Resource(name = "orderProService")
+    private OrderProService orderProService;
 
     /**
      * 查询员工销售排名
@@ -60,9 +68,10 @@ public class MyAppUserController extends BaseController {
     @RequestMapping(value = "findMyStoreUser", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findMyStoreUser(Long store_id,String start_time,String end_time,Integer type) {
-        logBefore(logger, "查询员工销售排名");
+        logBefore(logger, "查询员工销售排名",this.getPageData());
         PageData pd = this.getPageData();
         try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             List<PageData> pd_a = sysAppUserService.findUserByStore(pd);
             for (int i = 0; i < pd_a.size(); i++) {
                 PageData openUser = pd_a.get(i);
@@ -82,6 +91,7 @@ public class MyAppUserController extends BaseController {
                 BigDecimal total_sale = new BigDecimal(0);//总销售额
                 BigDecimal total_cost = new BigDecimal(0);//成本价总额
                 BigDecimal total_preferential= new BigDecimal(0);//总优惠
+
                 List<PageData> userlist = orderInfoService.findorderByOpenBill(openUser);
                 Long order_id = 0L;
                 for (int j = 0; j < userlist.size(); j++) {
@@ -111,6 +121,7 @@ public class MyAppUserController extends BaseController {
                 pd_a.get(i).put("total_cost",total_cost);
                 pd_a.get(i).put("total_profits",total_sale.subtract(total_cost).subtract(total_preferential));
             }
+
             pd.clear();
             pd.put("code", "1");
             pd.put("message", "正确返回数据!");
@@ -146,36 +157,192 @@ public class MyAppUserController extends BaseController {
             PageData user = sysAppUserService.findById(pd);
             user.put("start_time",MyTimesUtil.getDaySevenRange().get("startDate"));
             user.put("end_time",MyTimesUtil.getDaySevenRange().get("endDate"));
-            List<PageData> list = orderInfoService.findorderByOpenBill(user);
+            List<PageData> list = orderInfoService.findorderByOpenBillOnlyInfo(user);
             //总销售金额
             BigDecimal total_sale = new BigDecimal(0);
             //总欠款
             BigDecimal total_owe = new BigDecimal(0);
-            Long order_id = 0L;
+            //单品总金额
+            BigDecimal total_one = new BigDecimal(0);
             for (int i = 0; i < list.size(); i++) {
-                //商品售价
-                BigDecimal product_price = new BigDecimal( list.get(i).get("product_price").toString());
-                //商品规格
-                BigDecimal norms1 = new BigDecimal( list.get(i).get("norms1").toString());
-                //本单整袋销量
-                BigDecimal order_kuncun = new BigDecimal(list.get(i).get("order_kuncun").toString()).multiply(product_price);
-                //本单零售销量
-                BigDecimal now_number = new BigDecimal(list.get(i).get("now_number").toString()).divide(norms1,4,BigDecimal.ROUND_HALF_UP).multiply(product_price);
-                //销售总价
-                total_sale = total_sale.add(order_kuncun).add(now_number);
-                Long now_order_id = (Long) list.get(i).get("order_info_id");
-                if(!order_id.equals(now_order_id)){
-                    total_owe = total_owe.add(new BigDecimal( list.get(i).get("owe_money").toString()));
-                    order_id = now_order_id;
+                total_owe = total_owe.add(new BigDecimal( list.get(i).get("owe_money").toString()));
+                List<PageData> details = orderProService.findorderByOpenBillDetail(list.get(i));
+                BigDecimal sub_total_level = new BigDecimal(0);
+                for (int j = 0; j < details.size(); j++) {
+                    //商品售价
+                    BigDecimal product_price = new BigDecimal( details.get(j).get("product_price").toString());
+                    //商品规格
+                    BigDecimal norms1 = new BigDecimal( details.get(j).get("norms1").toString());
+                    //本单整袋销量
+                    BigDecimal order_kuncun = new BigDecimal(details.get(j).get("order_kuncun").toString()).multiply(product_price);
+                    //本单零售销量
+                    BigDecimal now_number = new BigDecimal(details.get(j).get("now_number").toString()).divide(norms1,4,BigDecimal.ROUND_HALF_UP).multiply(product_price);
+                    //销售总价
+                    total_sale = total_sale.add(order_kuncun).add(now_number);
+                    PageData dataone = new PageData();
+                    dataone.put("uid",uid);
+                    dataone.put("product_id",details.get(j).get("product_id"));
+                    PageData product = productService.findSaleLevel(dataone);
+                    if(product!=null){
+                        BigDecimal level = new BigDecimal(product.get("level").toString());
+                        /*BigDecimal one_price = product_price.multiply(level);
+                        details.get(j).put("one_price",one_price);//单个提成*/
+                        if(order_kuncun.compareTo(new BigDecimal(0))==1){
+                            BigDecimal more_price = level.multiply(order_kuncun);
+                            details.get(j).put("more_price",more_price);//单个提成
+                            total_one = total_one.add(more_price);
+                            sub_total_level = sub_total_level.add(more_price);
+                        }else if(now_number.compareTo(new BigDecimal(0))==1){
+                            BigDecimal more_price = level.multiply(now_number);
+                            details.get(j).put("more_price",more_price);//单个提成
+                            total_one = total_one.add(more_price);
+                            sub_total_level = sub_total_level.add(more_price);
+                        }
+                    }
                 }
+                list.get(i).put("sub_total_level",sub_total_level);
+                list.get(i).put("details",details);
             }
-            user.put("total_sale",total_sale);
-            user.put("total_owe",total_owe);
+            BigDecimal total_level = new BigDecimal(0);
+            PageData pageData = productService.selectSaleLevel(pd);
+            if(pageData!=null){
+                total_level = total_sale.multiply(new BigDecimal(pageData.get("level").toString()));
+            }
+            user.put("total_sale",total_sale);//总销售额
+            user.put("total_owe",total_owe);//欠款
+            user.put("total_one",total_one);//单品总提成
+            user.put("total_level",total_level);//销售总提成
             pd.clear();
             pd.put("code", "1");
             pd.put("message", "正确返回数据!");
             pd.put("user",user);
             pd.put("list",list);
+        } catch (Exception e) {
+            pd.clear();
+            pd.put("code", "2");
+            pd.put("message", "程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        String str = "";
+        try {
+            str = mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 设置店员比例
+     * @param uid
+     * @param type
+     * @param level
+     * @param product_id
+     * @return
+     */
+    @RequestMapping(value = "setlevel", produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String setlevel(Long uid,Integer type,BigDecimal level,Long product_id) {
+        logBefore(logger, "设置店员比例");
+        PageData pd = this.getPageData();
+        try {
+            sysAppUserService.saveLevel(pd);
+            pd.clear();
+            pd.put("code", "1");
+            pd.put("message", "正确返回数据!");
+        } catch (Exception e) {
+            pd.clear();
+            pd.put("code", "2");
+            pd.put("message", "程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        String str = "";
+        try {
+            str = mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 查询商品对应的员工比例
+     * @param pageNumber
+     * @param pageSize
+     * @param type
+     * @param store_id
+     * @return
+     */
+    @RequestMapping(value = "selectProductLevel", produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String selectProductLevel(Integer pageNumber,Integer pageSize,Integer type,Long store_id,Long uid,String product_name) {
+        logBefore(logger, "查询商品列表和对应的比例");
+        PageData pd = this.getPageData();
+        try {
+            if(pageNumber==null||pageSize==null){
+                pageNumber = getPageNumber();
+                pageSize = getPageSize();
+            }
+            pd.put("pageNumber",pageNumber);
+            pd.put("pageSize",pageSize);
+            PageHelper.startPage(pageNumber,pageSize);
+            List<PageData> list=productService.selectProductLevel(pd);
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).put("uid",uid);
+                PageData level = productService.selectLevel(list.get(i));
+                if(level!=null){
+                    list.get(i).put("level",new BigDecimal(level.get("level").toString()));
+                }else {
+                    list.get(i).put("level",new BigDecimal(0));
+                }
+            }
+            PageInfo<PageData> pageInfo = new PageInfo<>(list);
+            pd.clear();
+            pd.put("code", "1");
+            pd.put("message", "正确返回数据!");
+            pd.put("data",list);
+            pd.put("pageTotal",pageInfo.getTotal());
+        } catch (Exception e) {
+            pd.clear();
+            pd.put("code", "2");
+            pd.put("message", "程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        String str = "";
+        try {
+            str = mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**查询员工的总销售比例
+     * @param uid
+     * @return
+     */
+    @RequestMapping(value = "selectSaleLevel", produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String selectSaleLevel(Long uid) {
+        logBefore(logger, "查询员工对应的总销售比例");
+        PageData pd = this.getPageData();
+        try {
+            PageData pageData = productService.selectSaleLevel(pd);
+            pd.clear();
+            pd.put("code", "1");
+            pd.put("message", "正确返回数据!");
+            if(pageData==null){
+                PageData pds = new PageData();
+                pds.put("level",new BigDecimal(0));
+                pd.put("data",pds);
+                pd.put("level",new BigDecimal(0));
+            }else {
+                pd.put("data",pageData);
+                pd.put("level",new BigDecimal(pageData.get("level").toString()));
+            }
         } catch (Exception e) {
             pd.clear();
             pd.put("code", "2");

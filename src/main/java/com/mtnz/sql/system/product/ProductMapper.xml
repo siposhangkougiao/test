@@ -183,7 +183,7 @@
                 status,
                 type2
             FROM product
-            WHERE store_id=#{store_id} and status='0' and ( getPY(product_name) like concat(concat('%',#{product_name}),'%') OR POSITION(#{product_name} IN product_name))
+            WHERE store_id=#{store_id} and status='0' and product_name like concat('%',#{product_name},'%')
             ORDER BY date DESC
         ) p
         LEFT JOIN supplier s on s.supplier_id=p.supplier_id
@@ -444,6 +444,24 @@
             and type=#{type}
         </if>
         ORDER BY date DESC
+    </select>
+
+    <!--  根据类型查询商品  -->
+    <select id="selectProductLevel" parameterType="pd" resultType="pd">
+        SELECT *
+        FROM product
+        WHERE store_id=#{store_id} and status='0'
+        <if test="type!=null and type!=''">
+            and type=#{type}
+        </if>
+        <if test="product_name !=null and product_name !=''">
+            and product_name like concat('%',#{product_name},'%')
+        </if>
+        ORDER BY date DESC
+    </select>
+
+    <select id="selectLevel" resultType="pd">
+        select * from shopper_sale where product_id  =#{product_id} and uid = #{uid} order by id desc limit 1
     </select>
 
     <!--  关联供应商  -->
@@ -850,7 +868,8 @@
         </if>
     </select>
 
-    <select id="findProductFeiXis" parameterType="pd" resultType="pd">
+
+    <!--<select id="findProductFeiXis" parameterType="pd" resultType="pd">
         SELECT
             p.product_price,
             p.product_img,
@@ -893,12 +912,60 @@
             and POSITION(#{product_name} IN p.product_name)
         </if>
         <if test="type !=null and type ==1">
-            ORDER BY num DESC
+            ORDER BY num ASC
         </if>
         <if test="type !=null and type ==2">
+            ORDER BY num DESC
+        </if>
+        <if test="type !=null and type ==3">
+            ORDER BY profit ASC
+        </if>
+        <if test="type !=null and type ==4">
             ORDER BY profit DESC
         </if>
-
+    </select>-->
+    <select id="findProductFeiXis" parameterType="pd" resultType="pd">
+        SELECT
+        p.product_price,
+        p.product_img,
+        p.kucun,
+        p.product_price,
+        p.product_id,
+        p.product_id,
+        p.product_name,
+        '0' as revokes,
+        IFNULL((SELECT SUM(ok.nums*ok.product_price)  from order_kuncun ok
+        LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
+        where ok.product_id=p.product_id and op.revokes='0'),0) as profit,
+        IFNULL((SELECT SUM(ok.nums*ok.purchase_price) from order_kuncun ok
+        LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
+        where ok.product_id=p.product_id and op.revokes='0'),0) as receivable,
+        IFNULL((SELECT SUM(ok.nums) as saledec from order_kuncun ok
+        LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
+        where ok.product_id=p.product_id and op.revokes='0'),0) as num,
+        IFNULL((SELECT SUM(ok.nums*ok.product_price)  from order_kuncun ok
+        LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
+        where ok.product_id=p.product_id and op.revokes='0')-(SELECT SUM(ok.nums*ok.purchase_price) from order_kuncun ok
+        LEFT JOIN order_pro op on op.order_pro_id=ok.order_pro_id
+        where ok.product_id=p.product_id and op.revokes='0')
+        ,0) as rec
+        from product p
+        WHERE p.store_id=#{store_id}
+        <if test="product_name!=null and product_name!=''">
+            and POSITION(#{product_name} IN p.product_name)
+        </if>
+        <if test="type !=null and type ==1">
+            ORDER BY num ASC
+        </if>
+        <if test="type !=null and type ==2">
+            ORDER BY num DESC
+        </if>
+        <if test="type !=null and type ==3">
+            ORDER BY rec ASC
+        </if>
+        <if test="type !=null and type ==4">
+            ORDER BY rec DESC
+        </if>
         limit #{pageNumber},#{pageSize}
     </select>
 
@@ -912,4 +979,12 @@
     <update id="editNumslikucun">
         update product set likucun = 0 where product_id=#{product_id}
     </update>
+
+    <select id="selectSaleLevel" resultType="pd">
+        select * from shopper_sale sa where sa.uid  =#{uid} and sa.type = 1 order by id desc limit 1
+    </select>
+
+    <select id="findSaleLevel" resultType="pd">
+        select * from shopper_sale sa where sa.uid  =#{uid} and sa.type = 2 and sa.product_id  =#{product_id} order by sa.id desc limit 1
+    </select>
 </mapper>

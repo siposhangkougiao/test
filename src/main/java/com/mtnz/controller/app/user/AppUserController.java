@@ -7,6 +7,7 @@ import com.mtnz.service.system.adminrelation.AdminRelationService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
+import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.service.system.yzm.YzmService;
@@ -53,6 +54,8 @@ public class AppUserController extends BaseController {
     private IntegralService integralService;
     @Resource(name = "orderInfoService")
     private OrderInfoService orderInfoService;
+    @Resource(name = "myStoreService")
+    private MyStoreService myStoreService;
 
 
     /**
@@ -262,6 +265,9 @@ public class AppUserController extends BaseController {
                             map.put("integral", user.get("number"));
                         }
                         sysAppUserService.editLoginDate(pd_u);
+                        //查询店铺是否审核通过
+                        PageData pageData = myStoreService.selectResult(pd_u);
+                        map.put("is_pass",pageData.get("is_pass"));
                         /*if(type ==null||type!=1){
                             PageData pdx = new PageData();
                             pdx.put("phoneTow",username);

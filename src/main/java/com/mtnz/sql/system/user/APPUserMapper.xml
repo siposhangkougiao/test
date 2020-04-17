@@ -29,7 +29,8 @@
         u.NUMBER,
         u.PHONE,
         u.province
-        from SYS_USER u
+        /*from SYS_USER u*/
+        from sys_user u
         where u.USERNAME != 'admin'
         <if test="province!=null and province!=''">
             and POSITION(#{province} IN province)

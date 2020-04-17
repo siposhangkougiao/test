@@ -92,6 +92,12 @@
         <if test="pd.revokes!=null and pd.revokes!=''">
             and revokes=#{pd.revokes}
         </if>
+        <if test="pd.remarks!=null and pd.remarks!=''">
+            and remarks like concat('%',#{remarks},'%')
+        </if>
+        <if test="pd.phone!=null and pd.phone!=''">
+            and phone = #{phone}
+        </if>
         <if test="pd.status==null or pd.status==0">
             ORDER BY date DESC
         </if>
@@ -216,6 +222,8 @@
             POSITION(#{name} IN `name`)
             or
             POSITION(#{name} IN phone)
+            or
+            POSITION(#{name} IN remarks)
         )
         <if test="status==null or status==0">
             ORDER BY date DESC
@@ -827,6 +835,13 @@
         select op.*,oi.owe_money,oi.discount_money
         from order_pro op
         left join order_info oi on op.order_info_id = oi.order_info_id
+        where oi.date between #{start_time} and #{end_time} and oi.open_bill = #{username} and oi.revokes = 0
+        order by oi.order_info_id desc
+    </select>
+
+    <select id="findorderByOpenBillOnlyInfo" parameterType="pd" resultType="pd">
+        select oi.*
+        from order_info oi
         where oi.date between #{start_time} and #{end_time} and oi.open_bill = #{username} and oi.revokes = 0
         order by oi.order_info_id desc
     </select>

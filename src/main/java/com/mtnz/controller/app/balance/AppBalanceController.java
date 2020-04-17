@@ -202,7 +202,7 @@ public class AppBalanceController extends BaseController{
     @RequestMapping(value = "returnBalance",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String returnBalance(Long id,Long back_id){
-        logBefore(logger,"积分管理页面查询");
+        logBefore(logger,"撤销充值单");
         PageData pd=this.getPageData();
         try{
             balanceService.editBalanceByUserId(pd);

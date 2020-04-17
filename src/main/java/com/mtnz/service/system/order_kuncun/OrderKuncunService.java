@@ -173,7 +173,7 @@ public class OrderKuncunService extends BaseController{
             orderInfoService.save(pd_o);//添加主表订单信息
             //处理赠品
             if(orderGifts!=null&&orderGifts.size()>0){
-                orderGiftService.saveGift(orderGifts);
+                orderGiftService.saveGift(orderGifts,Long.valueOf(pd_o.get("order_info_id").toString()));
             }
             /**/
             // 下面处理积分的问题
@@ -570,6 +570,7 @@ public class OrderKuncunService extends BaseController{
             }
             pd.put("customer_id",customer_id);
             pd.put("order_number",no);
+            pd.put("order_info_id",pd_o.get("order_info_id"));
         }
         String str="";
         try {

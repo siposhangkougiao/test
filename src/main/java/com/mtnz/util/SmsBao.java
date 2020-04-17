@@ -10,12 +10,6 @@ import java.net.URLEncoder;
     Created by xxj on 2018\3\26 0026.  
  */
 public class SmsBao {
-    public static void main(String[] args) throws Exception {
-        SmsBao smsBao=new SmsBao();
-        smsBao.sendSMS("17638567709","你的账号已创建成功,账号为17638567709初始密码为123456，请赶快修改密码");
-
-    }
-
     public String sendSMS(String testPhone, String testContent) throws Exception{
         //登录账号密码13526524092     821143
         // 用户名

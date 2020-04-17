@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 public class OrderGift {
+
     private Long id;
 
     private Long order_info_id;
@@ -17,6 +18,7 @@ public class OrderGift {
     private BigDecimal number;
 
     private Integer is_back;
+
 
     public Long getId() {
         return id;

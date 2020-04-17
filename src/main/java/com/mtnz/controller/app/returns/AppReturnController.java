@@ -8,6 +8,7 @@ import com.mtnz.entity.Page;
 import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
+import com.mtnz.service.system.order_info.OrderGiftService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
 import com.mtnz.service.system.order_pro.OrderProService;
@@ -62,6 +63,8 @@ public class AppReturnController extends BaseController{
     private BalanceService balanceService;
     @Resource(name = "customerService")
     private CustomerService customerService;
+    @Resource(name = "orderGiftService")
+    private OrderGiftService orderGiftService;
 
 
     /**
@@ -98,6 +101,11 @@ public class AppReturnController extends BaseController{
                     integralService.saveIntegralReturn(pdr);
                 }
             }
+            //处理赠品的问题
+            PageData giftPage = new PageData();
+            giftPage.put("order_info_id",order_info_id);
+            giftPage.put("is_back",1);
+            orderGiftService.editGiftBack(giftPage);
             //查询订单信息对象
             PageData pd_o=orderInfoService.findById(pd);
             if(remarks==null||remarks.length()==0){
@@ -562,6 +570,11 @@ public class AppReturnController extends BaseController{
                 pageData.put("integral",pad.get("integral"));
                 integralService.editIntegral(pageData);
             }
+            //处理赠品问题
+            PageData giftPage = new PageData();
+            giftPage.put("order_info_id",pdReturn.get("order_info_id"));
+            giftPage.put("is_back",0);
+            orderGiftService.editGiftBack(giftPage);
             //处理账户余额问题
             PageData pp2 = new PageData();
             pp2.put("return_order_info_id",return_order_info_id);
@@ -695,12 +708,4 @@ public class AppReturnController extends BaseController{
             e.printStackTrace();
         }
     }
-
-    public static void main(String[] args) {
-        BigDecimal a = new BigDecimal(1);
-        BigDecimal b = new BigDecimal(3);
-        BigDecimal c= a.divide(b,5,BigDecimal.ROUND_HALF_UP);
-        System.out.println(String.valueOf(c));
-    }
-
 }

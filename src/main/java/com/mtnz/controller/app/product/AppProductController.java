@@ -47,16 +47,17 @@ public class AppProductController extends BaseController{
     @RequestMapping(value = "findProductFeiXis",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findProductFeiXis(String store_id,String status,String product_id,
-                                    String startTime,String endTime,String product_name,Integer pageNumber,Integer pageSize,Integer type){
+                                    String startTime,String endTime,String product_name,
+                                    Integer pageNumber,Integer pageSize,Integer type){
         logBefore(logger,"查询详情");
         PageData pd=this.getPageData();
         if(pageNumber!=null&&pageSize!=null){
-            pd.put("pageNumber",pageNumber);
+            pd.put("pageNumber",(pageNumber-1)*pageSize);
             pd.put("pageSize",pageSize);
         }else {
             pageNumber = getPageNumber();
             pageSize = getPageSize();
-            pd.put("pageNumber",pageNumber);
+            pd.put("pageNumber",0);
             pd.put("pageSize",pageSize);
         }
         try{

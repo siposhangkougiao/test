@@ -1,37 +1,97 @@
 package com.mtnz.controller.app.preorder.model;
 
+import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
+@Table(name = "pre_order")
 public class PreOrder {
 
+    /**
+     * 主键
+     */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "name")
     private String name;
 
+    @Column(name = "customer_id")
     private Long customer_id;
 
+    @Column(name = "phone")
     private String phone;
 
+    @Column(name = "open_id")
     private Long open_id;
 
+    @Column(name = "open_phone")
     private String open_phone;
 
+    @Column(name = "price")
     private BigDecimal price;
 
+    @Column(name = "total_price")
     private BigDecimal total_price;
 
+    @Column(name = "pre_price")
     private BigDecimal pre_price;
 
+    @Column(name = "last_price")
     private BigDecimal last_price;
 
+    @Column(name = "remark")
     private String remark;
 
+    @Column(name = "great_time")
     private Date great_time;
 
+    @Column(name = "is_pass")
     private Integer is_pass;
 
+    @Column(name = "address")
     private String address;
+
+    @Column(name = "store_id")
+    private Long store_id;
+
+    @Column(name = "is_return")
+    private Integer is_return;
+
+    @Column(name = "order_id")
+    private Long orderId;
+
+    @Transient
+    private List<PreOrderDetail> list;
+
+    @Transient
+    private Integer pageNumber;
+
+    @Transient
+    private Integer pageSize;
+    /**
+     * 搜索条件商品id
+     */
+    @Transient
+    private String productName;
+
+    @Transient
+    private String star_time;
+
+    @Transient
+    private String end_time;
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
 
     public Long getId() {
         return id;
@@ -143,5 +203,69 @@ public class PreOrder {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public Long getStore_id() {
+        return store_id;
+    }
+
+    public void setStore_id(Long store_id) {
+        this.store_id = store_id;
+    }
+
+    public Integer getIs_return() {
+        return is_return;
+    }
+
+    public void setIs_return(Integer is_return) {
+        this.is_return = is_return;
+    }
+
+    public List<PreOrderDetail> getList() {
+        return list;
+    }
+
+    public void setList(List<PreOrderDetail> list) {
+        this.list = list;
+    }
+
+    public Integer getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(Integer pageNumber) {
+        this.pageNumber = pageNumber;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getStar_time() {
+        return star_time;
+    }
+
+    public void setStar_time(String star_time) {
+        this.star_time = star_time;
+    }
+
+    public String getEnd_time() {
+        return end_time;
+    }
+
+    public void setEnd_time(String end_time) {
+        this.end_time = end_time;
     }
 }

@@ -88,7 +88,8 @@
               s.person_id,
               s.corp,
               ss.name as store_name,
-              p.NAME as person_name
+              p.NAME as person_name,
+              ss.is_pass
           FROM sys_app_user s
           LEFT JOIN store ss on ss.store_id=s.store_id
           LEFT JOIN sys_user p on p.USER_ID=s.person_id

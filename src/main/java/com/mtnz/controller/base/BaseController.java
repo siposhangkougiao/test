@@ -68,6 +68,12 @@ public class BaseController {
 		logger.info("start");
 		logger.info(interfaceName);
 	}
+	public static void logBefore(Logger logger, String interfaceName,PageData pd) {
+		logger.info("");
+		logger.info("start");
+		logger.info(interfaceName);
+		logger.info("传递的参数是：>>>>>>"+pd.toString());
+	}
 
 	public static void logAfter(Logger logger) {
 		logger.info("end");

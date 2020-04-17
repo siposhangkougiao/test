@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mtnz.controller.app.order.model.OrderGift;
+import com.mtnz.controller.app.preorder.model.PreOrder;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.agency.AgencyService;
@@ -13,12 +14,15 @@ import com.mtnz.service.system.already.AlreadyService;
 import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
+import com.mtnz.service.system.order_info.OrderGiftService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
 import com.mtnz.service.system.order_pro.OrderProService;
+import com.mtnz.service.system.preorder.PreOrderService;
 import com.mtnz.service.system.product.KunCunService;
 import com.mtnz.service.system.product.ProductService;
 import com.mtnz.service.system.returns.ReturnOrderInfoService;
+import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.supplier.SupplierOrderProService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.util.AdminExtend;
@@ -70,6 +74,10 @@ public class AppOrderController extends BaseController{
     private IntegralService integralService;
     @Resource(name = "balanceService")
     private BalanceService balanceService;
+    @Resource(name = "orderGiftService")
+    private OrderGiftService orderGiftService;
+    @Resource
+    private PreOrderService preOrderService;
 
 
 
@@ -91,6 +99,7 @@ public class AppOrderController extends BaseController{
         }else{
             try{
                 PageData pd_o=orderInfoService.findById(pd);
+                System.out.println(">>>>>"+JSONObject.toJSONString(pd_o));
                 //PageData pageData = integralService.findIntegralDetailByOrderId(pd);
                 List<PageData> listdata =  integralService.findIntegralDetailListByOrderId(pd);
                 BigDecimal aa = new BigDecimal(0);
@@ -104,12 +113,43 @@ public class AppOrderController extends BaseController{
                     }
                 }
                 pd_o.put("integral",aa);
+                List<PageData> gifts = orderGiftService.findGiftByOrderInfoId(pd_o);
+                pd_o.put("gifts",gifts);
                 List<PageData> list=orderProService.findList(pd_o);
+                //查询用户预付款信息
+                pd_o.put("user_id",pd_o.get("customer_id"));
+                PageData user_balance = balanceService.findUserbalanceByUserId(pd_o);
+                PageData order_balance = balanceService.findBalanceDetailByOrderId(pd_o);
+                Integer isreturn = preOrderService.selectisreturn(pd_o);
+
                 pd.clear();
                 pd.put("code","1");
                 pd.put("message","正确返回数据!");
                 pd.put("order",pd_o);
                 pd.put("list",list);
+                if(user_balance!=null){
+                    pd.put("all_balance",user_balance.get("balance"));
+                }else {
+                    pd.put("all_balance",new BigDecimal(0));
+                }
+                if(order_balance!=null){
+                    pd.put("order_balance",order_balance.get("balance"));
+                }else {
+                    pd.put("order_balance",new BigDecimal(0));
+                }
+                if(isreturn>0){
+                    pd.put("is_return",1);
+                    PreOrder preOrder = preOrderService.selectPreOrderByOrderInfo(pd_o);
+                    if(preOrder!=null){
+                        pd.put("pre_price",preOrder.getPrice());
+                    }else {
+                        pd.put("pre_price",new BigDecimal(0));
+                    }
+
+                }else {
+                    pd.put("is_return",0);
+                    pd.put("pre_price",new BigDecimal(0));
+                }
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");
@@ -501,7 +541,7 @@ public class AppOrderController extends BaseController{
     @RequestMapping(value = "findOrderInfo",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findOrderInfo(String store_id,String pageNum,String status,
-                                String startTime,String endTime){
+                                String startTime,String endTime,String remarks,String phone){
        logBefore(logger,"查询账单");
        PageData pd=this.getPageData();
        Page page=new Page();
@@ -525,7 +565,7 @@ public class AppOrderController extends BaseController{
                     list.get(i).put("order_pro",list_pro);
                 }
                 PageData pdMoney=orderInfoService.findSumTotalMoney(pd);
-                java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
+                java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");
                 String totalMoney="0.0";
                 if(pdMoney!=null&&!pdMoney.get("money").toString().equals("0.0")){
                     totalMoney=df.format(pdMoney.get("money"));
@@ -1163,6 +1203,11 @@ public class AppOrderController extends BaseController{
                 pdx.put("integral",pageData.get("integral"));
                 integralService.editIntegralUser(pdx);//把积分减去
             }
+            //处理赠品问题
+            PageData giftPage = new PageData();
+            giftPage.put("order_info_id",order_info_id);
+            giftPage.put("is_back",1);
+            orderGiftService.editGiftBack(giftPage);
 
             //处理账户余额问题
             PageData orderbalance =balanceService.findBalanceDetailByOrderId(pd);

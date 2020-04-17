@@ -122,4 +122,8 @@ public class OrderProService {
     public List<PageData> findOrderProList(PageData pd) throws Exception {
         return (List<PageData>) daoSupport.findForList("OrderProMapper.findOrderProList",pd);
     }
+
+    public List<PageData> findorderByOpenBillDetail(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("OrderProMapper.findorderByOpenBillDetail",pd);
+    }
 }

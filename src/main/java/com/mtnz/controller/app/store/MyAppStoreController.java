@@ -48,11 +48,16 @@ public class MyAppStoreController extends BaseController{
         logBefore(logger,"获取短信验证码");
         PageData pd=this.getPageData();
         try{
+            pd.put("username",phone);
+            PageData pd_u=sysAppUserService.findUserName(pd);
+            if(pd_u!=null){
+                return getMessage("-101","用户已存在，不能重复注册！");
+            }
             Map<String, Object> map = new HashMap();
             String yzm = String.valueOf((int) ((Math.random() * 9 + 1) * 1000));
             System.out.println("验证码为：" + yzm);
             SmsBao sms = new SmsBao();
-            String context = "验证码是【" + yzm + "】,有效时间:5分钟";
+            String context = "验证码是【" + yzm + "】有效时间:5分钟";
             String result = sms.sendSMS(phone, context);
             PageData pd2 = new PageData();
             pd2.put("code", yzm);
@@ -136,6 +141,7 @@ public class MyAppStoreController extends BaseController{
                 pd_s.put("is_pass",0);
                 storeService.save(pd_s);    //先添加店
                 pd.put("username",username);
+                pd.put("name",username);
                 pd.put("salt", CharacterUtils.getRandomString(4));
                 pd.put("password", MD5.md5(MD5.md5("123456") + pd.getString("salt")));
                 pd.put("openid","");
@@ -148,7 +154,8 @@ public class MyAppStoreController extends BaseController{
                 pd.put("diedstatus", 0);
                 sysAppUserService.save(pd);
                 SmsBao smsBao=new SmsBao();
-                smsBao.sendSMS(phone,"你的账号已创建成功,账号为"+username+"初始密码为123456，请赶快修改密码");
+                //smsBao.sendSMS(phone,"你的账号已创建成功,账号为"+username+"初始密码为123456，请赶快修改密码");
+                smsBao.sendSMS(phone,"你的账号已创建成功,账号为"+username+"初始密码为"+GetStrings.getRandomNickname(10)+"，请赶快修改密码");
                 PageData pd_customer=new PageData();
                 pd_customer.put("name","零散客户");
                 pd_customer.put("phone","");
@@ -248,7 +255,38 @@ public class MyAppStoreController extends BaseController{
         try{
 
             List<PageData> list = myStoreService.findRegisterList(pd);
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+            pd.put("data",list);
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str= mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
 
+    /**
+     * 查询店铺审核结果
+     * @param store_id
+     * @return
+     */
+    @RequestMapping(value = "selectResult",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String selectResult(Long store_id){
+        logBefore(logger,"查询店铺审核结果");
+        PageData pd=this.getPageData();
+        try{
+            PageData list = myStoreService.selectResult(pd);
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
@@ -311,6 +349,5 @@ public class MyAppStoreController extends BaseController{
         }
         return str;
     }
-
 
 }

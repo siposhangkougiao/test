@@ -24,4 +24,15 @@
     <update id="updateIsPass">
         update order_gift set is_back = #{is_back} where order_info_id  =#{order_info_id}
     </update>
+
+    <select id="findGiftByOrderInfoId" parameterType="pd" resultType="pd">
+        select og.*,p.*
+        from order_gift og
+        left join product p on og.product_id = p.product_id
+        where og.order_info_id  =#{order_info_id}
+    </select>
+
+    <update id="editGiftBack">
+        update order_gift set is_back  =#{is_back} where order_info_id = #{order_info_id}
+    </update>
 </mapper>

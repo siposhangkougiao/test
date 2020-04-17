@@ -175,4 +175,20 @@ public class ProductService {
     public void editNumslikucun(PageData pd) throws Exception {
         daoSupport.update("ProductMapper.editNumslikucun",pd);
     }
+
+    public List<PageData> selectProductLevel(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("ProductMapper.selectProductLevel",pd);
+    }
+
+    public PageData selectLevel(PageData pd) throws Exception {
+        return (PageData) daoSupport.findForObject("ProductMapper.selectLevel",pd);
+    }
+
+    public PageData selectSaleLevel(PageData pd) throws Exception {
+        return (PageData) daoSupport.findForObject("ProductMapper.selectSaleLevel",pd);
+    }
+
+    public PageData findSaleLevel(PageData pd) throws Exception {
+        return (PageData) daoSupport.findForObject("ProductMapper.findSaleLevel",pd);
+    }
 }

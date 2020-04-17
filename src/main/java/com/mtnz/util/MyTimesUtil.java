@@ -2,6 +2,7 @@ package com.mtnz.util;
 
 import org.apache.commons.collections.map.HashedMap;
 
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -77,7 +78,7 @@ public class MyTimesUtil {
      */
     public static Date getStartTime() {
         Calendar todayStart = Calendar.getInstance();
-        todayStart.set(Calendar.HOUR, 0);
+        todayStart.set(Calendar.HOUR_OF_DAY, 0);
         todayStart.set(Calendar.MINUTE, 0);
         todayStart.set(Calendar.SECOND, 0);
         todayStart.set(Calendar.MILLISECOND, 0);
@@ -90,13 +91,12 @@ public class MyTimesUtil {
      */
     public static Date getEndTime() {
         Calendar todayEnd = Calendar.getInstance();
-        todayEnd.set(Calendar.HOUR, 23);
+        todayEnd.set(Calendar.HOUR_OF_DAY, 23);
         todayEnd.set(Calendar.MINUTE, 59);
         todayEnd.set(Calendar.SECOND, 59);
         todayEnd.set(Calendar.MILLISECOND, 999);
         return todayEnd.getTime();
     }
-
 
     /**
      * 获得最近七天的开始时间和结束时间
@@ -111,9 +111,9 @@ public class MyTimesUtil {
         condition.put("endDate",df.format(calendar.getTime()));
         calendar.set(Calendar.HOUR_OF_DAY,-168);
         condition.put("startDate",df.format(calendar.getTime()));
+        System.out.println(condition.toString());
         return condition;
     }
-
 
     /**
      * 获得近一月的开始时间和结束时间
@@ -130,4 +130,129 @@ public class MyTimesUtil {
         condition.put("startDate",df.format(calendar.getTime()));
         return condition;
     }
+
+    /**
+     * 获得近三月的开始时间和结束时间
+     * @return
+     */
+    public static Map getDayTSan(){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Map condition=new HashedMap();
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        calendar.set(Calendar.HOUR_OF_DAY,24);
+        condition.put("endDate",df.format(calendar.getTime()));
+        calendar.set(Calendar.HOUR_OF_DAY,-2160);
+        condition.put("startDate",df.format(calendar.getTime()));
+        System.out.println(condition.toString());
+        return condition;
+    }
+
+    /**
+     * 获取某个日期的开始时间
+     */
+    public static Timestamp getDayStartTime(Date d) {
+        Calendar calendar = Calendar.getInstance();
+        if(null != d){
+            calendar.setTime(d);
+        }
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return new Timestamp(calendar.getTimeInMillis());
+    }
+
+    /**
+     * 获取某个日期的结束时间
+     * @param d
+     * @return
+     */
+    public static Timestamp getDayEndTime(Date d) {
+        Calendar calendar = Calendar.getInstance();
+        if(null != d) {
+            calendar.setTime(d);
+        }
+        calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        return new Timestamp(calendar.getTimeInMillis());
+    }
+
+    /**
+     * 获取指定日期所在月份开始的时间戳
+     * @param date 指定日期
+     * @return
+     */
+    public static Long getMonthBegin(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+
+        //设置为1号,当前日期既为本月第一天
+        c.set(Calendar.DAY_OF_MONTH, 1);
+        //将小时至0
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        //将分钟至0
+        c.set(Calendar.MINUTE, 0);
+        //将秒至0
+        c.set(Calendar.SECOND,0);
+        //将毫秒至0
+        c.set(Calendar.MILLISECOND, 0);
+        // 获取本月第一天的时间戳
+        return c.getTimeInMillis();
+    }
+
+    /**
+     * 获取指定日期所在月份结束的时间戳
+     * @param date 指定日期
+     * @return
+     */
+    public static Long getMonthEnd(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+
+        //设置为当月最后一天
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        //将小时至23
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        //将分钟至59
+        c.set(Calendar.MINUTE, 59);
+        //将秒至59
+        c.set(Calendar.SECOND,59);
+        //将毫秒至999
+        c.set(Calendar.MILLISECOND, 999);
+        // 获取本月最后一天的时间戳
+        return c.getTimeInMillis();
+    }
+
+    /**
+     * 判断时间是否在本月
+     * @param times
+     * @return
+     */
+    public static boolean isThisMonth(Date times) {
+        long time = times.getTime();
+        return isThisTime(time, "yyyy-MM");
+    }
+
+    /**
+     * 判断时间是否在本年
+     * @param times
+     * @return
+     */
+    public static boolean isThisYear(Date times) {
+        long time = times.getTime();
+        return isThisTime(time, "yyyy");
+    }
+
+
+
+    public static boolean isThisTime(long time, String pattern) {
+        Date date = new Date(time);
+        SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+        String param = sdf.format(date);//参数时间
+        String now = sdf.format(new Date());//当前时间
+        if (param.equals(now)) {
+            return true;
+        }
+        return false;
+    }
+
 }

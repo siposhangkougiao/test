@@ -40,4 +40,8 @@ public class MyStoreService {
     public List<PageData> findRegisterList(PageData pd) throws Exception {
         return (List<PageData>) daoSupport.findForList("ValidationYzmMapper.findRegisterList",pd);
     }
+
+    public PageData selectResult(PageData pd) throws Exception {
+        return (PageData) daoSupport.findForObject("ValidationYzmMapper.selectResult",pd);
+    }
 }
