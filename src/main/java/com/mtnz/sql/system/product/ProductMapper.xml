@@ -78,6 +78,9 @@
     <!--  查询店铺商品数量  -->
     <select id="findProductCount" parameterType="pd" resultType="pd">
         SELECT count(1) as count FROM product WHERE store_id=#{store_id} and status='0'
+        <if test="type !=null and type !=''">
+            and type = #{type}
+        </if>
     </select>
 
 
@@ -184,6 +187,9 @@
                 type2
             FROM product
             WHERE store_id=#{store_id} and status='0' and product_name like concat('%',#{product_name},'%')
+            <if test="type !=null and type !=''">
+                and type = #{type}
+            </if>
             ORDER BY date DESC
         ) p
         LEFT JOIN supplier s on s.supplier_id=p.supplier_id
@@ -954,6 +960,9 @@
         <if test="product_name!=null and product_name!=''">
             and POSITION(#{product_name} IN p.product_name)
         </if>
+        <if test="typeName !=null and typeName !=''">
+            and p.type = #{typeName}
+        </if>
         <if test="type !=null and type ==1">
             ORDER BY num ASC
         </if>
@@ -987,4 +996,23 @@
     <select id="findSaleLevel" resultType="pd">
         select * from shopper_sale sa where sa.uid  =#{uid} and sa.type = 2 and sa.product_id  =#{product_id} order by sa.id desc limit 1
     </select>
+
+    <select id="findproductall" resultType="pd">
+        select product_id,product_img from product
+    </select>
+    <update id="editProductall">
+        update product set product_img = #{product_img} where product_id = #{product_id}
+    </update>
+
+    <update id="editProductallxx">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            UPDATE product
+            <set>
+                product_img=#{item.product_img}
+            </set>
+            <where>
+                product_id = #{item.product_id}
+            </where>
+        </foreach>
+    </update>
 </mapper>

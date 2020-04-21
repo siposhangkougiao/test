@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.base.BaseController;
 
 import com.mtnz.service.system.customer.CustomerService;
+import com.mtnz.service.system.product.ProductService;
 import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -36,6 +38,8 @@ public class MyAppStoreController extends BaseController{
     public CustomerService customerService;
     @Resource(name = "sysAppUserService")
     private SysAppUserService sysAppUserService;
+    @Resource(name = "productService")
+    private ProductService productService;
 
     /**
      * 获取注册验证码
@@ -66,6 +70,8 @@ public class MyAppStoreController extends BaseController{
             Calendar afterTime = Calendar.getInstance();
             afterTime.add(Calendar.MINUTE, 5); // 当前分钟+5
             Date afterDate = (Date) afterTime.getTime();
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println(">>>>>>>>>>>>>"+sdf.format(afterDate));
             pd2.put("end_time", afterDate);
             pd2.put("now_time", new Date());
             PageData codepage = myStoreService.findyzm(pd2);
@@ -223,6 +229,13 @@ public class MyAppStoreController extends BaseController{
         PageData pd=this.getPageData();
         try{
             myStoreService.editStore(pd);
+            if(is_pass!=null&&is_pass==1){
+                PageData pageData = storeService.findById(pd);
+                if(pageData.get("phoneTow")!=null){
+                    SmsBao smsBao = new SmsBao();
+                    smsBao.sendSMS(pageData.get("phoneTow").toString(),"您的店铺已认证通过！请使用手机号尾号："+pageData.get("phoneTow").toString().substring(7)+"登录，即可享用VIP权益");
+                }
+            }
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
@@ -334,6 +347,55 @@ public class MyAppStoreController extends BaseController{
             pd.put("code", "1");
             pd.put("message", "正确返回数据!");
             pd.put("data",img_code);
+        } catch (Exception e) {
+            pd.clear();
+            pd.put("code", "2");
+            pd.put("message", "程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        String str = "";
+        try {
+            str = mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 刷数据库
+     * @return
+     */
+    @RequestMapping(value = "testimage", produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String testimage() {
+        logBefore(logger, "添加店铺图片");
+        PageData pd = this.getPageData();
+        try {
+            List<PageData> list = productService.findproductall();
+            Integer cc =0;
+            List<PageData> xx = new ArrayList<>();
+            for (int i = 0; i < list.size(); i++) {
+                if(list.get(i).get("product_img")!=null){
+                    String aa = list.get(i).get("product_img").toString();
+                    aa = aa.replace("115.28.210.33:9090","new.nongshoping.com:8080");
+                    PageData pageData = new PageData();
+                    pageData.put("product_id",list.get(i).get("product_id"));
+                    pageData.put("product_img",aa);
+                    xx.add(pageData);
+                    cc+=1;
+                    if(cc==500){
+                        productService.editProductallxx(xx);
+                        cc=0;
+                        xx.clear();
+                    }
+                    //productService.editProductall(pageData);
+                }
+            }
+            pd.clear();
+            pd.put("code", "1");
+            pd.put("message", "正确返回数据!");
         } catch (Exception e) {
             pd.clear();
             pd.put("code", "2");

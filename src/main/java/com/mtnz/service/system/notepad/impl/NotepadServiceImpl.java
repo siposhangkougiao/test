@@ -160,6 +160,9 @@ public class NotepadServiceImpl implements NotepadService {
                 notepadMapper.updateByExampleSelective(notepad,example);
             }
             notepadTypeMapper.updateByPrimaryKeySelective(notepadType);
+            if(notepadTypes.get(i).getIsDelete()==1){
+                notepadMapper.updateNoteType(notepadType);
+            }
         }
 
         return 1;
@@ -185,9 +188,9 @@ public class NotepadServiceImpl implements NotepadService {
             example.and().andEqualTo("typeName",notepad.getTypeName());
         }
         if(notepad.getStartTime()!=null){
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
-            Date start = sdf.parse(notepad.getStartTime());
-            Date end = sdf.parse(notepad.getEndTime());
+            String [] startTime = notepad.getStartTime().split("-");
+            Date start = MyTimesUtil.getBeginTime(Integer.valueOf(startTime[0]),Integer.valueOf(startTime[1]));
+            Date end = MyTimesUtil.getEndTime(Integer.valueOf(startTime[0]),Integer.valueOf(startTime[1]));
             example.and().andBetween("useTime",start,end);
         }
         if(notepad.getUseTime()!=null){

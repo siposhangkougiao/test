@@ -124,13 +124,31 @@ public class AppUserController extends BaseController {
         return str;
     }
 
-
+    /**
+     * 停用启用员工
+     * @return
+     */
     @RequestMapping(value = "update", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String update() {
         logBefore(logger, "修改用户信息");
         PageData pd = this.getPageData();
         try {
+            if(pd.get("code")!=null){
+                PageData pd2 = new PageData();
+                pd2.put("code", pd.get("code").toString());
+                pd2.put("phone", pd.get("phone").toString());
+                pd2.put("now_time", new Date());
+                PageData codepage = myStoreService.findyzmBycode(pd2);
+                if(codepage==null){
+                    return getMessage("-101","验证码失效，请重新发送");
+                }else {
+                    myStoreService.editCode(pd2);
+                }
+            }
+            if(pd.get("password")!=null){
+                pd.put("password",MD5.md5(MD5.md5(pd.get("password").toString()) + pd.getString("salt")));
+            }
             sysAppUserService.update(pd);
             pd.clear();
             pd.put("code", "1");
@@ -309,12 +327,26 @@ public class AppUserController extends BaseController {
         return str;
     }
 
+    /**
+     * 添加员工账号
+     * @return
+     */
     @RequestMapping(value = "newRegister", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String newRegister() {
         PageData pd = null;
         try {
             pd = this.getPageData();
+            PageData pd2 = new PageData();
+            pd2.put("code", pd.get("code").toString());
+            pd2.put("phone", pd.get("phone").toString());
+            pd2.put("now_time", new Date());
+            PageData codepage = myStoreService.findyzmBycode(pd2);
+            if(codepage==null){
+                return getMessage("-101","验证码失效，请重新发送");
+            }else {
+                myStoreService.editCode(pd2);
+            }
             PageData dtoUser = sysAppUserService.findUserName(pd);
             if (dtoUser != null && dtoUser.size() > 0) {
                 pd.clear();

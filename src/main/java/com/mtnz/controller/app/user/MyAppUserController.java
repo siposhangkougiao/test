@@ -10,6 +10,7 @@ import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_pro.OrderProService;
 import com.mtnz.service.system.product.ProductService;
+import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.service.system.yzm.YzmService;
@@ -58,6 +59,8 @@ public class MyAppUserController extends BaseController {
     private ProductService productService;
     @Resource(name = "orderProService")
     private OrderProService orderProService;
+    @Resource(name = "myStoreService")
+    private MyStoreService myStoreService;
 
     /**
      * 查询员工销售排名
@@ -67,7 +70,7 @@ public class MyAppUserController extends BaseController {
      */
     @RequestMapping(value = "findMyStoreUser", produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findMyStoreUser(Long store_id,String start_time,String end_time,Integer type) {
+    public String findMyStoreUser(Long store_id,String start_time,String end_time,Integer type,Long uid) {
         logBefore(logger, "查询员工销售排名",this.getPageData());
         PageData pd = this.getPageData();
         try {
@@ -353,6 +356,128 @@ public class MyAppUserController extends BaseController {
         String str = "";
         try {
             str = mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 添加店员账号获取注册验证码
+     * @param phone
+     * @return
+     */
+    @RequestMapping(value = "getcode",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String getcode(String phone){
+        logBefore(logger,"获取短信验证码");
+        PageData pd=this.getPageData();
+        try{
+            pd.put("username",phone);
+            PageData pd_u=sysAppUserService.findUserName(pd);
+            if(pd_u!=null){
+                return getMessage("-101","用户已存在，不能重复注册！");
+            }
+            Map<String, Object> map = new HashMap();
+            String yzm = String.valueOf((int) ((Math.random() * 9 + 1) * 1000));
+            System.out.println("验证码为：" + yzm);
+            SmsBao sms = new SmsBao();
+            String context = "店主正在给您开通店员权限,验证码：" + yzm;
+            String result = sms.sendSMS(phone, context);
+            PageData pd2 = new PageData();
+            pd2.put("code", yzm);
+            pd2.put("phone", phone);
+            pd2.put("start_time", DateUtil.getTime());
+            Calendar afterTime = Calendar.getInstance();
+            afterTime.add(Calendar.MINUTE, 5); // 当前分钟+5
+            Date afterDate = (Date) afterTime.getTime();
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println(">>>>>>>>>>>>>"+sdf.format(afterDate));
+            pd2.put("end_time", afterDate);
+            pd2.put("now_time", new Date());
+            PageData codepage = myStoreService.findyzm(pd2);
+            if(codepage!=null){
+                return getMessage("2","验证码已发送,五分钟后重试");
+            }
+            myStoreService.saveyzm(pd2);
+            if ("0".equals(result.split(",")[0])) {
+                map.put("YZM", yzm);
+            } else {
+                map.put("YZM", "-1");
+            }
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+            pd.put("data",map);
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str= mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+    /**
+     * 启用店员账号获取验证码
+     * @param phone
+     * @return
+     */
+    @RequestMapping(value = "getStatusCode",produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String getStatusCode(String phone){
+        logBefore(logger,"获取短信验证码");
+        PageData pd=this.getPageData();
+        try{
+            pd.put("username",phone);
+            Map<String, Object> map = new HashMap();
+            String yzm = String.valueOf((int) ((Math.random() * 9 + 1) * 1000));
+            System.out.println("验证码为：" + yzm);
+            SmsBao sms = new SmsBao();
+            String context = "店主正在给您开通店员权限,验证码：" + yzm;
+            String result = sms.sendSMS(phone, context);
+            PageData pd2 = new PageData();
+            pd2.put("code", yzm);
+            pd2.put("phone", phone);
+            pd2.put("start_time", DateUtil.getTime());
+            Calendar afterTime = Calendar.getInstance();
+            afterTime.add(Calendar.MINUTE, 5); // 当前分钟+5
+            Date afterDate = (Date) afterTime.getTime();
+            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            System.out.println(">>>>>>>>>>>>>"+sdf.format(afterDate));
+            pd2.put("end_time", afterDate);
+            pd2.put("now_time", new Date());
+            PageData codepage = myStoreService.findyzm(pd2);
+            if(codepage!=null){
+                return getMessage("2","验证码已发送,五分钟后重试");
+            }
+            myStoreService.saveyzm(pd2);
+            if ("0".equals(result.split(",")[0])) {
+                map.put("YZM", yzm);
+            } else {
+                map.put("YZM", "-1");
+            }
+            pd.clear();
+            pd.put("code","1");
+            pd.put("message","正确返回数据!");
+            pd.put("data",map);
+        }catch (Exception e){
+            pd.clear();
+            pd.put("code","2");
+            pd.put("message","程序出错,请联系管理员!");
+            e.printStackTrace();
+        }
+        ObjectMapper mapper=new ObjectMapper();
+        String str="";
+        try {
+            str= mapper.writeValueAsString(pd);
         } catch (Exception e) {
             e.printStackTrace();
         }

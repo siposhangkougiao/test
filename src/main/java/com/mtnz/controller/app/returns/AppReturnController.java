@@ -598,6 +598,7 @@ public class AppReturnController extends BaseController{
             pd.put("revokes","1");
             //修改退货单状态 1已撤销
             returnOrderInfoService.editRevokes(pd);
+            //查询退货单信息
             List<PageData> list=returnOrderProService.findList(pd);
             for(int i=0;i<list.size();i++){
                 if(new BigDecimal(list.get(i).get("li_num").toString()).compareTo(new BigDecimal(0))>0){//表示拆袋的
@@ -672,7 +673,7 @@ public class AppReturnController extends BaseController{
                             aa = 1;
                         }
                     }
-                    pdOrderpro.put("nums",list.get(i).get("num").toString());
+                    pdOrderpro.put("num",list.get(i).get("num").toString());
                     orderProService.editOrderKuncuns(pdOrderpro);
                     productService.editJianNums(pdOrderpro);
                 }

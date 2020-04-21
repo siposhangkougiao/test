@@ -1,5 +1,6 @@
 package com.mtnz.controller.app.customer;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -858,10 +859,9 @@ public class AppCustomerController extends BaseController{
                 if(Integer.valueOf(pd_c.get("number").toString())>Integer.valueOf(count)){
                     /*SmsBao sms=new SmsBao();
                     String result= sms.sendSMSstord(data,message,pd_c.getString("name"));*/
-                    SendMessageResult messageResult = MessageSend.sendMessage(data,message+",回T退订");
-                    System.out.println(">>>>>>返回的数据是"+messageResult);
-                    if(messageResult.getResult().equals("0")){
-
+                    SendMessageResult messageResult = MessageSend.sendMessage(data,"【"+pd_c.get("name").toString()+"】"+message+",回T退订");
+                    System.out.println(">>>>>>返回的数据是"+ JSONObject.toJSONString(messageResult));
+                    if(messageResult.getResult().equals(0)){
                         pd_c.put("count",count);
                         storeService.updateNumber(pd);
                         PageData shortletter=new PageData();
@@ -1085,11 +1085,4 @@ public class AppCustomerController extends BaseController{
             e.printStackTrace();
         }
     }*/
-
-    public static void main(String[] args) throws Exception {
-        SmsBao sms=new SmsBao();
-        String result= sms.sendSMSstord("17638567709,18515155792","老李农资店，地膜35元一卷，三月十二最后一天。电话：18515155792，回T退订","名称");
-        System.out.println(result);
-    }
-
 }

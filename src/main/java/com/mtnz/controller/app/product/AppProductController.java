@@ -48,7 +48,7 @@ public class AppProductController extends BaseController{
     @ResponseBody
     public String findProductFeiXis(String store_id,String status,String product_id,
                                     String startTime,String endTime,String product_name,
-                                    Integer pageNumber,Integer pageSize,Integer type){
+                                    Integer pageNumber,Integer pageSize,Integer type,String typeName){
         logBefore(logger,"查询详情");
         PageData pd=this.getPageData();
         if(pageNumber!=null&&pageSize!=null){
@@ -675,7 +675,7 @@ public class AppProductController extends BaseController{
      */
     @RequestMapping(value = "findlikeProduct",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findlikeProduct(String store_id,String product_name){
+    public String findlikeProduct(String store_id,String product_name,String type){
         logBefore(logger,"模糊查询商品");
         PageData pd=this.getPageData();
         if(store_id==null||store_id.length()==0||product_name==null||product_name.length()==0){
@@ -690,12 +690,35 @@ public class AppProductController extends BaseController{
                     List<PageData> list_img=productImgService.findList(list.get(i));
                     list.get(i).put("img",list_img);
                 }
+                //开始计算总进货价
+                BigDecimal priceaa = new BigDecimal(0);
+                for (int i = 0; i <list.size() ; i++) {
+                    //if(Integer.valueOf(String.valueOf(list.get(i).get("kucun")))>0){
+                    if(new BigDecimal(String.valueOf(list.get(i).get("kucun"))).compareTo(new BigDecimal(0))>0){
+                        PageData kucun= new PageData();
+                        kucun.put("product_id",list.get(i).get("product_id"));
+                        kucun.put("store_id",list.get(i).get("store_id"));
+                        List<PageData> pricelist = productService.findProductPrice(kucun);
+                        for (int j = 0; j <pricelist.size() ; j++) {
+                            //System.out.println("數量："+pricelist.get(j).get("nums")+"单价是："+pricelist.get(j).get("purchase_price"));
+                            priceaa = priceaa.add(new BigDecimal(pricelist.get(j).get("nums").toString()).multiply(new BigDecimal(pricelist.get(j).get("purchase_price").toString())));
+                            if(pricelist.get(j).get("likucun")!=null){
+                                BigDecimal a = new BigDecimal(pricelist.get(j).get("likucun").toString());
+                                BigDecimal b = new BigDecimal(list.get(i).get("norms1").toString());
+                                BigDecimal c = new BigDecimal(pricelist.get(j).get("purchase_price").toString());
+                                priceaa = priceaa.add(a.divide(b,4).multiply(c));
+                            }
+                        }
+                    }
+                }
+                priceaa.setScale(2,BigDecimal.ROUND_HALF_UP);
                 Map<String, Object> map = new HashedMap();
                 map.put("data",list);
                 pd.clear();
                 pd.put("object",map);
                 pd.put("code","1");
                 pd.put("message",message);
+                pd.put("money",priceaa);
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");
@@ -715,7 +738,7 @@ public class AppProductController extends BaseController{
 
     @RequestMapping(value = "findProductType",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findProductType(String type,String store_id){
+    public String findProductType(String type,String store_id,String typeName){
         logBefore(logger,"根据商品类型查询商品");
         PageData pd=this.getPageData();
         try{
@@ -749,7 +772,7 @@ public class AppProductController extends BaseController{
      */
     @RequestMapping(value = "findProduct",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findProduct(String store_id,String pageNum){
+    public String findProduct(String store_id,String pageNum,String type){
         logBefore(logger,"查询商品");
         PageData pd=this.getPageData();
         Page page=new Page();
@@ -787,13 +810,12 @@ public class AppProductController extends BaseController{
                 }
                 Map<String, Object> map = new HashedMap();
                 map.put("data",list);
-                String moneg="0.0";
                 //下面计算价格的地方错误，需要修改
                 /*PageData pd_s=productService.findKuCun(pd);
                 if(pd_s!=null){
                     moneg=pd_s.get("money").toString();
                 }*/
-                //开始计算总价
+                //开始计算总进货价
                 BigDecimal priceaa = new BigDecimal(0);
                 for (int i = 0; i <list.size() ; i++) {
                     //if(Integer.valueOf(String.valueOf(list.get(i).get("kucun")))>0){
@@ -803,7 +825,7 @@ public class AppProductController extends BaseController{
                         kucun.put("store_id",list.get(i).get("store_id"));
                         List<PageData> pricelist = productService.findProductPrice(kucun);
                         for (int j = 0; j <pricelist.size() ; j++) {
-                            System.out.println("數量："+pricelist.get(j).get("nums")+"单价是："+pricelist.get(j).get("purchase_price"));
+                            //System.out.println("數量："+pricelist.get(j).get("nums")+"单价是："+pricelist.get(j).get("purchase_price"));
                             priceaa = priceaa.add(new BigDecimal(pricelist.get(j).get("nums").toString()).multiply(new BigDecimal(pricelist.get(j).get("purchase_price").toString())));
                             if(pricelist.get(j).get("likucun")!=null){
                                 BigDecimal a = new BigDecimal(pricelist.get(j).get("likucun").toString());
@@ -814,9 +836,7 @@ public class AppProductController extends BaseController{
                         }
                     }
                 }
-                System.out.println("计算出来的总价格>>>>"+priceaa);
                 priceaa.setScale(2,BigDecimal.ROUND_HALF_UP);
-                System.out.println("计算出来的总价格>>>>"+priceaa);
                 pd.clear();
                 pd.put("object",map);
                 pd.put("code","1");

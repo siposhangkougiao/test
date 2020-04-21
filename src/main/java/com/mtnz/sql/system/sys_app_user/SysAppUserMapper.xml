@@ -93,7 +93,7 @@
           FROM sys_app_user s
           LEFT JOIN store ss on ss.store_id=s.store_id
           LEFT JOIN sys_user p on p.USER_ID=s.person_id
-          where 1=1
+          where s.is_delete = 0
               <if test="pd.province!=null and pd.province!=''">
                   and s.province=#{pd.province}
               </if>
@@ -144,7 +144,7 @@
               st.phone
           FROM sys_app_user s
           LEFT JOIN store st on st.store_id=s.store_id
-          where username=#{username} and password=#{password} AND diedstatus = 0
+          where username=#{username} and password=#{password} AND diedstatus = 0 and is_delete =0
     </select>
 
     <update id="editPassword" parameterType="pd">
@@ -173,7 +173,7 @@
               identity,
               diedstatus
         FROM sys_app_user
-        where username=#{username}
+        where username=#{username} and is_delete =0
     </select>
 
 
@@ -197,7 +197,10 @@
         identity,
         diedstatus
         FROM sys_app_user
-        where store_id=#{store_id} AND identity = 3
+        where store_id=#{store_id} AND identity = 3 and is_delete =0
+        <if test="uid !=null">
+            and uid = #{uid}
+        </if>
     </select>
 
     <select id="findBySId" parameterType="pd" resultType="pd">
@@ -229,7 +232,7 @@
         ss.street as street
         FROM sys_app_user s
         LEFT JOIN store ss on ss.store_id=s.store_id
-        where s.uid=#{uid}
+        where s.uid=#{uid} and is_delete =0
         <if test="store_id !=null">
             and ss.store_id = #{store_id}
         </if>
@@ -250,6 +253,7 @@
         <if test="corp != null">corp=#{corp},</if>
         <if test="identity != null">identity=#{identity},</if>
         <if test="diedstatus  != null">diedstatus =#{diedstatus },</if>
+        <if test="password  != null">password =#{password },</if>
         </set>
         where uid=#{uid}
     </update>
@@ -281,7 +285,7 @@
             username,
             store_id,
             uid
-        FROM sys_app_user
+        FROM sys_app_user and is_delete =0
     </select>
 
     <update id="editLoginDate" parameterType="pd">
@@ -291,7 +295,7 @@
     </update>
 
     <select id="findcostor" parameterType="pd" resultType="pd">
-        select * from customer where name = #{name}
+        select * from customer where name = #{name} and is_delete =0
     </select>
 
     <select id="findUserName" parameterType="pd" resultType="pd">
@@ -314,11 +318,11 @@
               identity,
               diedstatus
         FROM sys_app_user
-        where username=#{username}
+        where username=#{username} and is_delete =0
     </select>
 
     <select id="findall" parameterType="pd" resultType="pd">
-        select uid,store_id from sys_app_user
+        select uid,store_id from sys_app_user and is_delete =0
     </select>
 
     <update id="editStoreId">

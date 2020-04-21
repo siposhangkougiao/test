@@ -3,10 +3,13 @@ package com.mtnz.service.system.product;
 import com.mtnz.dao.DaoSupport;
 import com.mtnz.entity.Page;
 import com.mtnz.util.PageData;
+import org.apache.commons.collections.map.HashedMap;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 /*
     Created by xxj on 2018\3\21 0021.
@@ -190,5 +193,20 @@ public class ProductService {
 
     public PageData findSaleLevel(PageData pd) throws Exception {
         return (PageData) daoSupport.findForObject("ProductMapper.findSaleLevel",pd);
+    }
+
+    public List<PageData> findproductall() throws Exception {
+        PageData pd =new PageData();
+        return (List<PageData>) daoSupport.findForList("ProductMapper.findproductall",pd);
+    }
+
+    public void editProductall(PageData pd) throws Exception {
+        daoSupport.update("ProductMapper.editProductall",pd);
+    }
+
+    public void editProductallxx(List<PageData> xx) throws Exception {
+        Map map = new HashedMap();
+        map.put("list",xx);
+        daoSupport.update("ProductMapper.editProductallxx",map);
     }
 }
