@@ -1309,7 +1309,7 @@ public class AppProductController extends BaseController{
             PageData pd_p=productService.findById(pd);
             //修改商品表库存
             productService.editNums(pd);
-            if(new BigDecimal(kucun).compareTo(new BigDecimal(0))==0){//如果清楚库存
+            if(new BigDecimal(kucun).compareTo(new BigDecimal(0))==0){//如果清除库存
                 productService.editNumslikucun(pd);
                 kunCunService.editNumlikucun(pd);
             }
@@ -1345,13 +1345,14 @@ public class AppProductController extends BaseController{
             //查询进货单
             List<PageData> list=kunCunService.findListjin(pd);
             if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){//这是减库存了
-                int in=cc;//实际操作的差值
+                /*int in=cc;//实际操作的差值*/
+                int in = Integer.valueOf(pd_p.get("kucun").toString()) - Integer.valueOf(kucun);
                 for(int i=0;i<list.size();i++){
                     if(in>Integer.valueOf(list.get(i).get("nums").toString())){
                         Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(list.get(i).get("nums").toString());
                         list.get(i).put("nums","0");
                         kunCunService.editNum(list.get(i));
-                        in=Integer.valueOf(kuncuns.toString());
+                        in=kuncuns;
                     }else {
                         list.get(i).put("nums",Integer.valueOf(list.get(i).get("nums").toString())-Integer.valueOf(in));
                         kunCunService.editNum(list.get(i));

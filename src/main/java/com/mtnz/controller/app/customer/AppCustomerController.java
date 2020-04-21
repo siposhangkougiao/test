@@ -591,6 +591,24 @@ public class AppCustomerController extends BaseController{
                         money=df.format(pd_m.get("total_owe"));
                     }
                 }
+                //查询用户账户余额
+                for (int i = 0; i < list.size(); i++) {
+                    PageData ub = new PageData();
+                    ub.put("user_id",list.get(i).get("customer_id"));
+                    ub.put("customer_id",list.get(i).get("customer_id"));
+                    PageData balance = balanceService.findUserbalanceByUserId(ub);
+                    if(balance==null){
+                        PageData customer = customerService.findById(ub);
+                        PageData pda = new PageData();
+                        pda.put("name",customer.get("name"));
+                        pda.put("balance",new BigDecimal(0));
+                        pda.put("user_id",ub.get("customer_id"));
+                        balanceService.saveBalance(pda);
+                        list.get(i).put("prepayment",new BigDecimal(0));
+                    }else {
+                        list.get(i).put("prepayment",balance.get("balance"));
+                    }
+                }
                 map.put("data",list);
                 pd.clear();
                 pd.put("code","1");
