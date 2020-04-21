@@ -133,6 +133,7 @@ public class AppUserController extends BaseController {
     public String update() {
         logBefore(logger, "修改用户信息");
         PageData pd = this.getPageData();
+        System.out.println(">>>>接收到的参数："+ com.alibaba.fastjson.JSONObject.toJSONString(pd));
         try {
             if(pd.get("code")!=null){
                 PageData pd2 = new PageData();
@@ -146,8 +147,9 @@ public class AppUserController extends BaseController {
                     myStoreService.editCode(pd2);
                 }
             }
+            PageData user = sysAppUserService.findById(pd);
             if(pd.get("password")!=null){
-                pd.put("password",MD5.md5(MD5.md5(pd.get("password").toString()) + pd.getString("salt")));
+                pd.put("password",MD5.md5(MD5.md5(pd.get("password").toString()) + user.getString("salt")));
             }
             sysAppUserService.update(pd);
             pd.clear();

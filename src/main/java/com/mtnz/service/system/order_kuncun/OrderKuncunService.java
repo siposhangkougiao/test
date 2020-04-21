@@ -245,7 +245,7 @@ public class OrderKuncunService extends BaseController{
             Gson gson = new Gson();
             List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
             }.getType());   //获取订单商品列表
-            System.out.println(">>>>>>>是否拆单："+list.get(0).get("isli").toString());
+            //System.out.println(">>>>>>>是否拆单："+list.get(0).get("isli").toString());
             PageData pd_cc=new PageData();
             pd_cc.put("customer_id",customer_id);
             pd_cc.put("billing_date",pd_o.getString("date"));
@@ -253,7 +253,7 @@ public class OrderKuncunService extends BaseController{
             for (int i = 0; i < list.size(); i++) {//遍历获取的商品信息
                 BigDecimal zong = new BigDecimal(list.get(i).get("num").toString());//未转换的零售数量
                 BigDecimal zong1 = new BigDecimal(list.get(i).get("num").toString());
-                if(new BigDecimal(list.get(i).get("isli").toString()).compareTo(new BigDecimal(0))>0){
+                if(list.get(i).get("isli")!=null&&new BigDecimal(list.get(i).get("isli").toString()).compareTo(new BigDecimal(0))>0){
                     BigDecimal goumai = new BigDecimal(list.get(i).get("num").toString());
                     PageData product = productService.findById(list.get(i));//查询出来商品的信息
                     if(isnumber(product.get("norms1").toString())){//判断是否可以零售
