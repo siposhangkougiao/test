@@ -253,7 +253,8 @@
         <if test="corp != null">corp=#{corp},</if>
         <if test="identity != null">identity=#{identity},</if>
         <if test="diedstatus  != null">diedstatus =#{diedstatus },</if>
-        <if test="password  != null">password =#{password },</if>
+        <if test="password  != null">password =#{password},</if>
+        <if test="is_delete  != null">is_delete =#{is_delete},</if>
         </set>
         where uid=#{uid}
     </update>
