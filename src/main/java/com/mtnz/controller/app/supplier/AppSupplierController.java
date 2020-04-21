@@ -168,7 +168,7 @@ public class AppSupplierController extends BaseController{
         logBefore(logger,"查询供应商");
         PageData pd=this.getPageData();
         Page page=new Page();
-        java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
+        java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");
         if(store_id==null||store_id.length()==0){
             pd.clear();
             pd.put("code","2");
@@ -290,10 +290,23 @@ public class AppSupplierController extends BaseController{
             pd.put("message","缺少参数!");
         }else{
             try {
+                java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");
                 List<PageData> list=supplierService.findLikeSupplier(pd);
                 for(int i=0;i<list.size();i++){
                     PageData pd_cc=supplierOrderInfoService.findSupplierCount(list.get(i));
                     list.get(i).put("count1",pd_cc.get("count").toString());
+                }
+                for(int i=0;i<list.size();i++){
+                    PageData pd_c=productService.findCount(list.get(i));
+                    list.get(i).put("count",pd_c.get("count").toString());
+                    PageData pd_money=supplierOrderInfoService.findSumMoney(list.get(i));
+                    if(pd_money!=null&&!pd_money.get("money").toString().equals("0.0")){
+                        list.get(i).put("money",df.format(pd_money.get("money")));
+                    }else{
+                        list.get(i).put("money","0.0");
+                    }
+
+                    list.get(i).put("return_money","0.0");
                 }
                 Map<String, Object> map = new HashedMap();
                 map.put("data", list);
