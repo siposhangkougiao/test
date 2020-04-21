@@ -210,7 +210,7 @@ public class AppOrderController extends BaseController{
                 }else{
                     pd_c.put("money","0.0");
                 }*/
-                if(new BigDecimal(pd_o.get("money").toString()).compareTo(new BigDecimal(0))>0){
+                if(pd_o!=null&&new BigDecimal(pd_o.get("money").toString()).compareTo(new BigDecimal(0))>0){
                     pd_c.put("money",new BigDecimal(pd_o.get("money").toString()).setScale(2,BigDecimal.ROUND_HALF_UP));
                 }else {
                     pd_c.put("money",new BigDecimal(0));
