@@ -160,7 +160,7 @@ public class NotepadServiceImpl implements NotepadService {
                 notepadMapper.updateByExampleSelective(notepad,example);
             }
             notepadTypeMapper.updateByPrimaryKeySelective(notepadType);
-            if(notepadTypes.get(i).getIsDelete()==1){
+            if(notepadTypes.get(i).getIsDelete()!=null&&notepadTypes.get(i).getIsDelete()==1){
                 notepadMapper.updateNoteType(notepadType);
             }
         }
@@ -201,5 +201,16 @@ public class NotepadServiceImpl implements NotepadService {
         example.orderBy("id").desc();
         List<Notepad> list = notepadMapper.selectByExample(example);
         return list;
+    }
+
+    /**
+     * 新增分类
+     * @param notepadType
+     * @return
+     */
+    @Override
+    public int insertType(NotepadType notepadType) {
+
+        return notepadTypeMapper.insertSelective(notepadType);
     }
 }

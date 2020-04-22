@@ -58,4 +58,12 @@ public interface NotepadService {
     List<NotepadType> selecttypelist(NotepadType notepadType);
 
     List<Notepad> selectlistnopage(Notepad notepad) throws ParseException;
+
+    /**
+     * 新增分类
+     * @param notepadType
+     * @return
+     */
+    int insertType(NotepadType notepadType);
+
 }

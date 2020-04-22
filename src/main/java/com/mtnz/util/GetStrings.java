@@ -13,11 +13,22 @@ public class GetStrings {
             if ("char".equalsIgnoreCase(charOrNum)) {
                 // 取得大写字母还是小写字母
                 int choice = random.nextInt(2) % 2 == 0 ? 65 : 97;
-                val += (char) (choice + random.nextInt(26));
-            } else if ("num".equalsIgnoreCase(charOrNum)) { // 数字
-                val += String.valueOf(random.nextInt(10));
+                int cc = random.nextInt(26);
+                String aa = String.valueOf((choice + cc));
+                while (true){
+                    if(!aa.equals("O")&&!aa.equals("o")){
+                        val += (char) (choice + random.nextInt(26));
+                        break;
+                    }
+                }
+            } else if ("num".equalsIgnoreCase(charOrNum)) { // 数字 f9r9693
+                int bb = random.nextInt(10);
+                val += String.valueOf(bb);
             }
         }
+        val = val.replace('O','h');
+        val = val.replace('o','h');
+        val = val.replace('0','r');
         return val;
     }
 }

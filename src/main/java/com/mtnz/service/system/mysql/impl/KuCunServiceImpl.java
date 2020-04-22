@@ -6,8 +6,10 @@ import com.mtnz.controller.app.mysql.model.GetBean;
 import com.mtnz.controller.app.mysql.model.KuCun;
 import com.mtnz.controller.app.mysql.model.Product;
 import com.mtnz.service.system.mysql.KuCunService;
+import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.sql.system.mysql.KuCunMapper;
 import com.mtnz.sql.system.mysql.ProductMapper;
+import com.mtnz.util.PageData;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
@@ -25,6 +27,9 @@ public class KuCunServiceImpl implements KuCunService {
 
     @Resource
     KuCunMapper kuCunMapper;
+
+    @Resource(name = "sysAppUserService")
+    SysAppUserService sysAppUserService;
     @Override
     public void test() {
         PageHelper.startPage(1,10000);
@@ -64,5 +69,23 @@ public class KuCunServiceImpl implements KuCunService {
         kuCunMapper.updateling(updateling);
         kuCunMapper.updatelist(updatelist);
         System.out.println(JSONObject.toJSONString(relist));
+    }
+
+    /**
+     * 发送维护通知
+     */
+    @Override
+    public void sendMeg() throws Exception {
+        List<PageData> list =sysAppUserService.findallUser();
+        String aa = "";
+        for (int i = 0; i < list.size(); i++) {
+            if(list.get(i).get("username")!=null){
+                String username = list.get(i).get("username").toString();
+                if(username.length()==11){
+                    aa = aa + username + ";";
+                }
+            }
+        }
+        System.out.println(">>>>>>"+aa);
     }
 }

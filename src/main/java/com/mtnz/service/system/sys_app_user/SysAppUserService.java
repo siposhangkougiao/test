@@ -90,4 +90,10 @@ public class SysAppUserService {
     public void saveLevel(PageData pd) throws Exception {
         daoSupport.save("ShopperSaleMapper.saveLevel",pd);
     }
+
+
+    public List<PageData> findallUser() throws Exception {
+        PageData pd = new PageData();
+        return (List<PageData>) daoSupport.findForList("SysAppUserMapper.findallUser",pd);
+    }
 }

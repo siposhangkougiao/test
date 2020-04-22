@@ -149,7 +149,8 @@ public class MyAppStoreController extends BaseController{
                 pd.put("username",username);
                 pd.put("name",username);
                 pd.put("salt", CharacterUtils.getRandomString(4));
-                pd.put("password", MD5.md5(MD5.md5("123456") + pd.getString("salt")));
+                String password = GetStrings.getRandomNickname(8);
+                pd.put("password", MD5.md5(MD5.md5(password) + pd.getString("salt")));
                 pd.put("openid","");
                 pd.put("unionid","");
                 pd.put("status","0");
@@ -161,7 +162,7 @@ public class MyAppStoreController extends BaseController{
                 sysAppUserService.save(pd);
                 SmsBao smsBao=new SmsBao();
                 //smsBao.sendSMS(phone,"你的账号已创建成功,账号为"+username+"初始密码为123456，请赶快修改密码");
-                smsBao.sendSMS(phone,"你的账号已创建成功,账号为"+username+"初始密码为"+GetStrings.getRandomNickname(10)+"，请赶快修改密码");
+                smsBao.sendSMS(phone,"您的账号已创建，账号:"+username+"初始密码:"+password);
                 PageData pd_customer=new PageData();
                 pd_customer.put("name","零散客户");
                 pd_customer.put("phone","");

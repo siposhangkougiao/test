@@ -330,4 +330,8 @@
         update sys_app_user set store_id = #{store_id} where uid = #{user_id}
     </update>
 
+    <select id="findallUser" resultType="pd">
+        select username from sys_app_user
+    </select>
+
 </mapper>

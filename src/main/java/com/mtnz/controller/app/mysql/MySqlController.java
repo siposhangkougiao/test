@@ -15,15 +15,15 @@ import javax.ws.rs.core.MediaType;
 
 @RestController
 @RequestMapping(value = "/app/mysql")
-public class KuCunController extends BaseController{
+public class MySqlController extends BaseController{
 
-    private static Logger logger = LoggerFactory.getLogger(KuCunController.class);
+    private static Logger logger = LoggerFactory.getLogger(MySqlController.class);
 
     @Resource
     private KuCunService kuCunService;
 
     /**
-     * 添加记事本
+     * 刷新库存不正确的问题
      * @return
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -32,6 +32,29 @@ public class KuCunController extends BaseController{
         Result result = new Result(0,"成功");
         try {
             kuCunService.test();
+        }catch (ServiceException e) {
+            logger.error("数据操作失败",e);
+            result.setCode(e.getExceptionCode());
+            result.setMsg(e.getMessage());
+        } catch (Exception e) {
+            logger.error("系统错误",e);
+            result.setCode(-101);
+            result.setMsg(e.getMessage());
+        }
+        return result;
+    }
+
+
+    /**
+     * 发送维护通知短信
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/sendMeg")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Result sendMeg(){
+        Result result = new Result(0,"成功");
+        try {
+            kuCunService.sendMeg();
         }catch (ServiceException e) {
             logger.error("数据操作失败",e);
             result.setCode(e.getExceptionCode());

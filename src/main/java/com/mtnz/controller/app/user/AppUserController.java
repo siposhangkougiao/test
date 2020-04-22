@@ -142,8 +142,11 @@ public class AppUserController extends BaseController {
                 pd2.put("now_time", new Date());
                 PageData codepage = myStoreService.findyzmBycode(pd2);
                 if(codepage==null){
-                    return getMessage("-101","验证码失效，请重新发送");
+                    return getMessage("-101","验证码失效，请重新发送！");
                 }else {
+                    if(!codepage.get("code").toString().equals(pd.get("code").toString())){
+                        return getMessage("-102","验证码错误！");
+                    }
                     myStoreService.editCode(pd2);
                 }
             }
@@ -225,7 +228,6 @@ public class AppUserController extends BaseController {
         }
         return str;
     }
-
 
     /**
      * @param username 用户名

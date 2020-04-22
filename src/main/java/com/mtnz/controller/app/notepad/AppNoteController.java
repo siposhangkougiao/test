@@ -227,4 +227,29 @@ public class AppNoteController extends BaseController{
         }
         return result;
     }
+
+    /**
+     * 查询类型列表
+     * @param notepadType
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.POST,value = "/insertType")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Result insertType(@RequestBody NotepadType notepadType){
+        logger.error("接收到的参数：{}", JSONObject.toJSONString(notepadType));
+        Result result = new Result(0,"成功");
+        try {
+            int count = notepadService.insertType(notepadType);
+            result.setData(count);
+        }catch (ServiceException e) {
+            logger.error("数据操作失败",e);
+            result.setCode(e.getExceptionCode());
+            result.setMsg(e.getMessage());
+        } catch (Exception e) {
+            logger.error("系统错误",e);
+            result.setCode(-101);
+            result.setMsg(e.getMessage());
+        }
+        return result;
+    }
 }

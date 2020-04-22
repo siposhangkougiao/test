@@ -701,7 +701,7 @@ public class AppStoreController extends BaseController{
                 pd.put("diedstatus", 0);
                 sysAppUserService.save(pd);
                 SmsBao smsBao=new SmsBao();
-                smsBao.sendSMS(phone,"你的账号已创建成功,账号为"+username+"初始密码为"+GetStrings.getRandomNickname(10)+"，请赶快修改密码");
+                smsBao.sendSMS(phone,"您的账号已创建，账号:"+username+" 初始密码:"+GetStrings.getRandomNickname(10));
                 PageData pd_customer=new PageData();
                 pd_customer.put("name","零散客户");
                 pd_customer.put("phone","");
