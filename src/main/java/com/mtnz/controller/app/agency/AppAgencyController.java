@@ -345,7 +345,7 @@ public class AppAgencyController extends BaseController{
                 pd.put("street",pd_s.getString("street"));
                 pd.put("phone",pd_s.getString("sphone"));
                 pd.put("openid",pd_s.getString("openid"));
-                if(pd_s.getString("qr_code").toString()==null){
+                if(pd_s.getString("qr_code")==null){
                     pd.put("qr_code","");
                 }else {
                     pd.put("qr_code",pd_s.getString("qr_code"));

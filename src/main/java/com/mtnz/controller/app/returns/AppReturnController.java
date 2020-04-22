@@ -145,7 +145,7 @@ public class AppReturnController extends BaseController{
                 p4.put("customer_id",customer_id);
                 p4.put("owe",new BigDecimal(puser.get("owe").toString()).subtract(qiankuan));
                 customerService.editOwnByCustomerId(p4);//减去欠款金额
-                //记录退款是的账户变动
+                //记录退款时的账户变动
                 PageData pp4 = new PageData();
                 pp4.put("return_order_info_id",pd_o.get("return_order_info_id"));
                 pp4.put("number",qiankuan);

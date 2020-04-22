@@ -594,6 +594,7 @@ public class AppCustomerController extends BaseController{
                 //查询用户账户余额
                 for (int i = 0; i < list.size(); i++) {
                     PageData ub = new PageData();
+                    PageData pageData = list.get(i);
                     ub.put("user_id",list.get(i).get("customer_id"));
                     ub.put("customer_id",list.get(i).get("customer_id"));
                     PageData balance = balanceService.findUserbalanceByUserId(ub);
@@ -607,6 +608,14 @@ public class AppCustomerController extends BaseController{
                         list.get(i).put("prepayment",new BigDecimal(0));
                     }else {
                         list.get(i).put("prepayment",balance.get("balance"));
+                    }
+
+                    //查询用户积分
+                    PageData pageuser = integralService.findUserIntegralByUserid(pageData);
+                    if(pageuser!=null){
+                        list.get(i).put("integral",pageuser.get("remain_integral"));
+                    }else {
+                        list.get(i).put("integral",new BigDecimal(0));
                     }
                 }
                 map.put("data",list);

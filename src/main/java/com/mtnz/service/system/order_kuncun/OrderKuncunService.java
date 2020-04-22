@@ -232,6 +232,13 @@ public class OrderKuncunService extends BaseController{
                     if(balance.compareTo(ubalnce)>0){
                         throw new ServiceException("余额不足");
                     }
+                    /*PageData pddetail = new PageData();
+                    pddetail.put("balance",balance);
+                    pddetail.put("user_id",customer_id);
+                    pddetail.put("open_id",open_user);
+                    pddetail.put("order_info_id",pd_o.get("order_info_id"));
+                    pddetail.put("type",1);
+                    balanceService.saveBalanceDetailSaveOrder(pddetail);*/
                 }
 
             }

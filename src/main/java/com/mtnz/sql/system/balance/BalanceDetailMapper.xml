@@ -4,7 +4,9 @@
 
 
     <insert id="saveBalanceDetail">
-        insert into balance_detail (balance,user_id,open_id,great_time,remark,origin_balance)values (#{balance},#{user_id},#{open_id},NOW(),#{remark},#{origin_balance})
+        insert into balance_detail
+        (balance,user_id,open_id,great_time,remark,origin_balance,type)values
+        (#{balance},#{user_id},#{open_id},NOW(),#{remark},#{origin_balance},#{type})
     </insert>
 
     <select id="findBalanceDetailById" parameterType="pd" resultType="pd">
@@ -12,7 +14,7 @@
     </select>
 
     <select id="findUserbalanceDetailByUserId" parameterType="pd" resultType="pd">
-        select * from balance_detail where user_id = #{user_id}
+        select * from balance_detail where user_id = #{user_id} order by id desc
     </select>
 
     <update id="editBalanceByUserId">

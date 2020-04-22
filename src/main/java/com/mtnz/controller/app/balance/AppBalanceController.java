@@ -94,6 +94,7 @@ public class AppBalanceController extends BaseController{
         PageData pd=this.getPageData();
         try{
             pd.put("origin_balance",balance.add(deduction));
+            pd.put("type",2);
             balanceService.saveBalanceDetail(pd);
             balanceService.editBalanceByUserIdUp(pd);
             pd.put("owe",deduction);
