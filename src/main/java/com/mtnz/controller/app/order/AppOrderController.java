@@ -563,6 +563,12 @@ public class AppOrderController extends BaseController{
                 for(int i=0;i<list.size();i++){
                     List<PageData> list_pro=orderProService.findList(list.get(i));
                     list.get(i).put("order_pro",list_pro);
+                    PageData pbalance = balanceService.findBalanceDetailByOrderId(list.get(i));
+                    if(pbalance!=null){
+                        list.get(i).put("order_balance",pbalance.get("balance"));
+                    }else {
+                        list.get(i).put("order_balance",0);
+                    }
                 }
                 PageData pdMoney=orderInfoService.findSumTotalMoney(pd);
                 java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");

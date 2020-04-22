@@ -3,12 +3,15 @@ package com.mtnz.controller.app.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.mtnz.controller.app.preorder.model.PreOrder;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
+import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_pro.OrderProService;
+import com.mtnz.service.system.preorder.PreOrderService;
 import com.mtnz.service.system.product.ProductService;
 import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.store.StoreService;
@@ -61,6 +64,10 @@ public class MyAppUserController extends BaseController {
     private OrderProService orderProService;
     @Resource(name = "myStoreService")
     private MyStoreService myStoreService;
+    @Resource
+    private PreOrderService preOrderService;
+    @Resource(name = "balanceService")
+    private BalanceService balanceService;
 
     /**
      * 查询员工销售排名
@@ -167,6 +174,10 @@ public class MyAppUserController extends BaseController {
             BigDecimal total_owe = new BigDecimal(0);
             //单品总金额
             BigDecimal total_one = new BigDecimal(0);
+            //预支付金额
+            BigDecimal pre_price = new BigDecimal(0);
+            //账户抵扣的钱
+            BigDecimal order_balance = new BigDecimal(0);
             for (int i = 0; i < list.size(); i++) {
                 total_owe = total_owe.add(new BigDecimal( list.get(i).get("owe_money").toString()));
                 List<PageData> details = orderProService.findorderByOpenBillDetail(list.get(i));
@@ -205,6 +216,20 @@ public class MyAppUserController extends BaseController {
                 }
                 list.get(i).put("sub_total_level",sub_total_level);
                 list.get(i).put("details",details);
+                PreOrder preOrder = preOrderService.selectPreOrderByOrderInfo(list.get(i));
+                if(preOrder!=null){
+                    list.get(i).put("pre_price",preOrder.getPrice());
+                    pre_price =pre_price.add(preOrder.getPrice());
+                }else {
+                    list.get(i).put("pre_price",0);
+                }
+                PageData pbalance = balanceService.findBalanceDetailByOrderId(list.get(i));
+                if(pbalance!=null){
+                    list.get(i).put("order_balance",pbalance.get("balance"));
+                    order_balance = order_balance.add(new BigDecimal(pbalance.get("balance").toString()));
+                }else {
+                    list.get(i).put("order_balance",0);
+                }
             }
             BigDecimal total_level = new BigDecimal(0);
             PageData pageData = productService.selectSaleLevel(pd);
@@ -215,6 +240,8 @@ public class MyAppUserController extends BaseController {
             user.put("total_owe",total_owe);//欠款
             user.put("total_one",total_one);//单品总提成
             user.put("total_level",total_level);//销售总提成
+            user.put("pre_price",pre_price);//总预支付的钱
+            user.put("order_balance",order_balance);//总余额抵扣的钱
             pd.clear();
             pd.put("code", "1");
             pd.put("message", "正确返回数据!");
