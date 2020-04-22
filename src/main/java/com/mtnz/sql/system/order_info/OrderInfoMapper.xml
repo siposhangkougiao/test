@@ -18,6 +18,12 @@
         remarks,
         order_number,
         open_bill
+        <if test="product_sale !=null">
+            ,product_sale
+        </if>
+        <if test="total_sale !=null">
+            ,total_sale
+        </if>
         ) VALUE (
         #{store_id},
         #{customer_id},
@@ -34,6 +40,12 @@
         #{remarks},
         #{order_number},
         #{open_bill}
+        <if test="product_sale !=null">
+            ,#{product_sale}
+        </if>
+        <if test="total_sale !=null">
+            ,#{total_sale}
+        </if>
         )
     </insert>
 

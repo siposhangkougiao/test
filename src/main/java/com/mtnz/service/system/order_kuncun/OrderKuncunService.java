@@ -170,6 +170,50 @@ public class OrderKuncunService extends BaseController{
             }else{
                 pd_o.put("open_bill","");
             }
+            data = DateUtil.delHTMLTag(data);
+            data = data.replace("\r", "");
+            data = data.replace("\n", "");
+            data = data.replace("\\", "");
+            data = data.replace("\\\\", "");
+            data = data.replace("/", "");
+            data = data.replace(" ", "XINg");
+            Gson gson = new Gson();
+            List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
+            }.getType());   //获取订单商品列表
+            BigDecimal oneprice = new BigDecimal(0);
+            //查询员工的销售提成比例
+            for (int i = 0; i <list.size() ; i++) {
+                PageData dataone = new PageData();
+                dataone.put("uid",open_user);
+                dataone.put("product_id",list.get(i).get("product_id"));
+                PageData saleLevel = productService.findSaleLevel(dataone);
+                if(saleLevel!=null){
+                    PageData product = productService.findById(dataone);//查询出来商品的信息
+                    if(list.get(i).get("isli")!=null&&new BigDecimal(list.get(i).get("isli").toString()).compareTo(new BigDecimal(0))>0){//拆袋
+                        BigDecimal level = new BigDecimal(saleLevel.get("level").toString());
+                        BigDecimal price = new BigDecimal(list.get(i).get("num").toString())
+                                .divide(new BigDecimal(product.get("norms1").toString()),4,BigDecimal.ROUND_HALF_UP)
+                                .multiply(new BigDecimal(product.get("product_price").toString())).multiply(level);
+                        oneprice = oneprice.add(price);
+                    }else {
+                        BigDecimal level = new BigDecimal(saleLevel.get("level").toString());
+                        BigDecimal price = new BigDecimal(list.get(i).get("num").toString())
+                                .multiply(new BigDecimal(product.get("product_price").toString()))
+                                .multiply(level);
+                        oneprice = oneprice.add(price);
+                    }
+                }
+            }
+            BigDecimal allprice = new BigDecimal(0);
+            PageData selectSaleLevel = new PageData();
+            selectSaleLevel.put("uid",open_user);
+            PageData pageDatasa = productService.selectSaleLevel(selectSaleLevel);
+            if(pageDatasa!=null){
+                BigDecimal salelevel = new BigDecimal(pageDatasa.get("level").toString());
+                allprice = allprice.add(new BigDecimal(money).multiply(salelevel));
+            }
+            pd_o.put("product_sale",oneprice);
+            pd_o.put("total_sale",allprice);
             orderInfoService.save(pd_o);//添加主表订单信息
             //处理赠品
             if(orderGifts!=null&&orderGifts.size()>0){
@@ -242,17 +286,8 @@ public class OrderKuncunService extends BaseController{
                 }
 
             }
-            data = DateUtil.delHTMLTag(data);
-            data = data.replace("\r", "");
-            data = data.replace("\n", "");
-            data = data.replace("\\", "");
-            data = data.replace("\\\\", "");
-            data = data.replace("/", "");
-            data = data.replace(" ", "XINg");
-            Gson gson = new Gson();
-            List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
-            }.getType());   //获取订单商品列表
-            //System.out.println(">>>>>>>是否拆单："+list.get(0).get("isli").toString());
+
+
             PageData pd_cc=new PageData();
             pd_cc.put("customer_id",customer_id);
             pd_cc.put("billing_date",pd_o.getString("date"));

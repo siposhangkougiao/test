@@ -178,7 +178,14 @@ public class MyAppUserController extends BaseController {
             BigDecimal pre_price = new BigDecimal(0);
             //账户抵扣的钱
             BigDecimal order_balance = new BigDecimal(0);
+            //销售总提成
+            BigDecimal total_level = new BigDecimal(0);
+            //单品总提成
+            BigDecimal one_levle= new BigDecimal(0);
+
             for (int i = 0; i < list.size(); i++) {
+                total_level =total_level.add(new BigDecimal( list.get(i).get("total_sale").toString()));
+                one_levle =one_levle.add(new BigDecimal( list.get(i).get("product_sale").toString()));
                 total_owe = total_owe.add(new BigDecimal( list.get(i).get("owe_money").toString()));
                 List<PageData> details = orderProService.findorderByOpenBillDetail(list.get(i));
                 BigDecimal sub_total_level = new BigDecimal(0);
@@ -214,7 +221,8 @@ public class MyAppUserController extends BaseController {
                         }
                     }
                 }
-                list.get(i).put("sub_total_level",sub_total_level);
+                /*list.get(i).put("sub_total_level",sub_total_level);*/
+                list.get(i).put("sub_total_level",list.get(i).get("product_sale").toString());
                 list.get(i).put("details",details);
                 PreOrder preOrder = preOrderService.selectPreOrderByOrderInfo(list.get(i));
                 if(preOrder!=null){
@@ -231,14 +239,14 @@ public class MyAppUserController extends BaseController {
                     list.get(i).put("order_balance",0);
                 }
             }
-            BigDecimal total_level = new BigDecimal(0);
+            /*BigDecimal total_level = new BigDecimal(0);
             PageData pageData = productService.selectSaleLevel(pd);
             if(pageData!=null){
                 total_level = total_sale.multiply(new BigDecimal(pageData.get("level").toString()));
-            }
+            }*/
             user.put("total_sale",total_sale);//总销售额
             user.put("total_owe",total_owe);//欠款
-            user.put("total_one",total_one);//单品总提成
+            user.put("total_one",one_levle);//单品总提成
             user.put("total_level",total_level);//销售总提成
             user.put("pre_price",pre_price);//总预支付的钱
             user.put("order_balance",order_balance);//总余额抵扣的钱
