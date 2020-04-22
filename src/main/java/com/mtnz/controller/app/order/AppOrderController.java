@@ -25,10 +25,7 @@ import com.mtnz.service.system.returns.ReturnOrderInfoService;
 import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.supplier.SupplierOrderProService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
-import com.mtnz.util.AdminExtend;
-import com.mtnz.util.DateUtil;
-import com.mtnz.util.ExcelUtil_Extend;
-import com.mtnz.util.PageData;
+import com.mtnz.util.*;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -814,6 +811,12 @@ public class AppOrderController extends BaseController{
                     BigDecimal d = new BigDecimal(list1.get(i).get("purchase_price").toString());
                     a = a.add(b.divide(c,4,BigDecimal.ROUND_HALF_UP).multiply(d));
                 }
+                //查询赠品的成本
+                PageData pgift = new PageData();
+                pgift.put("start", MyTimesUtil.getStartTime());
+                pgift.put("end", MyTimesUtil.getEndTime());
+                PageData gites = orderGiftService.findtodaySum(pgift);
+                a =a.add(new BigDecimal(gites.get("totalprice").toString()));
                 receivable = String.valueOf(a);
                 List<PageData> list_count=orderInfoService.findGroupCustomer(pd);
                 Map<String, Object> maps = new HashedMap();
@@ -833,7 +836,7 @@ public class AppOrderController extends BaseController{
                 pd.put("owe_money",owe_money);
                 pd.put("discount_money",discount_money);
                 pd.put("count",String.valueOf(list_count.size()));
-                pd.put("receivable",receivable);
+                pd.put("receivable",receivable);//成本价
                 pd.put("return_money",return_money);
             }catch (Exception e){
                 pd.clear();

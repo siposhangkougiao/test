@@ -19,6 +19,25 @@ public class OrderGift {
 
     private Integer is_back;
 
+    private BigDecimal purchase_price;
+
+    private BigDecimal total_purchase_price;
+
+    public BigDecimal getTotal_purchase_price() {
+        return total_purchase_price;
+    }
+
+    public void setTotal_purchase_price(BigDecimal total_purchase_price) {
+        this.total_purchase_price = total_purchase_price;
+    }
+
+    public BigDecimal getPurchase_price() {
+        return purchase_price;
+    }
+
+    public void setPurchase_price(BigDecimal purchase_price) {
+        this.purchase_price = purchase_price;
+    }
 
     public Long getId() {
         return id;

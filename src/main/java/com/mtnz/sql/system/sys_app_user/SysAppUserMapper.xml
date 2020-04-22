@@ -323,7 +323,7 @@
     </select>
 
     <select id="findall" parameterType="pd" resultType="pd">
-        select uid,store_id from sys_app_user and is_delete =0
+        select uid,store_id from sys_app_user where is_delete =0
     </select>
 
     <update id="editStoreId">

@@ -1,5 +1,6 @@
 package com.mtnz.service.system.notepad.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.app.notepad.model.Notepad;
@@ -133,8 +134,11 @@ public class NotepadServiceImpl implements NotepadService {
             notepadType.setUserId(bean.getUserId());
             Integer count = notepadTypeMapper.selectCount(notepadType);
             if(count<1){
-                notepadTypeMapper.insertSelective(notepad.getNotepadType());
-                notepad.setTypeId(notepad.getNotepadType().getId());
+                NotepadType type = new NotepadType();
+                type.setUserId(bean.getUserId());
+                type.setName(notepad.getTypeName());
+                notepadTypeMapper.insertSelective(type);
+                notepad.setTypeId(type.getId());
             }else {
                 NotepadType type = notepadTypeMapper.selectOne(notepadType);
                 notepad.setTypeId(type.getId());

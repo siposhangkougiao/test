@@ -3,7 +3,7 @@
 <mapper namespace="OrderGiftMapper">
 
     <insert id="saveGift">
-        insert into order_gift (order_info_id,great_time,product_id
+        insert into order_gift (order_info_id,great_time,product_id,purchase_price,total_purchase_price
         <if test="num !=null">
             ,num
         </if>
@@ -11,7 +11,7 @@
             ,number
         </if>
         )values (
-        #{order_info_id},NOW(),#{product_id}
+        #{order_info_id},NOW(),#{product_id},#{purchase_price},#{total_purchase_price}
         <if test="num !=null">
             ,#{num}
         </if>
@@ -35,4 +35,8 @@
     <update id="editGiftBack">
         update order_gift set is_back  =#{is_back} where order_info_id = #{order_info_id}
     </update>
+
+    <select id="findtodaySum" resultType="pd" parameterType="pd">
+        select sum(total_purchase_price) as totalprice from order_gift where great_time between #{start} and #{end} and is_back =0
+    </select>
 </mapper>
