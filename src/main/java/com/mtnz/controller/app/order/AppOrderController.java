@@ -118,7 +118,10 @@ public class AppOrderController extends BaseController{
                 PageData user_balance = balanceService.findUserbalanceByUserId(pd_o);
                 PageData order_balance = balanceService.findBalanceDetailByOrderId(pd_o);
                 Integer isreturn = preOrderService.selectisreturn(pd_o);
-
+                if(order_balance!=null){
+                    pd_o.put("discount_money",new BigDecimal(pd_o.get("discount_money").toString())
+                            .subtract(new BigDecimal(order_balance.get("balance").toString())));
+                }
                 pd.clear();
                 pd.put("code","1");
                 pd.put("message","正确返回数据!");
@@ -816,7 +819,9 @@ public class AppOrderController extends BaseController{
                 pgift.put("start", MyTimesUtil.getStartTime());
                 pgift.put("end", MyTimesUtil.getEndTime());
                 PageData gites = orderGiftService.findtodaySum(pgift);
-                a =a.add(new BigDecimal(gites.get("totalprice").toString()));
+                if(gites!=null){
+                    a =a.add(new BigDecimal(gites.get("totalprice").toString()));
+                }
                 receivable = String.valueOf(a);
                 List<PageData> list_count=orderInfoService.findGroupCustomer(pd);
                 Map<String, Object> maps = new HashedMap();

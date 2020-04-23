@@ -195,12 +195,14 @@ public class OrderKuncunService extends BaseController{
                                 .divide(new BigDecimal(product.get("norms1").toString()),4,BigDecimal.ROUND_HALF_UP)
                                 .multiply(new BigDecimal(product.get("product_price").toString())).multiply(level);
                         oneprice = oneprice.add(price);
+                        list.get(i).put("product_sale",price);
                     }else {
                         BigDecimal level = new BigDecimal(saleLevel.get("level").toString());
                         BigDecimal price = new BigDecimal(list.get(i).get("num").toString())
                                 .multiply(new BigDecimal(product.get("product_price").toString()))
                                 .multiply(level);
                         oneprice = oneprice.add(price);
+                        list.get(i).put("product_sale",price);
                     }
                 }
             }
@@ -424,8 +426,8 @@ public class OrderKuncunService extends BaseController{
                                     pd_pp.put("kuncun_id","0");
                                     pd_pp.put("store_id",store_id);
                                     pd_pp.put("order_info_id",pd_o.get("order_info_id").toString());
-                                    pd_p.put("num","0");
-                                    pd_p.put("nums","0");
+                                    pd_pp.put("num","0");
+                                    pd_pp.put("nums","0");
                                     //pd_p.put("li_num",zong.divide(new BigDecimal(product.get("norms1").toString()),2).setScale(2,BigDecimal.ROUND_UP));
                                     //pd_p.put("li_nums",zong.divide(new BigDecimal(product.get("norms1").toString()),2).setScale(2,BigDecimal.ROUND_UP));
                                     pd_pp.put("all_number",zong);

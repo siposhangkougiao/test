@@ -18,6 +18,9 @@
             all_number,
             now_number,
             date
+            <if test="product_sale !=null">
+                ,product_sale
+            </if>
         )VALUE (
             #{order_info_id},
             #{product_name},
@@ -34,6 +37,9 @@
             #{all_number},
             #{now_number},
             now()
+        <if test="product_sale !=null">
+            ,#{product_sale}
+        </if>
         )
     </insert>
 

@@ -200,6 +200,7 @@ public class MyAppUserController extends BaseController {
                     BigDecimal now_number = new BigDecimal(details.get(j).get("now_number").toString()).divide(norms1,4,BigDecimal.ROUND_HALF_UP).multiply(product_price);
                     //销售总价
                     total_sale = total_sale.add(order_kuncun).add(now_number);
+                    details.get(j).put("more_price",details.get(j).get("product_sale"));//单个提成
                     PageData dataone = new PageData();
                     dataone.put("uid",uid);
                     dataone.put("product_id",details.get(j).get("product_id"));
@@ -210,12 +211,12 @@ public class MyAppUserController extends BaseController {
                         details.get(j).put("one_price",one_price);//单个提成*/
                         if(order_kuncun.compareTo(new BigDecimal(0))==1){
                             BigDecimal more_price = level.multiply(order_kuncun);
-                            details.get(j).put("more_price",more_price);//单个提成
+                            //details.get(j).put("more_price",more_price);//单个提成
                             total_one = total_one.add(more_price);
                             sub_total_level = sub_total_level.add(more_price);
                         }else if(now_number.compareTo(new BigDecimal(0))==1){
                             BigDecimal more_price = level.multiply(now_number);
-                            details.get(j).put("more_price",more_price);//单个提成
+                            //details.get(j).put("more_price",more_price);//单个提成
                             total_one = total_one.add(more_price);
                             sub_total_level = sub_total_level.add(more_price);
                         }
