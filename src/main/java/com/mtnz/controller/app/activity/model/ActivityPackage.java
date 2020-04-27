@@ -4,6 +4,7 @@ package com.mtnz.controller.app.activity.model;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Table(name = "activity_package")
 public class ActivityPackage {
@@ -20,7 +21,7 @@ public class ActivityPackage {
   private Long storeId;
 
   @Column(name = "user_id")
-  private Long user_id;
+  private Long userId;
 
   @Column(name = "total_money")
   private BigDecimal totalMoney;
@@ -36,6 +37,50 @@ public class ActivityPackage {
 
   @Column(name = "isDelete")
   private Integer isDelete;
+
+  @Transient
+  private ActivityPackageDetail activityPackageDetail;
+
+  @Transient
+  private List<ActivityPackageDetail> list;
+
+  @Transient
+  private Integer pageNumber;
+
+  @Transient
+  private Integer pageSize;
+
+  public Integer getPageNumber() {
+    return pageNumber;
+  }
+
+  public void setPageNumber(Integer pageNumber) {
+    this.pageNumber = pageNumber;
+  }
+
+  public Integer getPageSize() {
+    return pageSize;
+  }
+
+  public void setPageSize(Integer pageSize) {
+    this.pageSize = pageSize;
+  }
+
+  public List<ActivityPackageDetail> getList() {
+    return list;
+  }
+
+  public void setList(List<ActivityPackageDetail> list) {
+    this.list = list;
+  }
+
+  public ActivityPackageDetail getActivityPackageDetail() {
+    return activityPackageDetail;
+  }
+
+  public void setActivityPackageDetail(ActivityPackageDetail activityPackageDetail) {
+    this.activityPackageDetail = activityPackageDetail;
+  }
 
   public Long getId() {
     return id;
@@ -61,12 +106,12 @@ public class ActivityPackage {
     this.storeId = storeId;
   }
 
-  public Long getUser_id() {
-    return user_id;
+  public Long getUserId() {
+    return userId;
   }
 
-  public void setUser_id(Long user_id) {
-    this.user_id = user_id;
+  public void setUserId(Long userId) {
+    this.userId = userId;
   }
 
   public BigDecimal getTotalMoney() {
