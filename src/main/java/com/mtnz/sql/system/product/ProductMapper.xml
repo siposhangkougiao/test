@@ -186,14 +186,17 @@
                 status,
                 type2
             FROM product
-            WHERE store_id=#{store_id} and status='0'
-            and POSITION(#{product_name} IN getPY(product_name))
+            WHERE
+            store_id=#{store_id}
+            and status='0'
+            and ( getPY(product_name) like concat(concat('%',#{product_name}),'%')
+            OR POSITION(#{product_name} IN product_name))
             <if test="type !=null and type !=''">
                 and type = #{type}
             </if>
             ORDER BY date DESC
-        ) p
-        LEFT JOIN supplier s on s.supplier_id=p.supplier_id
+            ) p
+            LEFT JOIN supplier s on s.supplier_id=p.supplier_id
     </select>
 
     <!--  减库存  -->
