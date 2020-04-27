@@ -1,6 +1,8 @@
 package com.mtnz.controller.app.supplier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceOwe;
@@ -804,11 +806,16 @@ public class AppSupplierController extends BaseController{
 
     @RequestMapping(value = "findRelation",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findRelation(String supplier_id,String store_id){
+    public String findRelation(String supplier_id,String store_id,Integer pageNumber,Integer pageSize){
         logBefore(logger,"查询关联的商品");
         PageData pd=this.getPageData();
         java.text.DecimalFormat df = new java.text.DecimalFormat("########.0");
         try{
+            if(pageNumber==null||pageSize==null){
+                pageNumber =1;
+                pageSize=10;
+            }
+            PageHelper.startPage(pageNumber,pageSize);
             List<PageData> list=productService.findSupplierList(pd);
             for(int i=0;i<list.size();i++){
                 PageData pd_sp=orderKuncunService.findSumProduct(list.get(i));
@@ -826,9 +833,11 @@ public class AppSupplierController extends BaseController{
             }
             Map<String, Object> map = new HashedMap();
             map.put("object",list);
+            PageInfo pageInfo = new PageInfo(list);
             pd.clear();
             pd.put("object",map);
             pd.put("code","1");
+            pd.put("pageInfo",pageInfo);
             pd.put("message","正确返回数据");
         }catch (Exception e){
             pd.clear();
