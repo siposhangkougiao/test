@@ -186,7 +186,8 @@
                 status,
                 type2
             FROM product
-            WHERE store_id=#{store_id} and status='0' and product_name like concat('%',#{product_name},'%')
+            WHERE store_id=#{store_id} and status='0'
+            and POSITION(#{product_name} IN getPY(product_name))
             <if test="type !=null and type !=''">
                 and type = #{type}
             </if>

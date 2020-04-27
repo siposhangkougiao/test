@@ -334,7 +334,7 @@ public class OrderKuncunService extends BaseController{
                                     if(nowkucun.compareTo(zong)>-1){//现有库存大于实际购买的数量时
                                         lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                         lists.get(j).put("product_price",list.get(i).get("product_price").toString());
-                                        lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
+                                        lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
                                         lists.get(j).put("order_info_id",pd_o.get("order_info_id").toString());
                                         BigDecimal xianyou = new BigDecimal(lists.get(j).get("nums").toString());
                                         lists.get(j).put("num","0");
@@ -366,7 +366,7 @@ public class OrderKuncunService extends BaseController{
                                         if(j==lists.size()-1){
                                             lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                             lists.get(j).put("product_price",list.get(i).get("product_price").toString());
-                                            lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
+                                            lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
                                             lists.get(j).put("order_info_id",pd_o.get("order_info_id").toString());
                                             lists.get(j).put("num","0");
                                             lists.get(j).put("nums","0");
@@ -384,7 +384,7 @@ public class OrderKuncunService extends BaseController{
                                         }else{
                                             lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                             lists.get(j).put("product_price",list.get(i).get("product_price").toString());
-                                            lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
+                                            lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
                                             lists.get(j).put("order_info_id",pd_o.get("order_info_id").toString());
                                             lists.get(j).put("store_id",store_id);
                                             lists.get(j).put("num","0");
@@ -407,7 +407,7 @@ public class OrderKuncunService extends BaseController{
                                 if (pd_p!=null){
                                     pd_p.put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                     pd_p.put("product_price",list.get(i).get("product_price").toString());
-                                    pd_p.put("purchase_price",pd_p.getString("purchase_price"));
+                                    pd_p.put("purchase_price",pd_p.get("purchase_price").toString());
                                     pd_p.put("order_info_id",pd_o.get("order_info_id").toString());
                                     pd_p.put("num","0");
                                     pd_p.put("nums","0");
@@ -422,7 +422,7 @@ public class OrderKuncunService extends BaseController{
                                     pd_pp.put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                     pd_pp.put("product_price",pd_pp.get("product_price").toString());
                                     if(pd_pp!=null&&!pd_pp.get("purchase_price").toString().equals("0")){
-                                        pd_pp.put("purchase_price",pd_pp.getString("purchase_price"));
+                                        pd_pp.put("purchase_price",pd_pp.get("purchase_price").toString());
                                     }else{
                                         pd_pp.put("purchase_price",list.get(i).get("product_price").toString());
                                     }
@@ -488,7 +488,7 @@ public class OrderKuncunService extends BaseController{
                             if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){//现有库存大于实际购买的数量时
                                 lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                 lists.get(j).put("product_price",list.get(i).get("product_price").toString());
-                                lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
+                                lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
                                 lists.get(j).put("order_info_id",pd_o.get("order_info_id").toString());
                                 lists.get(j).put("num",kucun);
                                 lists.get(j).put("store_id",store_id);
@@ -506,7 +506,7 @@ public class OrderKuncunService extends BaseController{
                                 if(j==lists.size()-1){
                                     lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                     lists.get(j).put("product_price",list.get(i).get("product_price").toString());
-                                    lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
+                                    lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
                                     lists.get(j).put("order_info_id",pd_o.get("order_info_id").toString());
                                     lists.get(j).put("num",kucun);
                                     lists.get(j).put("store_id",store_id);
@@ -522,7 +522,7 @@ public class OrderKuncunService extends BaseController{
                                 }else{
                                     lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                     lists.get(j).put("product_price",list.get(i).get("product_price").toString());
-                                    lists.get(j).put("purchase_price",lists.get(j).getString("purchase_price"));
+                                    lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
                                     lists.get(j).put("order_info_id",pd_o.get("order_info_id").toString());
                                     lists.get(j).put("store_id",store_id);
                                     lists.get(j).put("num",lists.get(j).get("nums").toString());
@@ -544,7 +544,7 @@ public class OrderKuncunService extends BaseController{
                         if (pd_p!=null){
                             pd_p.put("order_pro_id",list.get(i).get("order_pro_id").toString());
                             pd_p.put("product_price",list.get(i).get("product_price").toString());
-                            pd_p.put("purchase_price",pd_p.getString("purchase_price"));
+                            pd_p.put("purchase_price",pd_p.get("purchase_price").toString());
                             pd_p.put("order_info_id",pd_o.get("order_info_id").toString());
                             pd_p.put("num",kucun);
                             pd_p.put("date",date);
@@ -558,7 +558,7 @@ public class OrderKuncunService extends BaseController{
                             pd_pp.put("order_pro_id",list.get(i).get("order_pro_id").toString());
                             pd_pp.put("product_price",pd_pp.get("product_price").toString());
                             if(pd_pp!=null&&!pd_pp.get("purchase_price").toString().equals("0")){
-                                pd_pp.put("purchase_price",pd_pp.getString("purchase_price"));
+                                pd_pp.put("purchase_price",pd_pp.get("purchase_price").toString());
                             }else{
                                 pd_pp.put("purchase_price",list.get(i).get("product_price").toString());
                             }
