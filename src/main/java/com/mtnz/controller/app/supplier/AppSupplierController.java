@@ -3,6 +3,7 @@ package com.mtnz.controller.app.supplier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceOwe;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
@@ -15,6 +16,7 @@ import com.mtnz.service.system.return_supplier.ReturnSupplierOrderProService;
 import com.mtnz.service.system.supplier.SupplierOrderInfoService;
 import com.mtnz.service.system.supplier.SupplierOrderProService;
 import com.mtnz.service.system.supplier.SupplierService;
+import com.mtnz.sql.system.supplierbalance.SupplierBalanceOweMapper;
 import com.mtnz.util.*;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Controller;
@@ -59,6 +61,8 @@ public class AppSupplierController extends BaseController{
     private ReturnSupplierOrderProService returnSupplierOrderProService;
     @Resource(name = "repaymentsService")
     private RepaymentsService repaymentsService;
+    @Resource
+    private SupplierBalanceOweMapper supplierBalanceOweMapper;
 
 
     /**
@@ -204,8 +208,17 @@ public class AppSupplierController extends BaseController{
                     }else{
                         list.get(i).put("sale_money","0.0");
                     }
-
                     list.get(i).put("return_money","0.0");
+                    SupplierBalanceOwe supplierBalanceOwe = new SupplierBalanceOwe();
+                    supplierBalanceOwe.setSupplierId(Long.valueOf(list.get(i).get("supplier_id").toString()));
+                    supplierBalanceOwe.setStoreId(Long.valueOf(list.get(i).get("store_id").toString()));
+                    SupplierBalanceOwe BalanceOwe = supplierBalanceOweMapper.selectOne(supplierBalanceOwe);
+                    if(BalanceOwe!=null){
+                        list.get(i).put("prePrice",BalanceOwe.getPrePrice());
+                    }else {
+                        list.get(i).put("prePrice",new BigDecimal(0));
+                    }
+
                 }
                 axx.setScale(2,BigDecimal.ROUND_HALF_UP);
                 Map<String, Object> map = new HashedMap();
@@ -307,6 +320,16 @@ public class AppSupplierController extends BaseController{
                     }
 
                     list.get(i).put("return_money","0.0");
+
+                    SupplierBalanceOwe supplierBalanceOwe = new SupplierBalanceOwe();
+                    supplierBalanceOwe.setSupplierId(Long.valueOf(list.get(i).getString("supplier_id")));
+                    supplierBalanceOwe.setStoreId(Long.valueOf(list.get(i).getString("store_id")));
+                    SupplierBalanceOwe BalanceOwe = supplierBalanceOweMapper.selectOneByExample(supplierBalanceOwe);
+                    if(BalanceOwe!=null){
+                        list.get(i).put("prePrice",BalanceOwe.getPrePrice());
+                    }else {
+                        list.get(i).put("prePrice",new BigDecimal(0));
+                    }
                 }
                 Map<String, Object> map = new HashedMap();
                 map.put("data", list);

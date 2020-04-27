@@ -4,6 +4,8 @@ package com.mtnz.controller.app.store;
  * 新建 2020-04-07
  */
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.base.BaseController;
 
@@ -13,6 +15,7 @@ import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.util.*;
+import org.apache.http.util.TextUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -41,6 +44,16 @@ public class MyAppStoreController extends BaseController{
     @Resource(name = "productService")
     private ProductService productService;
 
+    public static boolean isMobileNO(String mobiles) {
+        String telRegex = "[1][3456789]\\d{9}";
+        // "[1]"代表第1位为数字1，"[3578]"代表第二位可以为3、5、8中的一个，"\\d{9}"代表后面是可以是0～9的数字，有9位。
+        if (TextUtils.isEmpty(mobiles)) {
+            return false;
+        } else
+            return mobiles.matches(telRegex);
+    }
+
+
     /**
      * 获取注册验证码
      * @param phone
@@ -52,6 +65,10 @@ public class MyAppStoreController extends BaseController{
         logBefore(logger,"获取短信验证码");
         PageData pd=this.getPageData();
         try{
+            phone = RASTest.getKeyDES(phone.trim());
+            if(!isMobileNO(phone)){
+                return getMessage("-101","非法请求");
+            }
             pd.put("username",phone);
             PageData pd_u=sysAppUserService.findUserName(pd);
             if(pd_u!=null){
@@ -60,9 +77,6 @@ public class MyAppStoreController extends BaseController{
             Map<String, Object> map = new HashMap();
             String yzm = String.valueOf((int) ((Math.random() * 9 + 1) * 1000));
             System.out.println("验证码为：" + yzm);
-            SmsBao sms = new SmsBao();
-            String context = "验证码是【" + yzm + "】有效时间:5分钟";
-            String result = sms.sendSMS(phone, context);
             PageData pd2 = new PageData();
             pd2.put("code", yzm);
             pd2.put("phone", phone);
@@ -79,6 +93,10 @@ public class MyAppStoreController extends BaseController{
                 return getMessage("2","验证码已发送,五分钟后重试");
             }
             myStoreService.saveyzm(pd2);
+
+            SmsBao sms = new SmsBao();
+            String context = "验证码是【" + yzm + "】有效时间:5分钟";
+            String result = sms.sendSMS(phone, context);
             if ("0".equals(result.split(",")[0])) {
                 map.put("YZM", yzm);
             } else {
@@ -229,14 +247,29 @@ public class MyAppStoreController extends BaseController{
         logBefore(logger,"修改店铺信息");
         PageData pd=this.getPageData();
         try{
-            myStoreService.editStore(pd);
+            if(is_pass==null){
+                pd.put("pass_time",new Date());
+                if(door_first==null||license_img==null){
+                    return getMessage("-101","请完善图片信息");
+                }
+            }
             if(is_pass!=null&&is_pass==1){
+                pd.put("over_time",new Date());
                 PageData pageData = storeService.findById(pd);
                 if(pageData.get("phoneTow")!=null){
                     SmsBao smsBao = new SmsBao();
                     smsBao.sendSMS(pageData.get("phoneTow").toString(),"您的店铺已认证通过！请使用手机号尾号："+pageData.get("phoneTow").toString().substring(7)+"登录，即可享用VIP权益");
                 }
             }
+            if(is_pass!=null&&is_pass==2){
+                pd.put("over_time",new Date());
+                PageData pageData = storeService.findById(pd);
+                if(pageData.get("phoneTow")!=null){
+                    SmsBao smsBao = new SmsBao();
+                    smsBao.sendSMS(pageData.get("phoneTow").toString(),"很遗憾，您的店铺认证未能通过！请确保门头照、营业执照清晰可见，感谢理解！");
+                }
+            }
+            myStoreService.editStore(pd);
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
@@ -269,6 +302,14 @@ public class MyAppStoreController extends BaseController{
         try{
 
             List<PageData> list = myStoreService.findRegisterList(pd);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (int i = 0; i < list.size(); i++) {
+                if(list.get(i).get("pass_time")!=null){
+                    System.out.println(">>>>>>>时间在这里"+JSONObject.toJSONString(list.get(i).get("pass_time")));
+                    String timez= sdf.format((Date) list.get(i).get("pass_time"));
+                    list.get(i).put("pass_time",timez);
+                }
+            }
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");

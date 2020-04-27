@@ -13,6 +13,7 @@ import com.mtnz.service.system.recharge.RechargeService;
 import com.mtnz.service.system.shorts.ShortService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
+import com.mtnz.service.system.user.LoginSaltService;
 import com.mtnz.service.system.user.UserService;
 import com.mtnz.util.*;
 import com.mtnz.util.utils.GetWxOrderno;
@@ -52,6 +53,8 @@ public class AppStoreController extends BaseController{
     private AlreadyService alreadyService;
     @Resource(name = "customerService")
     public CustomerService customerService;
+    @Resource
+    private LoginSaltService loginSaltService;
 
     /**
      *
@@ -940,9 +943,17 @@ public class AppStoreController extends BaseController{
 
             sysAppUserService.editStoreId(pd);
 
+            //给前端返回token
+            Long tokenId = Long.valueOf(store_id);
+            loginSaltService.delete(tokenId);
+            String salt = GetStrings.getRandomNickname(4);
+            loginSaltService.insert(tokenId,salt);
+            String token = Md5Util.md5(tokenId.toString(),salt);
+            System.out.println(">>>>>>返回的token："+token);
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
+            pd.put("token",token);
         }catch (Exception e){
             pd.clear();
             pd.put("code","2");
@@ -958,6 +969,7 @@ public class AppStoreController extends BaseController{
         }
         return str;
     }
+
 
     /**
      * 停用  启用店铺

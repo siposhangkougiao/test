@@ -1,8 +1,13 @@
 package com.mtnz.interceptor;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.mtnz.controller.app.user.model.LoginSalt;
+import com.mtnz.service.system.user.LoginSaltService;
+import com.mtnz.util.Md5Util;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
@@ -19,10 +24,39 @@ import com.mtnz.util.Jurisdiction;
  */
 public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
+	@Resource
+	LoginSaltService loginSaltService;
+
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-		// TODO Auto-generated method stub
 		String path = request.getServletPath();
+		System.out.println("请求的路径是:"+path);
+		//System.out.println("ip:"+request.getHeader("ip"));
+		if(!path.equals("/app/user/login")&&!path.equals("/app/mystore/getcode")&&!path.equals("/app/mystore/saveStore")
+				&&!path.equals("/app/statistical")){
+			String token = request.getHeader("token");
+			String storeId = request.getHeader("storeId");
+			System.out.println("token:"+token+",storeId:"+storeId);
+			if(StringUtils.isBlank(token)||StringUtils.isBlank(storeId)){
+				//response.setStatus(-802);//缺少参数
+				response.addHeader("status","-802");
+				return false;
+			}
+			LoginSalt loginSalt = loginSaltService.select(storeId);
+			if(loginSalt==null){
+				//response.setStatus(-803);//用户未找到
+				response.addHeader("status","-803");
+				return false;
+			}
+			String mytoken = Md5Util.md5(storeId,loginSalt.getSalt());
+			System.out.println(">>>>>>>"+mytoken);
+			if(!token.equals(mytoken)){
+				//response.setStatus(-801);//token不正确
+				response.addHeader("status","-801");
+				return false;
+			}
+		}
+
 		if (path.matches(Const.NO_INTERCEPTOR_PATH)) {
 			return true;
 		} else {

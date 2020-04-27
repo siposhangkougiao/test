@@ -1,15 +1,18 @@
 package com.mtnz.controller.app.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mtnz.controller.app.statistical.model.StLogin;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
+import com.mtnz.service.system.statistical.StatisticalService;
 import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
+import com.mtnz.service.system.user.LoginSaltService;
 import com.mtnz.service.system.yzm.YzmService;
 import com.mtnz.util.*;
 import org.apache.commons.collections.map.HashedMap;
@@ -27,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -56,6 +60,8 @@ public class AppUserController extends BaseController {
     private OrderInfoService orderInfoService;
     @Resource(name = "myStoreService")
     private MyStoreService myStoreService;
+    @Resource
+    private LoginSaltService loginSaltService;
 
 
     /**
@@ -229,6 +235,9 @@ public class AppUserController extends BaseController {
         return str;
     }
 
+    @Resource
+    private StatisticalService statisticalService;
+
     /**
      * @param username 用户名
      * @param password 密码
@@ -285,6 +294,8 @@ public class AppUserController extends BaseController {
                         PageData user = integralService.findIntegralSetup(userpage);
                         if(user!=null){
                             map.put("integral", user.get("number"));
+                        }else {
+                            map.put("integral", new BigDecimal(0));
                         }
                         sysAppUserService.editLoginDate(pd_u);
                         //查询店铺是否审核通过
@@ -303,7 +314,16 @@ public class AppUserController extends BaseController {
                         pd.put("code", "1");
                         pd.put("message", "正确返回数据!");
                         pd.put("data", map);
-
+                        //给前端返回token
+                        Long tokenId = Long.valueOf(pd_u.get("store_id").toString());
+                        loginSaltService.delete(tokenId);
+                        String salt = GetStrings.getRandomNickname(4);
+                        loginSaltService.insert(tokenId,salt);
+                        String token = Md5Util.md5(tokenId.toString(),salt);
+                        pd.put("token",token);
+                        System.out.println(">>>>>>返回的token："+token);
+                        //记录登录次数
+                        statisticalService.insertLogin(Long.valueOf(pd_u.get("uid").toString()));
                     } else {
                         pd.clear();
                         pd.put("code", "2");
@@ -330,6 +350,7 @@ public class AppUserController extends BaseController {
         }
         return str;
     }
+
 
     /**
      * 添加员工账号
@@ -652,9 +673,7 @@ public class AppUserController extends BaseController {
                     if (list_yue.size() < 5) {
                         String yzm = String.valueOf((int) ((Math.random() * 9 + 1) * 1000));
                         System.out.println("验证码为：" + yzm);
-                        SmsBao sms = new SmsBao();
-                        String context = "验证码是【" + yzm + "】,有效时间:5分钟";
-                        String result = sms.sendSMS(USERNAME, context);
+
                         PageData pd2 = new PageData();
                         pd2.put("YZM", yzm);
                         pd2.put("PHONE", USERNAME);
@@ -668,6 +687,9 @@ public class AppUserController extends BaseController {
                         pd2.put("YUE", DateUtil.getDay());
                         pd2.put("IP", ip);
                         yzmService.save(pd2);
+                        SmsBao sms = new SmsBao();
+                        String context = "验证码是【" + yzm + "】,有效时间:5分钟";
+                        String result = sms.sendSMS(USERNAME, context);
                         if ("0".equals(result.split(",")[0])) {
                             map.put("YZM", yzm);
                         } else {

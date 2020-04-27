@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.app.notepad.model.Notepad;
 import com.mtnz.controller.app.notepad.model.NotepadType;
+import com.mtnz.controller.base.ServiceException;
 import com.mtnz.service.system.notepad.NotepadService;
 import com.mtnz.sql.system.notepad.NotepadMapper;
 import com.mtnz.sql.system.notepad.NotepadTypeMapper;
@@ -187,6 +188,9 @@ public class NotepadServiceImpl implements NotepadService {
     public List<Notepad> selectlistnopage(Notepad notepad) throws ParseException {
         Example example = new Example(Notepad.class);
         example.and().andEqualTo("userId",notepad.getUserId());
+        if(notepad.getUserId()==null){
+            throw new ServiceException(-105,"userId不能为空",null);
+        }
         example.and().andEqualTo("isDelete",0);
         if(notepad.getTypeName()!=null){
             example.and().andEqualTo("typeName",notepad.getTypeName());

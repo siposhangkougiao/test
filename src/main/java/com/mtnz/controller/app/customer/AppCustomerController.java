@@ -271,8 +271,11 @@ public class AppCustomerController extends BaseController{
                         list.get(i).put("integral",new BigDecimal(0));
                     }
                     //查询用户账户余额
+                    if(pageData.get("customer_id")==null){
+                        return getMessage("-101","客户id不能为空");
+                    }
                     PageData ub = new PageData();
-                    ub.put("user_id",pageData.get("customer_id"));
+                    ub.put("user_id",pageData.get("customer_id").toString());
                     PageData balance = balanceService.findUserbalanceByUserId(ub);
                     if(balance==null){
                         PageData customer = customerService.findById(pageData);
@@ -280,7 +283,7 @@ public class AppCustomerController extends BaseController{
                         pda.put("name",customer.get("name"));
                         pda.put("balance",new BigDecimal(0));
                         pda.put("user_id",pageData.get("customer_id"));
-                        balanceService.saveBalance(pda);
+                        //balanceService.saveBalance(pda);
                         list.get(i).put("prepayment",new BigDecimal(0));
                     }else {
                         list.get(i).put("prepayment",balance.get("balance"));
@@ -597,6 +600,9 @@ public class AppCustomerController extends BaseController{
                     PageData pageData = list.get(i);
                     ub.put("user_id",list.get(i).get("customer_id"));
                     ub.put("customer_id",list.get(i).get("customer_id"));
+                    if(ub.get("customer_id")==null){
+                        return getMessage("-101","客户id不能为空");
+                    }
                     PageData balance = balanceService.findUserbalanceByUserId(ub);
                     if(balance==null){
                         PageData customer = customerService.findById(ub);
@@ -604,7 +610,7 @@ public class AppCustomerController extends BaseController{
                         pda.put("name",customer.get("name"));
                         pda.put("balance",new BigDecimal(0));
                         pda.put("user_id",ub.get("customer_id"));
-                        balanceService.saveBalance(pda);
+                        //balanceService.saveBalance(pda);
                         list.get(i).put("prepayment",new BigDecimal(0));
                     }else {
                         list.get(i).put("prepayment",balance.get("balance"));

@@ -29,6 +29,8 @@
             <if test="door_first !=null and door_first !=''">door_first = #{door_first},</if>
             <if test="license_img !=null and license_img !=''">license_img = #{license_img},</if>
             <if test="is_pass !=null and is_pass !=''">is_pass = #{is_pass},</if>
+            <if test="pass_time !=null">pass_time = #{pass_time},</if>
+            <if test="over_time !=null">over_time = #{over_time},</if>
         </set>
         where store_id = #{store_id}
     </update>
@@ -36,8 +38,9 @@
     <select id="findRegisterList" resultType="pd" parameterType="pd">
         select * from store
         <where>
+            pass_time is not null
             <if test="is_pass !=null">
-                is_pass = #{is_pass}
+                and is_pass = #{is_pass}
             </if>
         </where>
         order by store_id desc

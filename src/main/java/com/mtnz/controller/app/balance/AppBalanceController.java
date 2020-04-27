@@ -9,7 +9,9 @@ import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
 import com.mtnz.service.system.order_pro.OrderProService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
+import com.mtnz.util.MD5;
 import com.mtnz.util.PageData;
+import com.mtnz.util.utils.MD5Util;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -36,6 +38,10 @@ public class AppBalanceController extends BaseController{
     @Resource(name = "customerService")
     private CustomerService customerService;
 
+    public static void main(String[] args) {
+        System.out.println(MD5.md5(MD5.md5("123456") + "DhNd"));
+    }
+
     /**
      * 查询用户预付款余额
      * @param user_id
@@ -47,6 +53,9 @@ public class AppBalanceController extends BaseController{
         logBefore(logger,"积分管理页面查询");
         PageData pd=this.getPageData();
         try{
+            if(pd.get("user_id")==null){
+                return getMessage("-101","客户id不能为空");
+            }
             PageData pageData = balanceService.findUserbalanceByUserId(pd);
             if(pageData==null){
                 PageData user = new PageData();

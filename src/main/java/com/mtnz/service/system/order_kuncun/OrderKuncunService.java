@@ -248,6 +248,9 @@ public class OrderKuncunService extends BaseController{
             //处理账户余额问题
             if(balance!=null&&balance.compareTo(new BigDecimal(0))>0){
                 PageData balanceuser = new PageData();
+                if(customer_id==null){
+                    return getMessage("-101","客户id不能为空");
+                }
                 balanceuser.put("user_id",customer_id);
                 PageData pda = balanceService.findUserbalanceByUserId(balanceuser);
                 BigDecimal ubalnce =new BigDecimal(0);
