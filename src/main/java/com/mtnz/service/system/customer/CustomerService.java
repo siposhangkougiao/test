@@ -27,8 +27,8 @@ public class CustomerService {
         return (PageData) daoSupport.findForObject("CustomerMapper.findById",pd);
     }
 
-    public List<PageData> dataListPage(Page page) throws Exception {
-        return (List<PageData>) daoSupport.findForList("CustomerMapper.datalistPage",page);
+    public List<PageData> dataListPage(PageData pd) throws Exception {
+        return (List<PageData>) daoSupport.findForList("CustomerMapper.datalistPage",pd);
     }
 
     public void  updateCustomer(PageData pd) throws Exception {

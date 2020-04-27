@@ -123,7 +123,7 @@
             ),
             0
             ) AS discountmoney  我改的部分-->
-    <select id="datalistPage" parameterType="page" resultType="pd">
+    <select id="datalistPage" parameterType="pd" resultType="pd">
         SELECT
             c.customer_id,
             c.store_id,
@@ -147,36 +147,36 @@
             c.remarks,
             c.role
         FROM customer c
-        where c.store_id=#{pd.store_id} and c.status!='2' and c.status!='3'
-        <if test="pd.state1!=null and pd.state1!='' and pd.state1==1">
+        where c.store_id=#{store_id} and c.status!='2' and c.status!='3'
+        <if test="state1!=null and state1!='' and state1==1">
             and (c.status='1' or c.status='4')
         </if>
-        <if test="pd.state2!=null and pd.state2!='' and pd.state2==1">
+        <if test="state2!=null and pd.state2!='' and state2==1">
             and c.owe>0
         </if>
         <!--<if test="pd.state3!=null and pd.state3!='' and pd.state3==1">
             and c.prepayment>0
         </if>-->
-        <if test="pd.address!=null and pd.address!=''">
+        <if test="address!=null and address!=''">
             and (
-            POSITION(#{pd.address} IN `province`)
+            POSITION(#{address} IN `province`)
             OR
-            POSITION(#{pd.address} IN `city`)
+            POSITION(#{address} IN `city`)
             OR
-            POSITION(#{pd.address} IN `county`)
+            POSITION(#{address} IN `county`)
             OR
-            POSITION(#{pd.address} IN `street`)
+            POSITION(#{address} IN `street`)
             OR
-            POSITION(#{pd.address} IN `address`)
+            POSITION(#{address} IN `address`)
             )
         </if>
-        <if test="pd.status==0">
+        <if test="status==0">
             ORDER BY c.status,c.billing_date DESC
         </if>
-        <if test="pd.status==1">
+        <if test="status==1">
             ORDER BY c.status,c.billing_date
         </if>
-        <if test="pd.status==2">
+        <if test="status==2">
             ORDER BY c.status,c.input_date DESC
         </if>
     </select>

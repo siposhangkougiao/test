@@ -2,6 +2,8 @@ package com.mtnz.controller.app.customer;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mtnz.controller.base.BaseController;
@@ -209,10 +211,10 @@ public class AppCustomerController extends BaseController{
     @RequestMapping(value = "findCustomer",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findCustomer(String store_id,String pageNum,String status,String state1,
-                               String state2,String state3,String address){
+                               String state2,String state3,String address,Integer pageNumber,Integer pageSize){
         logBefore(logger,"查询客户");
         PageData pd=this.getPageData();
-        Page page=new Page();
+        /*Page page=new Page();*/
         java.text.DecimalFormat df = new java.text.DecimalFormat("##########.00");
         if(store_id==null||store_id.length()==0||status==null||status.length()==0){
             pd.clear();
@@ -221,13 +223,18 @@ public class AppCustomerController extends BaseController{
         }else{
             try {
                 String message="正确返回数据!";
-                if (pageNum == null || pageNum.length() == 0) {
+                /*if (pageNum == null || pageNum.length() == 0) {
                     pageNum = "1";
+                }*/
+                //page.setShowCount(10);
+                //page.setCurrentPage(Integer.parseInt(pageNum));
+                if(pageNumber==null||pageSize==null){
+                    pageNumber =1;
+                    pageSize = 100;
                 }
-                page.setPd(pd);
-                page.setShowCount(10);
-                page.setCurrentPage(Integer.parseInt(pageNum));
-                List<PageData> list=customerService.dataListPage(page);
+                PageHelper.startPage(pageNumber,pageSize);
+                List<PageData> list=customerService.dataListPage(pd);
+                PageInfo pageInfo = new PageInfo(list);
                 if(state3!=null&&state3.equals("1")){
                     Iterator<PageData> iterator = list.iterator();
                     while(iterator.hasNext()){
@@ -315,17 +322,19 @@ public class AppCustomerController extends BaseController{
                         list.get(i).put("role",list.get(i).get("role").toString());
                     }
                 }
-                if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
+                /*if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
                     map.put("data", list);
                 }else{
                     map.put("message",message);
                     map.put("data",list);
-                }
+                }*/
+                map.put("message",message);
+                map.put("data",list);
                 pd.clear();
                 pd.put("object", map);
                 pd.put("message", message);
                 pd.put("code", "1");
-                pd.put("pageTotal",String.valueOf(page.getTotalPage()));
+                pd.put("pageTotal",pageInfo.getTotal());
                 pd.put("count",pd_c.get("count").toString());
                 pd.put("money",money);
                 pd.put("totlepayment",totlepayment);
