@@ -19,7 +19,6 @@ import com.mtnz.service.system.returns.ReturnOrderProService;
 import com.mtnz.util.DateUtil;
 import com.mtnz.util.PageData;
 import com.mtnz.util.ReturnOrderExtend;
-import com.mtnz.util.ReturnSupplierOrderExtend;
 import org.apache.commons.collections.map.HashedMap;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,16 +28,13 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-/*
-    Created by xxj on 2018\5\30 0030.  
- */
+
 @Controller
 @RequestMapping(value = "app/return",produces = "text/html;charset=UTF-8")
 public class AppReturnController extends BaseController{
@@ -309,10 +305,13 @@ public class AppReturnController extends BaseController{
                     String kucun=list.get(i).get("num").toString();//需要退货的数量
                     if(lists!=null&&lists.size()!=0){
                         for(int j=0;j<lists.size();j++){
-                            int in=(new Double(kucun)).intValue();//需要退货的数量
+                            //int in=(new Double(kucun)).intValue();//需要退货的数量
+                            BigDecimal in=new BigDecimal(kucun);//需要退货的数量
                             //如果订单数量大于等于要退货的数量
-                            if(Integer.valueOf(lists.get(j).get("nums").toString())>in){
-                                lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-in);
+                            //if(Integer.valueOf(lists.get(j).get("nums").toString())>in){
+                            if(new BigDecimal(lists.get(j).get("nums").toString()).compareTo(in)==1){
+                                //lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-in);
+                                lists.get(j).put("nums",new BigDecimal(lists.get(j).get("nums").toString()).subtract(in));
                                 //修改订单的库存
                                 orderKuncunService.editNums(lists.get(j));
                                 lists.get(j).put("nums",in);
@@ -320,8 +319,9 @@ public class AppReturnController extends BaseController{
                                 kunCunService.editJiaNums(lists.get(j));
                                 kucun="0";
                             }else{//全部退货
-                                Integer kuncuns=in-Integer.valueOf(lists.get(j).get("nums").toString());
-                                kucun=kuncuns.toString();
+                                //Integer kuncuns=in-Integer.valueOf(lists.get(j).get("nums").toString());
+                                BigDecimal kuncuns=in.subtract(new BigDecimal(lists.get(j).get("nums").toString()));
+                                kucun=String.valueOf(kuncuns);
                                 //修改库存表的数据
                                 kunCunService.editJiaNums(lists.get(j));
                                 lists.get(j).put("nums",0);
@@ -649,31 +649,39 @@ public class AppReturnController extends BaseController{
                     Integer aa = 0;
                     for(int j=0;j<listKun.size();j++){
                         System.out.println("查询出来的库存id："+listKun.get(j).get("kuncun_id"));
-                        int tuihuo=Integer.valueOf(listKun.get(j).get("num").toString())-Integer.valueOf(listKun.get(j).get("nums").toString());
-                        if(tuihuo>=Integer.valueOf(kucun)){
-                            listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+Integer.valueOf(kucun));
+                        //int tuihuo=Integer.valueOf(listKun.get(j).get("num").toString())-Integer.valueOf(listKun.get(j).get("nums").toString());
+                        BigDecimal tuihuo= new BigDecimal(listKun.get(j).get("num").toString()).subtract(new BigDecimal(listKun.get(j).get("nums").toString()));
+                        //if(tuihuo>=Integer.valueOf(kucun)){
+                        if(tuihuo.compareTo(new BigDecimal(kucun))>-1){
+                            //listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+Integer.valueOf(kucun));
+                            listKun.get(j).put("nums",new BigDecimal(listKun.get(j).get("nums").toString()).add(new BigDecimal(kucun)));
                             orderKuncunService.editNums(listKun.get(j));
                             if(aa==1){
                                 System.out.println("走这里了");
-                                listKun.get(j).put("nums",Integer.valueOf(kucun));
+                                //listKun.get(j).put("nums",Integer.valueOf(kucun));
+                                listKun.get(j).put("nums",new BigDecimal(kucun));
                             }else {
-                                listKun.get(j).put("nums",Integer.valueOf(list.get(i).get("num").toString()));
+                                //listKun.get(j).put("nums",Integer.valueOf(list.get(i).get("num").toString()));
+                                listKun.get(j).put("nums",new BigDecimal(list.get(i).get("num").toString()));
                             }
                             System.out.println(">>>>>>>1111111"+listKun.get(j).get("nums"));
                             kunCunService.editJianNumss(listKun.get(j));
                             kucun="0";
                         }else{
-                            listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+tuihuo);
+                            //listKun.get(j).put("nums",Integer.valueOf(listKun.get(j).get("nums").toString())+tuihuo);
+                            listKun.get(j).put("nums",new BigDecimal(listKun.get(j).get("nums").toString()).add(tuihuo));
                             orderKuncunService.editNums(listKun.get(j));
                             listKun.get(j).put("nums",tuihuo);
                             System.out.println(">>>>>>>222222"+listKun.get(j).get("nums"));
                             kunCunService.editJianNumss(listKun.get(j));
-                            int kucuns=Integer.valueOf(kucun)-tuihuo;
+                            //int kucuns=Integer.valueOf(kucun)-tuihuo;
+                            BigDecimal kucuns=new BigDecimal(kucun).subtract(tuihuo);
                             kucun=String.valueOf(kucuns);
                             aa = 1;
                         }
                     }
-                    pdOrderpro.put("num",list.get(i).get("num").toString());
+                    //pdOrderpro.put("num",list.get(i).get("num").toString());
+                    pdOrderpro.put("num",new BigDecimal(list.get(i).get("num").toString()));
                     orderProService.editOrderKuncuns(pdOrderpro);
                     productService.editJianNums(pdOrderpro);
                 }
@@ -697,6 +705,7 @@ public class AppReturnController extends BaseController{
         }
         return str;
     }
+
 
     @RequestMapping(value = "findReturnExcelUtil",produces = "text/html;charset=UTF-8")
     @ResponseBody
