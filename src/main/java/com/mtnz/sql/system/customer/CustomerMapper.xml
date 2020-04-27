@@ -123,7 +123,7 @@
             ),
             0
             ) AS discountmoney  我改的部分-->
-    <select id="datalistPage" parameterType="pd" resultType="pd">
+    <select id="pageinfo" parameterType="pd" resultType="pd">
         SELECT
             c.customer_id,
             c.store_id,

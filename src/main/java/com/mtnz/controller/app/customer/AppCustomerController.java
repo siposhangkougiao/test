@@ -233,7 +233,7 @@ public class AppCustomerController extends BaseController{
                     pageSize = 100;
                 }
                 PageHelper.startPage(pageNumber,pageSize);
-                List<PageData> list=customerService.dataListPage(pd);
+                List<PageData> list=customerService.pageinfo(pd);
                 PageInfo pageInfo = new PageInfo(list);
                 if(state3!=null&&state3.equals("1")){
                     Iterator<PageData> iterator = list.iterator();
