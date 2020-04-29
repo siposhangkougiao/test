@@ -51,9 +51,9 @@ public class StatisticalServiceImpl implements StatisticalService {
         Integer orderCount = orderInfoMapper.selectCountByExample(exampleOrder);
 
         //查询活跃度
-        Example examplelogin = new Example(StLogin.class);
-        examplelogin.and().andBetween("creatTime",start,end);
-        Integer loginCount = stLoginMapper.selectCountByExample(examplelogin);
+        Example examplelogin = new Example(SysAppUser.class);
+        examplelogin.and().andBetween("loginDate",start,end);
+        Integer loginCount = sysAppUserMapper.selectCountByExample(examplelogin);
         ReturnBean returnBean = new ReturnBean();
         returnBean.setOrderCount(orderCount);
         returnBean.setLoginCount(loginCount);

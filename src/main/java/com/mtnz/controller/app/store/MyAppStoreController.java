@@ -4,7 +4,6 @@ package com.mtnz.controller.app.store;
  * 新建 2020-04-07
  */
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.base.BaseController;
@@ -53,6 +52,13 @@ public class MyAppStoreController extends BaseController{
             return mobiles.matches(telRegex);
     }
 
+    public static void main(String[] args) throws InterruptedException {
+        Date date1= new Date();
+        System.out.println(date1.getTime());
+        Thread.sleep(3000);
+        Date date2 = new Date();
+        System.out.println(date2.getTime()-date1.getTime());
+    }
 
     /**
      * 获取注册验证码
@@ -65,11 +71,22 @@ public class MyAppStoreController extends BaseController{
         logBefore(logger,"获取短信验证码");
         PageData pd=this.getPageData();
         try{
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             phone = RASTest.getKeyDES(phone.trim());
-            if(!isMobileNO(phone)){
+            String[] str = phone.split(",");
+            if(str.length !=2 ||str[0]==null||str[1]==null){
+                return getMessage("-105","非法请求");
+            }
+            System.out.println(str[1]);
+            long aa = new Date().getTime();
+            long bb = Long.valueOf(str[1]);
+            if(aa-bb>3000){
+                return getMessage("-106","非法请求");
+            }
+            if(!isMobileNO(str[0])){
                 return getMessage("-101","非法请求");
             }
-            pd.put("username",phone);
+            pd.put("username",str[0]);
             PageData pd_u=sysAppUserService.findUserName(pd);
             if(pd_u!=null){
                 return getMessage("-101","用户已存在，不能重复注册！");
@@ -79,12 +96,12 @@ public class MyAppStoreController extends BaseController{
             System.out.println("验证码为：" + yzm);
             PageData pd2 = new PageData();
             pd2.put("code", yzm);
-            pd2.put("phone", phone);
+            pd2.put("phone", str[0]);
             pd2.put("start_time", DateUtil.getTime());
             Calendar afterTime = Calendar.getInstance();
             afterTime.add(Calendar.MINUTE, 5); // 当前分钟+5
             Date afterDate = (Date) afterTime.getTime();
-            SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            //SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             System.out.println(">>>>>>>>>>>>>"+sdf.format(afterDate));
             pd2.put("end_time", afterDate);
             pd2.put("now_time", new Date());
