@@ -1,6 +1,8 @@
 package com.mtnz.controller.app.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.order_info.OrderInfoService;
@@ -675,7 +677,7 @@ public class AppProductController extends BaseController{
      */
     @RequestMapping(value = "findlikeProduct",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findlikeProduct(String store_id,String product_name,String type){
+    public String findlikeProduct(String store_id,String product_name,String type,Integer pageNumber,Integer pageSize){
         logBefore(logger,"模糊查询商品");
         PageData pd=this.getPageData();
         if(store_id==null||store_id.length()==0||product_name==null||product_name.length()==0){
@@ -685,6 +687,11 @@ public class AppProductController extends BaseController{
         }else{
             try{
                 String message="正确返回数据!";
+                if(pageNumber==null||pageSize==null){
+                    pageNumber =1;
+                    pageSize =1000;
+                }
+                PageHelper.startPage(pageNumber,pageSize);
                 List<PageData> list=productService.findlikeList(pd);
                 for (int i=0,len=list.size();i<len;i++){
                     List<PageData> list_img=productImgService.findList(list.get(i));
@@ -713,12 +720,16 @@ public class AppProductController extends BaseController{
                 }
                 priceaa.setScale(2,BigDecimal.ROUND_HALF_UP);
                 Map<String, Object> map = new HashedMap();
-                map.put("data",list);
+                //map.put("data",list);
+                PageInfo pageInfo = new PageInfo(list);
+                map.put("data",pageInfo.getList());
                 pd.clear();
                 pd.put("object",map);
+                pd.put("pageInfo",pageInfo);
                 pd.put("code","1");
                 pd.put("message",message);
                 pd.put("money",priceaa);
+                pd.put("pageTotal",pageInfo.getTotal());
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");

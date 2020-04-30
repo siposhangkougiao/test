@@ -7,4 +7,6 @@ public interface KuCunService {
     void test();
 
     void sendMeg() throws Exception;
+
+    void image();
 }

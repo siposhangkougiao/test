@@ -11,13 +11,17 @@ import com.mtnz.sql.system.mysql.KuCunMapper;
 import com.mtnz.sql.system.mysql.ProductMapper;
 import com.mtnz.util.PageData;
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.mtnz.util.QiniuUtils.getAllFileName;
 
 @Service
 public class KuCunServiceImpl implements KuCunService {
@@ -87,5 +91,43 @@ public class KuCunServiceImpl implements KuCunService {
             }
         }
         System.out.println(">>>>>>"+aa);
+    }
+
+    /**
+     * 刷新数据库图片地址(更新商品图片)
+     */
+    @Override
+    public void image() {
+        ArrayList<String> listFilePath = new ArrayList<String>();
+        ArrayList<String> listFileName = new ArrayList<String>();
+        getAllFileName("C:\\Users\\Dell\\Desktop\\uploadImgs\\",listFilePath,listFileName);
+        List<Product> insertlist = new ArrayList<>();
+        for (int i = 0; i < listFileName.size(); i++) {
+            String name = listFileName.get(i);
+            if(name.contains(".jpg")){
+                Product bean = new Product();
+                bean.setName(name);
+                Product product = productMapper.selectlikeimg(bean);
+                if(product!=null){
+                    if(StringUtils.isBlank(product.getProductImg())){
+                        continue;
+                    }else {
+                        if(product.getProductImg().contains("img.nongshoping.com")){
+                            continue;
+                        }
+                    }
+                    String aa = "http://img.nongshoping.com/xkd" + name;
+                    System.out.println(aa);
+                    Product product1 = new Product();
+                    product1.setProductId(product.getProductId());
+                    product1.setProductImg(aa);
+                    insertlist.add(product1);
+                }
+            }
+        }
+        System.out.println(">>>>>>>"+insertlist.size());
+        if(insertlist.size()>0){
+            productMapper.updatelist(insertlist);
+        }
     }
 }

@@ -8,13 +8,12 @@ import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
 import com.qiniu.util.StringMap;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
 * @Description:    七牛云工具
@@ -111,15 +110,53 @@ public class QiniuUtils {
         }
         String finalUrl = String.format("%s/%s", domainOfBucket,encodedFileName );*/
         String finalUrl = domainOfBucket + fileName;
-        System.out.println(finalUrl);
+        //System.out.println(finalUrl);
         return finalUrl;
     }
 
     public static void main(String[] args) throws Exception {
         //publicFile("abc.jpg","C:\\Users\\Dell\\Desktop\\工作\\uploadImgs\\20180521\\d7f9722f56c64f43acfffeee1c726f49.jpg");
         //upload("xkd/2020048/abc.jpg","C:\\Users\\Dell\\Desktop\\工作\\uploadImgs\\20180521\\d7f9722f56c64f43acfffeee1c726f49.jpg");
-        System.out.println(publicFile("xkd/2020048/abc.jpg","http://img.nongshoping.com/"));
+        //System.out.println(publicFile("xkd/2020048/abc.jpg","http://img.nongshoping.com/"));
+        /*ArrayList<String> listFilePath = new ArrayList<String>();
+        ArrayList<String> listFileName = new ArrayList<String>();
+        getAllFileName("C:\\Users\\Dell\\Desktop\\uploadImgs\\",listFilePath,listFileName);
+        for (int i = 0; i < listFilePath.size(); i++) {
+            String name = listFilePath.get(i);
+            if(name.contains(".jpg")){
+                //upload("xkd/2020048/abc.jpg","C:\\Users\\Dell\\Desktop\\工作\\uploadImgs\\20180521\\d7f9722f56c64f43acfffeee1c726f49.jpg");
+                String aa = "xkd" + listFileName.get(i);
+                upload(aa,name);
+                //System.out.println(name);
+                //System.out.println(aa);
+            }
+        }
+        System.out.println(listFilePath.size());
+        System.out.println(listFileName.size());*/
     }
 
+    public static void getAllFileName(String path, ArrayList<String> listFilePath,ArrayList<String> listFileName){
+        File file = new File(path);
+        File [] files = file.listFiles();
+        String [] names = file.list();
+        if(names != null){
+            String [] completNames = new String[names.length];
+            for(int i=0;i<names.length;i++){
+                completNames[i]=(path+names[i]).replaceAll("\\\\","/");
+                String aa = path+names[i];
+                String [] bb = aa.split("\\\\");
+                String cc = "/"+bb[bb.length-2]+"/"+bb[bb.length-1];
+                //cc = cc.replaceAll("\\\\","/");
+                listFileName.add(cc);
+            }
+            listFilePath.addAll(Arrays.asList(completNames));
+        }
+        for(File a:files){
+            if(a.isDirectory()){
+                //如果文件夹下有子文件夹，获取子文件夹下的所有文件全路径。
+                getAllFileName(a.getAbsolutePath()+"\\",listFilePath,listFileName);
+            }
+        }
+    }
 
 }

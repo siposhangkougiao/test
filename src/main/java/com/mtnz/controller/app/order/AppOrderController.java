@@ -1071,6 +1071,10 @@ public class AppOrderController extends BaseController{
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
+            for (int i = 0; i < list.size(); i++) {
+                BigDecimal price = new BigDecimal(list.get(i).get("total_money").toString()).setScale(2,BigDecimal.ROUND_HALF_UP);
+                list.get(i).put("total_money",String.valueOf(price));
+            }
             pd.put("data",list);
         }catch (Exception e){
             pd.clear();
