@@ -186,7 +186,7 @@ public class AppSupplierController extends BaseController{
                     pageNum = "1";
                 }
                 page.setPd(pd);
-                page.setShowCount(100);
+                page.setShowCount(10);
                 page.setCurrentPage(Integer.parseInt(pageNum));
                 List<PageData> list=supplierService.datalistPage(page);
                 double total_money=0;

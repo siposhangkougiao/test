@@ -37,6 +37,8 @@
     </update>
 
     <select id="findtodaySum" resultType="pd" parameterType="pd">
-        select sum(total_purchase_price) as totalprice from order_gift where great_time between #{start} and #{end} and is_back =0
+        select sum(total_purchase_price) as totalprice
+        from order_gift
+        where great_time between #{start} and #{end} and is_back =0 and order_info_id = #{order_info_id}
     </select>
 </mapper>

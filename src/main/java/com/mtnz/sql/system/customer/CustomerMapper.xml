@@ -148,15 +148,12 @@
             c.role
         FROM customer c
         where c.store_id=#{store_id} and c.status!='2' and c.status!='3'
-        <if test="state1!=null and state1!='' and state1==1">
+        <if test="state1 !=null and state1 !='' and state1==1">
             and (c.status='1' or c.status='4')
         </if>
-        <if test="state2!=null and pd.state2!='' and state2==1">
+        <if test="state2 !=null and state2 !='' and state2==1">
             and c.owe>0
         </if>
-        <!--<if test="pd.state3!=null and pd.state3!='' and pd.state3==1">
-            and c.prepayment>0
-        </if>-->
         <if test="address!=null and address!=''">
             and (
             POSITION(#{address} IN `province`)
@@ -174,11 +171,20 @@
             ORDER BY c.status,c.billing_date DESC
         </if>
         <if test="status==1">
-            ORDER BY c.status,c.billing_date
+            ORDER BY c.status,c.billing_date DESC
         </if>
         <if test="status==2">
             ORDER BY c.status,c.input_date DESC
         </if>
+        <!--<if test="status==0">
+            ORDER BY c.status,c.billing_date DESC
+        </if>
+        <if test="status==1">
+            ORDER BY c.status,c.billing_date DESC
+        </if>
+        <if test="status==2">
+            ORDER BY c.status,c.input_date DESC
+        </if>-->
     </select>
 
 

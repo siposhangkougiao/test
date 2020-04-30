@@ -2,6 +2,8 @@ package com.mtnz.controller.app.integral;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.already.AlreadyService;
@@ -90,15 +92,23 @@ public class AppIntegralController extends BaseController{
      */
     @RequestMapping(value = "findUserIntegrallist",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findUserIntegrallist(Long user_id){
+    public String findUserIntegrallist(Long user_id,Integer pageNumber,Integer pageSize){
         logBefore(logger,"积分管理页面查询");
         PageData pd=this.getPageData();
         try{
+            if(pageNumber==null){
+                pageNumber=1;
+            }
+            pageSize=10;
+            PageHelper.startPage(pageNumber,pageSize);
             List<PageData> list  = integralService.findUserIntegrallist(pd);
+            PageInfo pageInfo = new PageInfo(list);
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
-            pd.put("data",list);
+            pd.put("data",pageInfo.getList());
+            pd.put("pageInfo",pageInfo);
+            pd.put("pageTotal",pageInfo.getPages());
         }catch (Exception e){
             pd.clear();
             pd.put("code","2");

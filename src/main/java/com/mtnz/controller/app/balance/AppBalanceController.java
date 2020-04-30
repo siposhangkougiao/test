@@ -2,6 +2,8 @@ package com.mtnz.controller.app.balance;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.service.system.balance.BalanceService;
 import com.mtnz.service.system.customer.CustomerService;
@@ -179,15 +181,23 @@ public class AppBalanceController extends BaseController{
      */
     @RequestMapping(value = "findUserbalanceByUserId",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String saveUserbalance(Long user_id){
+    public String saveUserbalance(Long user_id,Integer pageNumber,Integer pageSize){
         logBefore(logger,"积分管理页面查询");
         PageData pd=this.getPageData();
         try{
+            if(pageNumber==null){
+                pageNumber=1;
+            }
+            pageSize=10;
+            PageHelper.startPage(pageNumber,pageSize);
             List<PageData> pageData = balanceService.findUserbalanceDetailByUserId(pd);
+            PageInfo pageInfo = new PageInfo(pageData);
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
             pd.put("data",pageData);
+            pd.put("pageInfo",pageInfo);
+            pd.put("pageTotal",pageInfo.getPages());
         }catch (Exception e){
             pd.clear();
             pd.put("code","2");

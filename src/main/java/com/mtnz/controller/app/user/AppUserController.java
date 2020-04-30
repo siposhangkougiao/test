@@ -2,6 +2,7 @@ package com.mtnz.controller.app.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.app.statistical.model.StLogin;
+import com.mtnz.controller.app.user.model.LoginSalt;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.adminrelation.AdminRelationService;
@@ -246,6 +247,7 @@ public class AppUserController extends BaseController {
     @RequestMapping(value = "login", produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String login(String username, String password,Integer type) {
+
         logBefore(logger, "用户登录");
         PageData pd = this.getPageData();
         Map<String, Object> map = new HashMap();
@@ -255,6 +257,9 @@ public class AppUserController extends BaseController {
             pd.put("message", "缺少参数");
         } else {
             try {
+                if(type==null){
+                    pd.put("type",0);// 0表示是pc登录的  1表示是app登录的
+                }
                 System.out.println(">>>>>>>"+pd.toString());
                 PageData pd_u = sysAppUserService.findUserName(pd);   //根据用户名查询用户是否存在
                 if (pd_u != null) {
@@ -315,13 +320,25 @@ public class AppUserController extends BaseController {
                         pd.put("message", "正确返回数据!");
                         pd.put("data", map);
                         //给前端返回token
-                        Long tokenId = Long.valueOf(pd_u.get("store_id").toString());
-                        loginSaltService.delete(tokenId);
-                        String salt = GetStrings.getRandomNickname(4);
-                        loginSaltService.insert(tokenId,salt);
-                        String token = Md5Util.md5(tokenId.toString(),salt);
+                        String salt = "Nsakj";
+                        String token = Md5Util.md5(pd_u.get("store_id").toString(),salt);
                         pd.put("token",token);
                         System.out.println(">>>>>>返回的token："+token);
+                        /*Long tokenId = Long.valueOf(pd_u.get("store_id").toString());
+                        LoginSalt loginSalt = loginSaltService.select(pd_u.get("store_id").toString());
+                        if(loginSalt==null){
+                            String salt = GetStrings.getRandomNickname(4);
+                            loginSaltService.insert(tokenId,salt);
+                            String token = Md5Util.md5(tokenId.toString(),salt);
+                            pd.put("token",token);
+                            System.out.println(">>>>>>返回的token："+token);
+                        }else {
+                            String token = Md5Util.md5(tokenId.toString(),loginSalt.getSalt());
+                            pd.put("token",token);
+                            System.out.println(">>>>>>返回的token："+token);
+                        }*/
+                        //loginSaltService.delete(tokenId);
+
                         //记录登录次数
                         statisticalService.insertLogin(Long.valueOf(pd_u.get("uid").toString()));
                     } else {

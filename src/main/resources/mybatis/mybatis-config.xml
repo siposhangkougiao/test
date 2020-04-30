@@ -21,13 +21,13 @@
     </typeAliases>
 
     <plugins>
-        <plugin interceptor="com.mtnz.plugin.PagePlugin">
-            <property name="dialect" value="mysql"/>
-            <property name="pageSqlId" value=".*listPage.*"/>
-        </plugin>
         <plugin interceptor="com.github.pagehelper.PageInterceptor">
             <!--分页参数合理化  -->
             <property name="reasonable" value="false"/>
+        </plugin>
+        <plugin interceptor="com.mtnz.plugin.PagePlugin">
+            <property name="dialect" value="mysql"/>
+            <property name="pageSqlId" value=".*listPage.*"/>
         </plugin>
     </plugins>
 

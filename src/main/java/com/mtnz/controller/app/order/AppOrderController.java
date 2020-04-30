@@ -766,9 +766,20 @@ public class AppOrderController extends BaseController{
                 page.setShowCount(10);
                 page.setCurrentPage(Integer.parseInt(pageNum));
                 List<PageData> list=orderInfoService.AnalysislistPage(page);
+                BigDecimal bcv = new BigDecimal(0);
                 for(int i=0;i<list.size();i++){
                     List<PageData> list_pro=orderProService.findList(list.get(i));
                     list.get(i).put("order_pro",list_pro);
+
+                    //查询赠品的成本
+                    PageData pgift = new PageData();
+                    pgift.put("start", MyTimesUtil.getStartTime());
+                    pgift.put("end", MyTimesUtil.getEndTime());
+                    pgift.put("order_info_id",list.get(i).get("order_info_id").toString());
+                    PageData gites = orderGiftService.findtodaySum(pgift);
+                    if(gites!=null){
+                        bcv =bcv.add(new BigDecimal(gites.get("totalprice").toString()));
+                    }
                 }
                 String total_money="0.0";
                 String money="0.0";
@@ -814,14 +825,7 @@ public class AppOrderController extends BaseController{
                     BigDecimal d = new BigDecimal(list1.get(i).get("purchase_price").toString());
                     a = a.add(b.divide(c,4,BigDecimal.ROUND_HALF_UP).multiply(d));
                 }
-                //查询赠品的成本
-                PageData pgift = new PageData();
-                pgift.put("start", MyTimesUtil.getStartTime());
-                pgift.put("end", MyTimesUtil.getEndTime());
-                PageData gites = orderGiftService.findtodaySum(pgift);
-                if(gites!=null){
-                    a =a.add(new BigDecimal(gites.get("totalprice").toString()));
-                }
+                a =a.add(bcv);
                 receivable = String.valueOf(a);
                 List<PageData> list_count=orderInfoService.findGroupCustomer(pd);
                 Map<String, Object> maps = new HashedMap();

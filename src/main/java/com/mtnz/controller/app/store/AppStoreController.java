@@ -928,11 +928,11 @@ public class AppStoreController extends BaseController{
      */
     @RequestMapping(value = "editcheckStore",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String saveOtherStore(Long user_id,Long store_id){
+    public String editcheckStore(Long user_id,Long store_id,Integer type){
         logBefore(logger,"查询店铺列表");
         PageData pd=this.getPageData();
         try{
-
+            System.out.println(">>>>>>"+pd.toString());
             pd.put("ismr",0);
             //全部修改未0
             storeService.editCheckStore(pd);
@@ -944,11 +944,16 @@ public class AppStoreController extends BaseController{
             sysAppUserService.editStoreId(pd);
 
             //给前端返回token
-            Long tokenId = Long.valueOf(store_id);
+            /*Long tokenId = Long.valueOf(store_id);
             loginSaltService.delete(tokenId);
             String salt = GetStrings.getRandomNickname(4);
             loginSaltService.insert(tokenId,salt);
+
             String token = Md5Util.md5(tokenId.toString(),salt);
+            System.out.println(">>>>>>返回的token："+token);*/
+            String salt = "Nsakj";
+            String token = Md5Util.md5(store_id.toString(),salt);
+            pd.put("token",token);
             System.out.println(">>>>>>返回的token："+token);
             pd.clear();
             pd.put("code","1");

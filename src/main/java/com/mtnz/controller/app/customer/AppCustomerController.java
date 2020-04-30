@@ -211,7 +211,7 @@ public class AppCustomerController extends BaseController{
     @RequestMapping(value = "findCustomer",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findCustomer(String store_id,String pageNum,String status,String state1,
-                               String state2,String state3,String address,Integer pageNumber,Integer pageSize){
+                               String state2,String state3,String address){
         logBefore(logger,"查询客户");
         PageData pd=this.getPageData();
         /*Page page=new Page();*/
@@ -222,17 +222,21 @@ public class AppCustomerController extends BaseController{
             pd.put("message","缺少参数!");
         }else{
             try {
+                System.out.println(">>>>>>>>>>>>接收的参数:"+pd.toString());
                 String message="正确返回数据!";
                 /*if (pageNum == null || pageNum.length() == 0) {
                     pageNum = "1";
                 }*/
                 //page.setShowCount(10);
                 //page.setCurrentPage(Integer.parseInt(pageNum));
-                if(pageNumber==null||pageSize==null){
-                    pageNumber =1;
-                    pageSize = 100;
+                Integer pageNumber=1;
+                Integer pageSize = 10;
+                if(pageNum!=null){
+                    pageNumber =Integer.valueOf(pageNum);
                 }
+
                 PageHelper.startPage(pageNumber,pageSize);
+                System.out.println(JSONObject.toJSONString(pd));
                 List<PageData> list=customerService.pageinfo(pd);
                 PageInfo pageInfo = new PageInfo(list);
                 if(state3!=null&&state3.equals("1")){
@@ -334,7 +338,8 @@ public class AppCustomerController extends BaseController{
                 pd.put("object", map);
                 pd.put("message", message);
                 pd.put("code", "1");
-                pd.put("pageTotal",pageInfo.getTotal());
+                pd.put("pageTotal",pageInfo.getPages());
+                System.out.println(">>>>"+JSONObject.toJSONString(pageInfo));
                 pd.put("count",pd_c.get("count").toString());
                 pd.put("money",money);
                 pd.put("totlepayment",totlepayment);
