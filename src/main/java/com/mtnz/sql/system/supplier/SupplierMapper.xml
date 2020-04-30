@@ -99,6 +99,8 @@
         WHERE store_id=#{store_id}
          and
 	    (
+	      POSITION(#{name} IN `remarks`)
+          OR
           POSITION(#{name} IN `name`)
           OR
           POSITION(#{name} IN `phone`)

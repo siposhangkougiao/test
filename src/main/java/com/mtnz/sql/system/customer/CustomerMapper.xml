@@ -328,6 +328,8 @@
         WHERE
 	      c.store_id=#{store_id} and c.status!='2' and c.status!='3' and
 	      (
+	      POSITION(#{name} IN c.remarks)
+          OR
           POSITION(#{name} IN c.name)
           OR
           POSITION(#{name} IN c.phone)

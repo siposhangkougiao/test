@@ -324,9 +324,9 @@ public class AppSupplierController extends BaseController{
                     list.get(i).put("return_money","0.0");
 
                     SupplierBalanceOwe supplierBalanceOwe = new SupplierBalanceOwe();
-                    supplierBalanceOwe.setSupplierId(Long.valueOf(list.get(i).getString("supplier_id")));
-                    supplierBalanceOwe.setStoreId(Long.valueOf(list.get(i).getString("store_id")));
-                    SupplierBalanceOwe BalanceOwe = supplierBalanceOweMapper.selectOneByExample(supplierBalanceOwe);
+                    supplierBalanceOwe.setSupplierId(Long.valueOf(list.get(i).get("supplier_id").toString()));
+                    supplierBalanceOwe.setStoreId(Long.valueOf(list.get(i).get("store_id").toString()));
+                    SupplierBalanceOwe BalanceOwe = supplierBalanceOweMapper.selectOne(supplierBalanceOwe);
                     if(BalanceOwe!=null){
                         list.get(i).put("prePrice",BalanceOwe.getPrePrice());
                     }else {

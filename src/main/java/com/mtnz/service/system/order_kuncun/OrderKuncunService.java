@@ -229,7 +229,11 @@ public class OrderKuncunService extends BaseController{
                 pageda.put("status",2);
                 pageda.put("integral",integral);
                 pageda.put("customer_id",customer_id);
-                pageda.put("open_user",open_user);
+                if(open_user!=null){
+                    pageda.put("open_user",open_user);
+                }else {
+                    pageda.put("open_user",uid);
+                }
                 pageda.put("remark",remark);
                 integralService.saveIntegralDetail(pageda);//积分详情表
                 Integer count = integralService.findIntegralUserById(pageda);//查询用户积分余额

@@ -67,5 +67,27 @@ public class MySqlController extends BaseController{
         return result;
     }
 
+    /**
+     * 刷新数据库图片地址
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "/image")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Result image(){
+        Result result = new Result(0,"成功");
+        try {
+            kuCunService.image();
+        }catch (ServiceException e) {
+            logger.error("数据操作失败",e);
+            result.setCode(e.getExceptionCode());
+            result.setMsg(e.getMessage());
+        } catch (Exception e) {
+            logger.error("系统错误",e);
+            result.setCode(-101);
+            result.setMsg(e.getMessage());
+        }
+        return result;
+    }
+
 
 }

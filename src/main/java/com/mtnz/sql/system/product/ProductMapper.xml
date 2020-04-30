@@ -115,6 +115,9 @@
                 likucun
             FROM product
             WHERE store_id=#{store_id} and status='0'
+            <if test="type !=null and type !=''">
+                and type = #{type}
+            </if>
             ORDER BY date DESC
             limit #{SHU1},10
         ) p
