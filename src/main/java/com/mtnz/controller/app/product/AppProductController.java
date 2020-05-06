@@ -786,7 +786,7 @@ public class AppProductController extends BaseController{
     public String findProduct(String store_id,String pageNum,String type){
         logBefore(logger,"查询商品");
         PageData pd=this.getPageData();
-        Page page=new Page();
+        //Page page=new Page();
         if(store_id==null||store_id.length()==0){
             pd.clear();
             pd.put("code","2");
@@ -797,30 +797,40 @@ public class AppProductController extends BaseController{
                 if (pageNum == null || pageNum.length() == 0) {
                     pageNum = "1";
                 }
-                Integer SHU1 = Integer.valueOf(pageNum) * 10;
-                pd.put("SHU1", SHU1 - 10);
+                /*Integer SHU1 = Integer.valueOf(pageNum) * 10;
+                pd.put("SHU1", SHU1 - 10);*/
                 //查询店铺库存的所有商品
-                List<PageData> list=productService.findProduct(pd);
+                Integer pageNumber = Integer.valueOf(pageNum);
+                Integer pageSize = 10;
+                PageHelper.startPage(pageNumber,pageSize);
+                List<PageData> list=productService.findProductxx(pd);
+                PageInfo pageInfo = new PageInfo(list);
                 //查询店铺一共有多少个商品
-                PageData pd_c=productService.findProductCount(pd);
+                //PageData pd_c=productService.findProductCount(pd);
                 for (int i=0,len=list.size();i<len;i++){
                     //查询店铺的图片norms1
                     List<PageData> list_img=productImgService.findList(list.get(i));
                     list.get(i).put("img",list_img);
                     BigDecimal a = new BigDecimal(list.get(i).get("likucun").toString());
-                    BigDecimal b = new BigDecimal(list.get(i).get("norms1").toString());
+                    BigDecimal b = new BigDecimal(1);
+                    try {
+                        b = new BigDecimal(list.get(i).get("norms1").toString());
+                    }catch (Exception e){
+
+                    }
+
                     BigDecimal c = a.divide(b,4);
                     BigDecimal kus = new BigDecimal(list.get(i).get("kucun").toString()).add(c);
                     list.get(i).put("kucun",kus);
                 }
-                Integer pageTotal;
+                /*Integer pageTotal;
                 if (Integer.valueOf(pd_c.get("count").toString()) % 10 == 0){
                     pageTotal =Integer.valueOf(pd_c.get("count").toString()) / 10;
                 }else {
                     pageTotal = Integer.valueOf(pd_c.get("count").toString()) / 10 + 1;
-                }
+                }*/
                 Map<String, Object> map = new HashedMap();
-                map.put("data",list);
+                map.put("data",pageInfo.getList());
                 //下面计算价格的地方错误，需要修改
                 /*PageData pd_s=productService.findKuCun(pd);
                 if(pd_s!=null){
@@ -852,7 +862,7 @@ public class AppProductController extends BaseController{
                 pd.put("object",map);
                 pd.put("code","1");
                 pd.put("message",message);
-                pd.put("pageTotal",String.valueOf(pageTotal));
+                pd.put("pageTotal",String.valueOf(pageInfo.getPages()));
                 pd.put("money",priceaa);
             }catch (Exception e){
                 pd.clear();

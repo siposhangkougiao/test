@@ -29,7 +29,7 @@ public class ProductService {
         return (PageData) daoSupport.findForObject("ProductMapper.findById",pd);
     }
 
-    public List<PageData> findProduct(PageData pd) throws Exception {
+    public List<PageData> findProductxx(PageData pd) throws Exception {
         return (List<PageData>) daoSupport.findForList("ProductMapper.findProduct",pd);
     }
 
