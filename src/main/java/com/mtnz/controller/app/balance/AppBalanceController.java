@@ -40,10 +40,6 @@ public class AppBalanceController extends BaseController{
     @Resource(name = "customerService")
     private CustomerService customerService;
 
-    public static void main(String[] args) {
-        System.out.println(MD5.md5(MD5.md5("123456") + "DhNd"));
-    }
-
     /**
      * 查询用户预付款余额
      * @param user_id
