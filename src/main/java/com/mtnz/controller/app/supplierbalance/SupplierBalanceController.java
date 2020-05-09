@@ -154,6 +154,31 @@ public class SupplierBalanceController extends BaseController{
         return result;
     }
 
+    /**
+     * 查询用户在供货商处的预存款
+     * @param supplierBalanceOwe
+     * @return
+     */
+    @RequestMapping(method = RequestMethod.GET,value = "selectbalance")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Result selectbalance(SupplierBalanceOwe supplierBalanceOwe){
+        logger.error("接收到的参数：{}",JSONObject.toJSONString(supplierBalanceOwe));
+        Result result = new Result(0,"成功");
+        try {
+            SupplierBalanceOwe supplierBalanceOwe1 = supplierBalanceService.selectbalance(supplierBalanceOwe);
+            result.setData(supplierBalanceOwe1);
+        }catch (ServiceException e) {
+            logger.error("数据操作失败",e);
+            result.setCode(e.getExceptionCode());
+            result.setMsg(e.getMessage());
+        } catch (Exception e) {
+            logger.error("系统错误",e);
+            result.setCode(-101);
+            result.setMsg("系统错误");
+        }
+        return result;
+    }
+
 
 
 }

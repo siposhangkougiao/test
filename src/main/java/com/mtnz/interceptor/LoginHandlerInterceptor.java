@@ -32,9 +32,9 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 		String path = request.getServletPath();
 		System.out.println("请求的路径是:"+path);
 		//System.out.println("ip:"+request.getHeader("ip"));
-		if(!path.equals("/app/user/login")&&!path.equals("/app/mystore/getcode")&&!path.equals("/app/mystore/saveStore")
+		/*if(!path.equals("/app/user/login")&&!path.equals("/app/mystore/getcode")&&!path.equals("/app/mystore/saveStore")
 				&&!path.equals("/app/statistical")&&!path.contains("jpg")&&!path.equals("/app/user/verification")
-				&&!path.equals("/app/user/ForgetPassowrd")){
+				&&!path.equals("/app/user/ForgetPassowrd")&&!path.equals("/app/store/loagin")){
 			String token = request.getHeader("token");
 			String storeId = request.getHeader("storeId");
 			System.out.println("token:"+token+",storeId:"+storeId);
@@ -43,12 +43,12 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 				response.addHeader("status","-802");
 				return false;
 			}
-			/*LoginSalt loginSalt = loginSaltService.select(storeId);
+			*//*LoginSalt loginSalt = loginSaltService.select(storeId);
 			if(loginSalt==null){
 				//response.setStatus(-803);//用户未找到
 				response.addHeader("status","-803");
 				return false;
-			}*/
+			}*//*
 			String salt = "Nsakj";
 			String mytoken = Md5Util.md5(storeId,salt);
 			System.out.println(">>>>>>>"+mytoken);
@@ -57,7 +57,7 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 				response.addHeader("status","-801");
 				return false;
 			}
-		}
+		}*/
 
 		if (path.matches(Const.NO_INTERCEPTOR_PATH)) {
 			return true;

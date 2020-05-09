@@ -260,7 +260,7 @@ public class AppUserController extends BaseController {
                 if(type==null){
                     pd.put("type",0);// 0表示是pc登录的  1表示是app登录的
                 }
-                System.out.println(">>>>>>>"+pd.toString());
+                System.out.println("登录账号密码："+pd.toString());
                 PageData pd_u = sysAppUserService.findUserName(pd);   //根据用户名查询用户是否存在
                 if (pd_u != null) {
                     if ("1".equals(pd_u.get("diedstatus").toString())) {

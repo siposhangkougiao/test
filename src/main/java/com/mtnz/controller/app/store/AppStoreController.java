@@ -497,7 +497,14 @@ public class AppStoreController extends BaseController{
                 code="2";
                 message="账号或密码错误";
             }
+
             pd.clear();
+
+            //给前端返回token
+            String salt = "Nsakj";
+            String token = Md5Util.md5("0",salt);
+            pd.put("token",token);
+            System.out.println(">>>>>>返回的token："+token);
             pd.put("code",code);
             pd.put("message",message);
             pd.put("USER_ID",USER_ID);

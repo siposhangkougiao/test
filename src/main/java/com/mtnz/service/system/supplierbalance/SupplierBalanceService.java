@@ -41,4 +41,11 @@ public interface SupplierBalanceService {
      * @return
      */
     int updatebegin(SupplierBalanceOwe supplierBalanceOwe);
+
+    /**
+     * 查询用户在供货商处的预存款
+     * @param supplierBalanceOwe
+     * @return
+     */
+    SupplierBalanceOwe selectbalance(SupplierBalanceOwe supplierBalanceOwe);
 }

@@ -167,6 +167,13 @@
             POSITION(#{address} IN `address`)
             )
         </if>
+        <if test="phone!=null and phone!=''">
+            and (
+            POSITION(#{phone} IN `name`)
+            OR
+            POSITION(#{phone} IN `phone`)
+            )
+        </if>
         <if test="status==0">
             ORDER BY c.status,c.billing_date DESC
         </if>

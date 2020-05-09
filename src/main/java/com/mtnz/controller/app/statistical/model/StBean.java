@@ -13,6 +13,32 @@ public class StBean {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date end;
 
+    /**
+     * 查询类型
+     */
+    private Integer type;
+
+    /**
+     * 查询id
+     */
+    private Long userId;
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     public Date getStart() {
         return start;

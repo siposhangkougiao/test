@@ -242,4 +242,22 @@ public class SupplierBalanceServiceImpl implements SupplierBalanceService {
         return supplierBalanceOweMapper.updateByPrimaryKeySelective(supplierBalanceOwe);
     }
 
+    /**
+     * 查询用户在供货商处的预存款
+     * @param supplierBalanceOwe
+     * @return
+     */
+    @Override
+    public SupplierBalanceOwe selectbalance(SupplierBalanceOwe supplierBalanceOwe) {
+        SupplierBalanceOwe supplierBalanceOwe1 = supplierBalanceOweMapper.selectOne(supplierBalanceOwe);
+        if(supplierBalanceOwe1!=null){
+            return supplierBalanceOwe1;
+        }else {
+            SupplierBalanceOwe supplierBalanceOwe2 = new SupplierBalanceOwe();
+            supplierBalanceOwe2.setOwePrice(new BigDecimal(0));
+            supplierBalanceOwe2.setPrePrice(new BigDecimal(0));
+            return supplierBalanceOwe2;
+        }
+    }
+
 }

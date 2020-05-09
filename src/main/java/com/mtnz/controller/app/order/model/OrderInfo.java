@@ -58,7 +58,7 @@ public class OrderInfo {
   @Column(name="revokes")
   private String revokes;
 
-  @Column(name="openBill")
+  @Column(name="open_bill")
   private String openBill;
 
   @Column(name="product_sale")

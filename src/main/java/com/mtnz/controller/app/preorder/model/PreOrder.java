@@ -69,10 +69,10 @@ public class PreOrder {
     private List<PreOrderDetail> list;
 
     @Transient
-    private Integer pageNumber;
+    private Integer pageNumber=1;
 
     @Transient
-    private Integer pageSize;
+    private Integer pageSize=15;
     /**
      * 搜索条件商品id
      */

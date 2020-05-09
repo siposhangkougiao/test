@@ -5,8 +5,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceDetail;
+import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceOrder;
 import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceOwe;
 import com.mtnz.controller.base.BaseController;
+import com.mtnz.controller.base.ServiceException;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
 import com.mtnz.service.system.order_pro.OrderProService;
@@ -18,6 +21,8 @@ import com.mtnz.service.system.return_supplier.ReturnSupplierOrderProService;
 import com.mtnz.service.system.supplier.SupplierOrderInfoService;
 import com.mtnz.service.system.supplier.SupplierOrderProService;
 import com.mtnz.service.system.supplier.SupplierService;
+import com.mtnz.sql.system.supplierbalance.SupplierBalanceDetailMapper;
+import com.mtnz.sql.system.supplierbalance.SupplierBalanceOrderMapper;
 import com.mtnz.sql.system.supplierbalance.SupplierBalanceOweMapper;
 import com.mtnz.util.*;
 import org.apache.commons.collections.map.HashedMap;
@@ -65,6 +70,10 @@ public class AppSupplierController extends BaseController{
     private RepaymentsService repaymentsService;
     @Resource
     private SupplierBalanceOweMapper supplierBalanceOweMapper;
+    @Resource
+    private SupplierBalanceOrderMapper supplierBalanceOrderMapper;
+    @Resource
+    private SupplierBalanceDetailMapper supplierBalanceDetailMapper;
 
 
     /**
@@ -495,7 +504,7 @@ public class AppSupplierController extends BaseController{
 
 
     /**
-     *
+     *  进货单
      * @param supplier_id 供应商ID
      * @param store_id 店ID
      * @param uid 用户ID
@@ -511,7 +520,7 @@ public class AppSupplierController extends BaseController{
     @ResponseBody
     public String saveSupplierOrderInfo(String supplier_id,String store_id,String uid,String money,
                                         String owe_money,String total_money,String remarks,
-                                        String data,String status,String open_bill){
+                                        String data,String status,String open_bill,BigDecimal balance){
         logBefore(logger,"进货添加订单");
         PageData pd=this.getPageData();
         try{
@@ -557,6 +566,40 @@ public class AppSupplierController extends BaseController{
                 }
             }
             kunCunService.batchSaves(list,store_id,DateUtil.getTime(),"2",supplier_id,pd.get("supplier_order_info_id").toString(),pd.get("supplier_order_info_id").toString());
+            //处理预付款抵扣问题
+            if(balance!=null){
+                SupplierBalanceOwe balanceOwe = new SupplierBalanceOwe();
+                balanceOwe.setUserId(Long.valueOf(uid));
+                balanceOwe.setSupplierId(Long.valueOf(supplier_id));
+                SupplierBalanceOwe supplierBalanceOwe = supplierBalanceOweMapper.selectOne(balanceOwe);
+                if(supplierBalanceOwe!=null){
+                    if(supplierBalanceOwe.getPrePrice().compareTo(balance)==-1){
+                        throw new ServiceException(-101,"预付款余额不足",null);
+                    }
+                    SupplierBalanceOrder supplierBalanceOrder = new SupplierBalanceOrder();
+                    supplierBalanceOrder.setPrice(balance);
+                    supplierBalanceOrder.setOrderId(Long.valueOf(pd.get("supplier_order_info_id").toString()));
+                    supplierBalanceOrder.setStoreId(Long.valueOf(store_id));
+                    supplierBalanceOrder.setSupplierId(Long.valueOf(supplier_id));
+                    supplierBalanceOrderMapper.insertSelective(supplierBalanceOrder);
+                    //添加明细
+                    SupplierBalanceDetail supplierBalanceDetail = new SupplierBalanceDetail();
+                    supplierBalanceDetail.setMoney(balance);
+                    supplierBalanceDetail.setTotalMoney(balance);
+                    supplierBalanceDetail.setStoreId(supplierBalanceOrder.getStoreId());
+                    supplierBalanceDetail.setSupplierId(supplierBalanceOrder.getSupplierId());
+                    supplierBalanceDetail.setUserId(Long.valueOf(uid));
+                    supplierBalanceDetail.setType(5);
+                    supplierBalanceDetailMapper.insertSelective(supplierBalanceDetail);
+                    //减欠款
+                    SupplierBalanceOwe balanceOwe1= new SupplierBalanceOwe();
+                    balanceOwe1.setId(supplierBalanceOwe.getId());
+                    balanceOwe1.setPrePrice(supplierBalanceOwe.getPrePrice().subtract(balance));
+                    supplierBalanceOweMapper.updateByPrimaryKeySelective(balanceOwe1);
+                }else {
+                    return getMessage("-101","账户余额不足");
+                }
+            }
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
@@ -981,6 +1024,27 @@ public class AppSupplierController extends BaseController{
             List<PageData> listSu=supplierOrderProService.findList(pd);
             for(int i=0;i<listSu.size();i++){
                 productService.editNum(listSu.get(i));
+            }
+            //处理抵扣金额
+            SupplierBalanceOrder supplierBalanceOrder = new SupplierBalanceOrder();
+            supplierBalanceOrder.setOrderId(Long.valueOf(supplier_order_info_id));
+            supplierBalanceOrder.setIsBack(0);
+            SupplierBalanceOrder bean = supplierBalanceOrderMapper.selectOne(supplierBalanceOrder);
+            if(bean!=null){
+                SupplierBalanceOwe supplierBalanceOwe = new SupplierBalanceOwe();
+                supplierBalanceOwe.setStoreId(bean.getStoreId());
+                supplierBalanceOwe.setSupplierId(bean.getSupplierId());
+                SupplierBalanceOwe balanceOwe = supplierBalanceOweMapper.selectOne(supplierBalanceOwe);
+                if(balanceOwe!=null){
+                    SupplierBalanceOwe up = new SupplierBalanceOwe();
+                    up.setId(balanceOwe.getId());
+                    up.setPrePrice(balanceOwe.getPrePrice().add(bean.getPrice()));
+                    supplierBalanceOweMapper.updateByPrimaryKeySelective(up);
+                    SupplierBalanceOrder balanceOrder = new SupplierBalanceOrder();
+                    balanceOrder.setId(bean.getId());
+                    balanceOrder.setIsBack(1);
+                    supplierBalanceOrderMapper.updateByPrimaryKeySelective(balanceOrder);
+                }
             }
             pd.clear();
             pd.put("code","1");

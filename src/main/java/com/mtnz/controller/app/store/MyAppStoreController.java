@@ -52,14 +52,6 @@ public class MyAppStoreController extends BaseController{
             return mobiles.matches(telRegex);
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        Date date1= new Date();
-        System.out.println(date1.getTime());
-        Thread.sleep(3000);
-        Date date2 = new Date();
-        System.out.println(date2.getTime()-date1.getTime());
-    }
-
     /**
      * 获取注册验证码
      * @param phone

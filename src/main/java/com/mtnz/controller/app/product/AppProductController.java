@@ -689,7 +689,7 @@ public class AppProductController extends BaseController{
                 String message="正确返回数据!";
                 if(pageNumber==null||pageSize==null){
                     pageNumber =1;
-                    pageSize =1000;
+                    pageSize =15;
                 }
                 PageHelper.startPage(pageNumber,pageSize);
                 List<PageData> list=productService.findlikeList(pd);
@@ -729,7 +729,7 @@ public class AppProductController extends BaseController{
                 pd.put("code","1");
                 pd.put("message",message);
                 pd.put("money",priceaa);
-                pd.put("pageTotal",pageInfo.getTotal());
+                pd.put("pageTotal",pageInfo.getPages());
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");
@@ -819,7 +819,12 @@ public class AppProductController extends BaseController{
 
                     }
 
-                    BigDecimal c = a.divide(b,4);
+                    BigDecimal c = null;
+                    try {
+                        c = a.divide(b,4);
+                    } catch (Exception e) {
+                        c= new BigDecimal(0);
+                    }
                     BigDecimal kus = new BigDecimal(list.get(i).get("kucun").toString()).add(c);
                     list.get(i).put("kucun",kus);
                 }
@@ -940,7 +945,16 @@ public class AppProductController extends BaseController{
                     if(kucun==null||kucun.length()==0){
                         pd.put("kuncun","0");
                     }
-                    pd.put("product_img",product_img);
+                try {
+                    BigDecimal nooo = new BigDecimal(norms1);
+                    if(nooo.compareTo(new BigDecimal(0))==0||nooo.compareTo(new BigDecimal(0))==-1){
+                        return getMessage("102","商品规格1格式不正确！");
+                    }
+                } catch (NumberFormatException e) {
+                    return getMessage("102","商品规格必须为数字！");
+                }
+
+                pd.put("product_img",product_img);
                     pd.put("date",DateUtil.getTime());
                     if(purchase_price==null||purchase_price.length()==0){
                         pd.put("purchase_price","0");
@@ -1356,7 +1370,7 @@ public class AppProductController extends BaseController{
             if(pd_p.getString("purchase_price")!=null&&!pd_p.getString("purchase_price").equals("0")){
                 pd_p.put("purchase_price",pd_p.getString("purchase_price"));
             }else{
-                pd_p.put("purchase_price",pd_p.getString("product_price"));
+                pd_p.put("purchase_price","0");
             }
             pd_p.put("product_price",pd_p.getString("product_price"));
             pd_p.put("nums",0);

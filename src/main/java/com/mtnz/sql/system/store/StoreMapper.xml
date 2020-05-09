@@ -3,35 +3,35 @@
 <mapper namespace="StoreMapper">
     <insert id="save" parameterType="pd" useGeneratedKeys="true" keyProperty="store_id">
         INSERT INTO store(
-            name,
-            number,
-            address,
-            qr_code,
-            phone,
-            province,
-            city,
-            county,
-            street,
-            business_img,
-            phoneTow
-            <if test="is_pass !=null">
+        name,
+        number,
+        address,
+        qr_code,
+        phone,
+        province,
+        city,
+        county,
+        street,
+        business_img,
+        phoneTow
+        <if test="is_pass !=null">
             ,is_pass
-            </if>
+        </if>
         )VALUE (
-            #{name},
-            #{number},
-            #{address},
-            #{qr_code},
-            #{phone},
-            #{province},
-            #{city},
-            #{county},
-            #{street},
-            #{business_img},
-            #{phoneTow}
-            <if test="is_pass !=null">
-                ,#{is_pass}
-            </if>
+        #{name},
+        #{number},
+        #{address},
+        #{qr_code},
+        #{phone},
+        #{province},
+        #{city},
+        #{county},
+        #{street},
+        #{business_img},
+        #{phoneTow}
+        <if test="is_pass !=null">
+            ,#{is_pass}
+        </if>
         )
     </insert>
 
@@ -86,9 +86,9 @@
     <update id="updateName" parameterType="pd">
         UPDATE store
         SET name=#{name}
-            <if test="phone!=null and phone!=''">
-                ,phone=#{phone}
-            </if>
+        <if test="phone!=null and phone!=''">
+            ,phone=#{phone}
+        </if>
         <if test="address!=null and address!=''">
             ,address=#{address}
         </if>

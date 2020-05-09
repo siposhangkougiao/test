@@ -211,7 +211,7 @@ public class AppCustomerController extends BaseController{
     @RequestMapping(value = "findCustomer",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findCustomer(String store_id,String pageNum,String status,String state1,
-                               String state2,String state3,String address){
+                               String state2,String state3,String address,String phone){
         logBefore(logger,"查询客户");
         PageData pd=this.getPageData();
         /*Page page=new Page();*/
@@ -449,9 +449,14 @@ public class AppCustomerController extends BaseController{
                     pd.put("identity","");
                 }
                 customerService.save(pd);
+                PageData pda = new PageData();
+                pda.put("store_id",store_id);
+                pda.put("store_id",phone);
+                List<PageData> pageData = customerService.findCustomerPhone(pda);
                 pd.clear();
                 pd.put("code",status);
                 pd.put("message",message);
+                pd.put("customer",pageData.get(pageData.size()-1).get("customer_id").toString());
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");

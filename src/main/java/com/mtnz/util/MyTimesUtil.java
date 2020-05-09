@@ -6,42 +6,12 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MyTimesUtil {
 
 
-    /**
-     *根据时间范围获得月份集
-     * @return
-     */
-    public static List<String> getRangeSet(String beginDate, String endDate){
-        /*      Date1.after(Date2),当Date1大于Date2时，返回TRUE，当小于等于时，返回false；
-          Date1.before(Date2)，当Date1小于Date2时，返回TRUE，当大于等于时，返回false；
-          如果业务数据存在相等的时候，而且相等时也需要做相应的业务判断或处理时，你需要使用：！Date1.after(Date2);*/
-        List<String> rangeSet =null;
-        SimpleDateFormat sdf = null;
-        Date begin_date = null;
-        Date end_date = null;
-        rangeSet = new java.util.ArrayList<String>();
-        sdf = new SimpleDateFormat("yyyy-MM");
-        try {
-            begin_date = sdf.parse(beginDate);//定义起始日期
-            end_date = sdf.parse(endDate);//定义结束日期
-        } catch (ParseException e) {
-            System.out.println("时间转化异常，请检查你的时间格式是否为yyyy-MM或yyyy-MM-dd");
-        }
-        Calendar dd = Calendar.getInstance();//定义日期实例
-        dd.setTime(begin_date);//设置日期起始时间
-        while(!dd.getTime().after(end_date)){//判断是否到结束日期
-            rangeSet.add(sdf.format(dd.getTime()));
-            dd.add(Calendar.MONTH, 1);//进行当前日期月份加1
-        }
-        return rangeSet;
-    }
+
 
     /**
      * 获取某月的开始时间
@@ -200,6 +170,55 @@ public class MyTimesUtil {
     }
 
     /**
+     * 获取本月的开始时间
+     * @return
+     */
+    public static Date getBeginDayOfMonth() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(getNowYear(), getNowMonth() - 1, 1);
+        return getDayStartTime(calendar.getTime());
+    }
+
+
+    /**
+     * 获取本月的结束时间
+     * @return
+     */
+    public static Date getEndDayOfMonth() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(getNowYear(), getNowMonth() - 1, 1);
+        int day = calendar.getActualMaximum(5);
+        calendar.set(getNowYear(), getNowMonth() - 1, day);
+        return getDayEndTime(calendar.getTime());
+    }
+
+
+    /**
+     * 获取今年是哪一年
+     * @return
+     */
+    public static Integer getNowYear() {
+        Date date = new Date();
+        GregorianCalendar gc = (GregorianCalendar) Calendar.getInstance();
+        gc.setTime(date);
+        return Integer.valueOf(gc.get(1));
+    }
+
+
+    /**
+     * 获取本月是哪一月
+     * @return
+     */
+    public static int getNowMonth() {
+        Date date = new Date();
+        GregorianCalendar gc = (GregorianCalendar) Calendar.getInstance();
+        gc.setTime(date);
+        return gc.get(2) + 1;
+    }
+
+
+
+    /**
      * 获取指定日期所在月份结束的时间戳
      * @param date 指定日期
      * @return
@@ -253,6 +272,105 @@ public class MyTimesUtil {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 获取当年的开始时间戳
+     *
+     * @param timeStamp 毫秒级时间戳
+     * @param timeZone  如 GMT+8:00
+     * @return
+     */
+    public static Date getYearStartTime(Long timeStamp, String timeZone) {
+        Calendar calendar = Calendar.getInstance();// 获取当前日期
+        calendar.setTimeZone(TimeZone.getTimeZone(timeZone));
+        calendar.setTimeInMillis(timeStamp);
+        calendar.add(Calendar.YEAR, 0);
+        calendar.add(Calendar.DATE, 0);
+        calendar.add(Calendar.MONTH, 0);
+        calendar.set(Calendar.DAY_OF_YEAR, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return new Date(calendar.getTimeInMillis());
+    }
+
+    /**
+     * 获取当年的最后时间戳
+     *
+     * @param timeStamp 毫秒级时间戳
+     * @param timeZone  如 GMT+8:00
+     * @return
+     */
+    public static Date getYearEndTime(Long timeStamp, String timeZone) {
+        Calendar calendar = Calendar.getInstance();// 获取当前日期
+        calendar.setTimeZone(TimeZone.getTimeZone(timeZone));
+        calendar.setTimeInMillis(timeStamp);
+        int year = calendar.get(Calendar.YEAR);
+        calendar.clear();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.HOUR_OF_DAY, 23);
+        calendar.set(Calendar.MINUTE, 59);
+        calendar.set(Calendar.SECOND, 59);
+        calendar.set(Calendar.MILLISECOND, 999);
+        calendar.roll(Calendar.DAY_OF_YEAR, -1);
+        return new Date(calendar.getTimeInMillis());
+    }
+
+
+    //获取本周的开始时间
+    public static Date getBeginDayOfWeek() {
+        Date date = new Date();
+        if (date == null) {
+            return null;
+        }
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int dayofweek = cal.get(Calendar.DAY_OF_WEEK);
+        if (dayofweek == 1) {
+            dayofweek += 7;
+        }
+        cal.add(Calendar.DATE, 2 - dayofweek);
+        return getDayStartTime(cal.getTime());
+    }
+
+    //获取本周的结束时间
+    public static Date getEndDayOfWeek(){
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getBeginDayOfWeek());
+        cal.add(Calendar.DAY_OF_WEEK, 6);
+        Date weekEndSta = cal.getTime();
+        return getDayEndTime(weekEndSta);
+    }
+
+    /**
+     *根据时间范围获得月份集
+     * @return
+     */
+    public static List<String> getRangeSet(String beginDate, String endDate){
+        /*      Date1.after(Date2),当Date1大于Date2时，返回TRUE，当小于等于时，返回false；
+          Date1.before(Date2)，当Date1小于Date2时，返回TRUE，当大于等于时，返回false；
+          如果业务数据存在相等的时候，而且相等时也需要做相应的业务判断或处理时，你需要使用：！Date1.after(Date2);*/
+        List<String> rangeSet =null;
+        SimpleDateFormat sdf = null;
+        Date begin_date = null;
+        Date end_date = null;
+        rangeSet = new java.util.ArrayList<String>();
+        sdf = new SimpleDateFormat("yyyy-MM");
+        try {
+            begin_date = sdf.parse(beginDate);//定义起始日期
+            end_date = sdf.parse(endDate);//定义结束日期
+        } catch (ParseException e) {
+            System.out.println("时间转化异常，请检查你的时间格式是否为yyyy-MM或yyyy-MM-dd");
+        }
+        Calendar dd = Calendar.getInstance();//定义日期实例
+        dd.setTime(begin_date);//设置日期起始时间
+        while(!dd.getTime().after(end_date)){//判断是否到结束日期
+            rangeSet.add(sdf.format(dd.getTime()));
+            dd.add(Calendar.MONTH, 1);//进行当前日期月份加1
+        }
+        return rangeSet;
     }
 
 }

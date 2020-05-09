@@ -118,10 +118,10 @@ public class AppOrderController extends BaseController{
                 PageData user_balance = balanceService.findUserbalanceByUserId(pd_o);
                 PageData order_balance = balanceService.findBalanceDetailByOrderId(pd_o);
                 Integer isreturn = preOrderService.selectisreturn(pd_o);
-                if(order_balance!=null){
+                /*if(order_balance!=null){
                     pd_o.put("discount_money",new BigDecimal(pd_o.get("discount_money").toString())
                             .subtract(new BigDecimal(order_balance.get("balance").toString())));
-                }
+                }*/
                 pd.clear();
                 pd.put("code","1");
                 pd.put("message","正确返回数据!");
