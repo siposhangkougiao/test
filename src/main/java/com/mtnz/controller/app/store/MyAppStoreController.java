@@ -67,12 +67,14 @@ public class MyAppStoreController extends BaseController{
      */
     @RequestMapping(value = "getcode",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String getcode(String phone){
+    public String getcode(String phone,Integer type){
         logBefore(logger,"获取短信验证码");
         PageData pd=this.getPageData();
         try{
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            phone = RASTest.getKeyDES(phone.trim());
+            if(type==null){
+                phone = RASTest.getKeyDES(phone.trim());
+            }
             String[] str = phone.split(",");
             if(str.length !=2 ||str[0]==null||str[1]==null){
                 return getMessage("-105","非法请求");
