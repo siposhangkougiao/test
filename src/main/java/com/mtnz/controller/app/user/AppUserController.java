@@ -2,6 +2,7 @@ package com.mtnz.controller.app.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mtnz.controller.app.statistical.model.StLogin;
+import com.mtnz.controller.app.store.model.StoreUser;
 import com.mtnz.controller.app.user.model.LoginSalt;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
@@ -747,20 +748,28 @@ public class AppUserController extends BaseController {
 
 
     /**
-     * @param store_id 店铺ID
+     * @param uid 店铺ID
      * @return
      */
     @RequestMapping(value = "findShort", produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String findShort(String store_id) {
+    public String findShort(Long uid) {
         logBefore(logger, "查询短信数");
         PageData pd = this.getPageData();
         try {
-            PageData pd_s = storeService.findById(pd);
+            //PageData pd_s = storeService.findById(pd);
+            StoreUser storeUser = new StoreUser();
+            storeUser.setUserId(uid);
+            List<StoreUser> storeUsers =storeService.select(storeUser);
+            List<Long> idlist = new ArrayList<>();
+            for (int i = 0; i < storeUsers.size(); i++) {
+                idlist.add(storeUsers.get(i).getStoreId());
+            }
+            Integer count = storeService.selectSumNumber(idlist);
             pd.clear();
             pd.put("code", "1");
             pd.put("message", "正确返回数据!");
-            pd.put("number", pd_s.get("number").toString());
+            pd.put("number", count);
         } catch (Exception e) {
             e.printStackTrace();
             pd.clear();

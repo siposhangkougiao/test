@@ -73,7 +73,7 @@ public class NotepadServiceImpl implements NotepadService {
             Date end = MyTimesUtil.getDayEndTime(notepad.getUseTime());
             example.and().andBetween("useTime",start,end);
         }
-        example.orderBy("id").desc();
+        example.orderBy("useTime").desc();
         List<Notepad> list = notepadMapper.selectByExample(example);
         SimpleDateFormat sdf1 = new SimpleDateFormat("d日");
         SimpleDateFormat sdf2 = new SimpleDateFormat("M月d日");
@@ -185,7 +185,7 @@ public class NotepadServiceImpl implements NotepadService {
     }
 
     @Override
-    public List<Notepad> selectlistnopage(Notepad notepad) throws ParseException {
+    public List<Notepad> selectlistnopage(Notepad notepad)  {
         Example example = new Example(Notepad.class);
         example.and().andEqualTo("userId",notepad.getUserId());
         if(notepad.getUserId()==null){
@@ -206,7 +206,7 @@ public class NotepadServiceImpl implements NotepadService {
             Date end = MyTimesUtil.getDayEndTime(notepad.getUseTime());
             example.and().andBetween("useTime",start,end);
         }
-        example.orderBy("id").desc();
+        example.orderBy("useTime").desc();
         List<Notepad> list = notepadMapper.selectByExample(example);
         return list;
     }

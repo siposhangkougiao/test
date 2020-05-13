@@ -103,7 +103,8 @@ public class OrderKuncunService extends BaseController{
                             String total_money,String money,String discount_money,
                             String owe_money,String data,String customer_id,String store_id,
                             String medication_date,String remarks,String uid,String open_bill ,String date
-            ,Integer isli,BigDecimal integral,Long open_user,String remark,BigDecimal balance, List<OrderGift> orderGifts) throws Exception {
+            ,Integer isli,BigDecimal integral,Long open_user,String remark,BigDecimal balance,
+                            List<OrderGift> orderGifts,Integer lose) throws Exception {
         logBefore(logger,"销售开单");
         java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");
         PageData pd=this.getPageData();
@@ -305,9 +306,19 @@ public class OrderKuncunService extends BaseController{
             for (int i = 0; i < list.size(); i++) {//遍历获取的商品信息
                 BigDecimal zong = new BigDecimal(list.get(i).get("num").toString());//未转换的零售数量
                 BigDecimal zong1 = new BigDecimal(list.get(i).get("num").toString());
+                PageData product = productService.findById(list.get(i));//查询出来商品的信息
                 if(list.get(i).get("isli")!=null&&new BigDecimal(list.get(i).get("isli").toString()).compareTo(new BigDecimal(0))>0){
                     BigDecimal goumai = new BigDecimal(list.get(i).get("num").toString());
-                    PageData product = productService.findById(list.get(i));//查询出来商品的信息
+
+                    //判断是否支持负库存销售
+                    if(lose!=null){
+                        BigDecimal allNum = new BigDecimal(product.get("kucun").toString()).add(
+                                new BigDecimal(product.get("likucun").toString()).divide(new BigDecimal(product.get("norms1").toString()),4,BigDecimal.ROUND_HALF_UP)
+                        );
+                        if(allNum.compareTo(goumai)<0){
+                            return getMessage("-102","不支持负库存");
+                        }
+                    }
                     if(isnumber(product.get("norms1").toString())){//判断是否可以零售
                         System.out.println(">>>>>>想要购买的总的数量："+zong.toString());
                         if(zong.compareTo(new BigDecimal(0))>0){
@@ -474,6 +485,13 @@ public class OrderKuncunService extends BaseController{
                     listone.add(list.get(i));
                     kunCunService.batchSavessli(listone,store_id,DateUtil.getTime(),"0",customer_id,pd_o.get("order_info_id").toString(),"1",pd_o.get("order_info_id").toString());
                 }else {//这件商品不是拆袋销售的
+                    //判断是否支持负库存销售
+                    if(lose!=null){
+                        BigDecimal allNum = new BigDecimal(product.get("kucun").toString());
+                        if(allNum.compareTo(new BigDecimal(list.get(i).get("num").toString()))<0){
+                            return getMessage("-102","不支持负库存");
+                        }
+                    }
                     list.get(i).put("order_info_id",pd_o.get("order_info_id").toString());
                     list.get(i).put("orde_by","1");
                     list.get(i).put("order_kuncun",list.get(i).get("num"));
@@ -487,10 +505,14 @@ public class OrderKuncunService extends BaseController{
                     list.get(i).put("store_id",store_id);
                     List<PageData> lists=kunCunService.findList(list.get(i));//查找库存
                     String kucun=list.get(i).get("num").toString();//商品购买的数量（这里是需要修改的）
+
                     if(lists!=null&&lists.size()!=0){//遍历库存
+
                         for (int j=0;j<lists.size();j++){
-                            int in=(new Double(kucun)).intValue();
-                            if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){//现有库存大于实际购买的数量时
+                            /*int in=(new Double(kucun)).intValue();*/
+                            BigDecimal in = new BigDecimal(kucun);
+                            /*if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){//现有库存大于实际购买的数量时*/
+                            if(new BigDecimal(lists.get(j).get("nums").toString()).compareTo(in)>-1){//现有库存大于实际购买的数量时
                                 lists.get(j).put("order_pro_id",list.get(i).get("order_pro_id").toString());
                                 lists.get(j).put("product_price",list.get(i).get("product_price").toString());
                                 lists.get(j).put("purchase_price",lists.get(j).get("purchase_price").toString());
@@ -505,7 +527,8 @@ public class OrderKuncunService extends BaseController{
                                 lists.get(j).put("now_number",new BigDecimal(0));
                                 save(lists.get(j));
                                 kucun="0";
-                                lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-Integer.valueOf(in));
+                                /*lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-Integer.valueOf(in));*/
+                                lists.get(j).put("nums",new BigDecimal(lists.get(j).get("nums").toString()).subtract(in));
                                 kunCunService.editNum(lists.get(j));
                             }else{
                                 if(j==lists.size()-1){
@@ -537,7 +560,8 @@ public class OrderKuncunService extends BaseController{
                                     //lists.get(j).put("li_num",new BigDecimal(0));
                                     //lists.get(j).put("li_nums",new BigDecimal(0));
                                     save(lists.get(j));
-                                    Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(lists.get(j).get("nums").toString());
+                                    /*Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(lists.get(j).get("nums").toString());*/
+                                    BigDecimal kuncuns=in.subtract(new BigDecimal(lists.get(j).get("nums").toString()));
                                     kucun=kuncuns.toString();
                                     lists.get(j).put("nums","0");
                                     kunCunService.editNum(lists.get(j));

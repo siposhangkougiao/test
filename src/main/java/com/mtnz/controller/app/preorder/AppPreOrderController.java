@@ -44,7 +44,7 @@ public class AppPreOrderController extends BaseController{
         } catch (Exception e) {
             logger.error("系统错误",e);
             result.setCode(-101);
-            result.setMsg("系统错误");
+            logger.error("系统错误",e);
         }
         return result;
     }
@@ -69,7 +69,7 @@ public class AppPreOrderController extends BaseController{
         } catch (Exception e) {
             result.setMsg("系统错误");
             result.setCode(-101);
-            logger.error("系统错误");
+            logger.error("系统错误",e);
         }
         return result;
     }
@@ -94,7 +94,7 @@ public class AppPreOrderController extends BaseController{
         } catch (Exception e) {
             result.setMsg("系统错误");
             result.setCode(-101);
-            logger.error("系统错误");
+            logger.error("系统错误",e);
         }
         return result;
     }
@@ -118,7 +118,7 @@ public class AppPreOrderController extends BaseController{
         } catch (Exception e) {
             result.setMsg("系统错误");
             result.setCode(-101);
-            logger.error("系统错误");
+            logger.error("系统错误",e);
         }
         return result;
     }

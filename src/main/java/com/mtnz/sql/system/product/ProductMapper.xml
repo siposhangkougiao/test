@@ -226,13 +226,19 @@
 
     <update id="editJiaNums" parameterType="pd">
         UPDATE product
-        SET kucun=kucun+#{num},likucun = likucun+#{now_number}
+        SET kucun=kucun+#{num}
+        <if test="now_number !=null">
+            ,likucun = likucun+#{now_number}
+        </if>
         WHERE product_id=#{product_id}
     </update>
 
     <update id="editJiaNumsli" parameterType="pd">
         UPDATE product
-        SET kucun=kucun+#{num},likucun = likucun+#{now_number}
+        SET kucun=kucun+#{num}
+        <if test="now_number !=null">
+            ,likucun = likucun+#{now_number}
+        </if>
         WHERE product_id=#{product_id}
     </update>
 

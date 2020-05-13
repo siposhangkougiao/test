@@ -49,6 +49,7 @@ public class KunCunService {
         map.put("order_info_id",order_info_id);
         map.put("jia",jia);
         map.put("id",id);
+
         daoSupport.save("KunCunMapper.batchSavess",map);
     }
 

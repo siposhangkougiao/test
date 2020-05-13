@@ -53,6 +53,7 @@ public class AppProductController extends BaseController{
                                     Integer pageNumber,Integer pageSize,Integer type,String typeName){
         logBefore(logger,"查询详情");
         PageData pd=this.getPageData();
+        pageSize = 5;
         if(pageNumber!=null&&pageSize!=null){
             pd.put("pageNumber",(pageNumber-1)*pageSize);
             pd.put("pageSize",pageSize);
@@ -802,9 +803,16 @@ public class AppProductController extends BaseController{
                 //查询店铺库存的所有商品
                 Integer pageNumber = Integer.valueOf(pageNum);
                 Integer pageSize = 10;
-                PageHelper.startPage(pageNumber,pageSize);
-                List<PageData> list=productService.findProductxx(pd);
-                PageInfo pageInfo = new PageInfo(list);
+                //PageHelper.startPage(pageNumber,pageSize);
+                List<PageData> lista=productService.findProductxx(pd);
+                int startIndex = (pageNumber - 1) * pageSize;
+                int endIndex = Math.min(startIndex + pageSize,lista.size());
+                List<PageData> list = lista.subList(startIndex,endIndex);
+
+                com.github.pagehelper.Page page = new com.github.pagehelper.Page(pageNumber, pageSize);
+                page.setTotal(lista.size());
+                page.addAll(list);
+                PageInfo pageInfo = new PageInfo<>(page);
                 //查询店铺一共有多少个商品
                 //PageData pd_c=productService.findProductCount(pd);
                 for (int i=0,len=list.size();i<len;i++){
@@ -843,19 +851,19 @@ public class AppProductController extends BaseController{
                 }*/
                 //开始计算总进货价
                 BigDecimal priceaa = new BigDecimal(0);
-                for (int i = 0; i <list.size() ; i++) {
+                for (int i = 0; i <lista.size() ; i++) {
                     //if(Integer.valueOf(String.valueOf(list.get(i).get("kucun")))>0){
-                    if(new BigDecimal(String.valueOf(list.get(i).get("kucun"))).compareTo(new BigDecimal(0))>0){
+                    if(new BigDecimal(String.valueOf(lista.get(i).get("kucun"))).compareTo(new BigDecimal(0))>0){
                         PageData kucun= new PageData();
-                        kucun.put("product_id",list.get(i).get("product_id"));
-                        kucun.put("store_id",list.get(i).get("store_id"));
+                        kucun.put("product_id",lista.get(i).get("product_id"));
+                        kucun.put("store_id",lista.get(i).get("store_id"));
                         List<PageData> pricelist = productService.findProductPrice(kucun);
                         for (int j = 0; j <pricelist.size() ; j++) {
                             //System.out.println("數量："+pricelist.get(j).get("nums")+"单价是："+pricelist.get(j).get("purchase_price"));
                             priceaa = priceaa.add(new BigDecimal(pricelist.get(j).get("nums").toString()).multiply(new BigDecimal(pricelist.get(j).get("purchase_price").toString())));
                             if(pricelist.get(j).get("likucun")!=null){
                                 BigDecimal a = new BigDecimal(pricelist.get(j).get("likucun").toString());
-                                BigDecimal b = new BigDecimal(list.get(i).get("norms1").toString());
+                                BigDecimal b = new BigDecimal(lista.get(i).get("norms1").toString());
                                 BigDecimal c = new BigDecimal(pricelist.get(j).get("purchase_price").toString());
                                 priceaa = priceaa.add(a.divide(b,4).multiply(c));
                             }

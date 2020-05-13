@@ -1,8 +1,13 @@
 package com.mtnz.service.system.store;
 
 
+import com.mtnz.controller.app.store.model.StoreLose;
+import com.mtnz.controller.app.store.model.StoreUser;
 import com.mtnz.dao.DaoSupport;
 import com.mtnz.entity.Page;
+import com.mtnz.sql.system.store.StoreLoseMapper;
+import com.mtnz.sql.system.store.StoreMapper;
+import com.mtnz.sql.system.store.StoreUserMapper;
 import com.mtnz.util.PageData;
 import org.springframework.stereotype.Service;
 
@@ -86,5 +91,43 @@ public class StoreService {
 
     public PageData findStoreOneByUId(PageData pd) throws Exception {
        return (PageData) daoSupport.findForObject("StoreMapper.findStoreOneByUId",pd);
+    }
+
+    @Resource
+    StoreUserMapper storeUserMapper;
+
+    @Resource
+    StoreMapper storeMapper;
+
+    @Resource
+    StoreLoseMapper storeLoseMapper;
+
+    public List<StoreUser> select(StoreUser storeUser) {
+
+        return  storeUserMapper.select(storeUser);
+    }
+
+    public Integer selectSumNumber(List<Long> idlist) {
+
+        return storeMapper.selectSumNumber(idlist);
+    }
+
+    public void insert(StoreLose storeLose) {
+        StoreLose bean = new StoreLose();
+        bean.setStoreId(storeLose.getStoreId());
+        if(storeLoseMapper.selectCount(bean)>0){
+            StoreLose beans= storeLoseMapper.selectOne(bean);
+            StoreLose storeLose1 = new StoreLose();
+            storeLose1.setId(beans.getId());
+            storeLose1.setStatus(storeLose.getStatus());
+            storeLoseMapper.updateByPrimaryKeySelective(storeLose1);
+        }else {
+            storeLoseMapper.insertSelective(storeLose);
+        }
+    }
+
+    public StoreLose selectLose(StoreLose storeLose) {
+
+        return storeLoseMapper.selectOne(storeLose);
     }
 }

@@ -5,6 +5,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mtnz.controller.app.product.model.KuCun;
+import com.mtnz.controller.app.supplier.model.SupplierOrderPro;
 import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceDetail;
 import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceOrder;
 import com.mtnz.controller.app.supplierbalance.model.SupplierBalanceOwe;
@@ -13,6 +15,7 @@ import com.mtnz.controller.base.ServiceException;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.order_kuncun.OrderKuncunService;
 import com.mtnz.service.system.order_pro.OrderProService;
+import com.mtnz.service.system.product.KuCunNewService;
 import com.mtnz.service.system.product.KunCunService;
 import com.mtnz.service.system.product.ProductService;
 import com.mtnz.service.system.repayments.RepaymentsService;
@@ -21,6 +24,7 @@ import com.mtnz.service.system.return_supplier.ReturnSupplierOrderProService;
 import com.mtnz.service.system.supplier.SupplierOrderInfoService;
 import com.mtnz.service.system.supplier.SupplierOrderProService;
 import com.mtnz.service.system.supplier.SupplierService;
+import com.mtnz.service.system.supplier.SupplieresService;
 import com.mtnz.sql.system.supplierbalance.SupplierBalanceDetailMapper;
 import com.mtnz.sql.system.supplierbalance.SupplierBalanceOrderMapper;
 import com.mtnz.sql.system.supplierbalance.SupplierBalanceOweMapper;
@@ -74,6 +78,10 @@ public class AppSupplierController extends BaseController{
     private SupplierBalanceOrderMapper supplierBalanceOrderMapper;
     @Resource
     private SupplierBalanceDetailMapper supplierBalanceDetailMapper;
+    @Resource
+    private SupplieresService supplieresService;
+    @Resource
+    private KuCunNewService kuCunNewService;
 
 
     /**
@@ -504,7 +512,7 @@ public class AppSupplierController extends BaseController{
 
 
     /**
-     *  进货单
+     *  添加进货单
      * @param supplier_id 供应商ID
      * @param store_id 店ID
      * @param uid 用户ID
@@ -519,7 +527,7 @@ public class AppSupplierController extends BaseController{
     @RequestMapping(value = "saveSupplierOrder",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String saveSupplierOrderInfo(String supplier_id,String store_id,String uid,String money,
-                                        String owe_money,String total_money,String remarks,
+                                        String owe_money,String total_money,String remarks,String discount_money,
                                         String data,String status,String open_bill,BigDecimal balance){
         logBefore(logger,"进货添加订单");
         PageData pd=this.getPageData();
@@ -547,6 +555,10 @@ public class AppSupplierController extends BaseController{
             Gson gson = new Gson();
             List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
             }.getType());   //获取订单商品列表
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).put("nums",list.get(i).get("num"));
+            }
+            //添加订单详情
             supplierOrderProService.batchSave(list,pd.get("supplier_order_info_id").toString());
             PageData pd_s=supplierService.findById(pd);
             Double owe=0.0;
@@ -574,7 +586,7 @@ public class AppSupplierController extends BaseController{
                 SupplierBalanceOwe supplierBalanceOwe = supplierBalanceOweMapper.selectOne(balanceOwe);
                 if(supplierBalanceOwe!=null){
                     if(supplierBalanceOwe.getPrePrice().compareTo(balance)==-1){
-                        throw new ServiceException(-101,"预付款余额不足",null);
+                        return getMessage("-101","预付款余额不足");
                     }
                     SupplierBalanceOrder supplierBalanceOrder = new SupplierBalanceOrder();
                     supplierBalanceOrder.setPrice(balance);
@@ -758,6 +770,15 @@ public class AppSupplierController extends BaseController{
         PageData pd=this.getPageData();
         try{
             PageData pd_o=supplierOrderInfoService.findById(pd);
+            SupplierBalanceOrder supplierBalanceOrder = new SupplierBalanceOrder();
+            supplierBalanceOrder.setOrderId(Long.valueOf(pd_o.get("supplier_order_info_id").toString()));
+            supplierBalanceOrder.setIsBack(0);
+            SupplierBalanceOrder bean = supplierBalanceOrderMapper.selectOne(supplierBalanceOrder);
+            if(bean!=null){
+                pd_o.put("balance_price",bean.getPrice());
+            }else {
+                pd_o.put("balance_price",0);
+            }
             List<PageData> list=supplierOrderProService.findList(pd_o);
             pd.clear();
             pd.put("code","1");
@@ -1064,7 +1085,6 @@ public class AppSupplierController extends BaseController{
         return str;
     }
 
-
     /**
      *
      * @param supplier_order_info_id 进货订单ID
@@ -1109,16 +1129,29 @@ public class AppSupplierController extends BaseController{
             List<PageData> list = gson.fromJson(data, new TypeToken<List<PageData>>() {
             }.getType());   //获取订单商品列表
             for(int i=0;i<list.size();i++){
+                list.get(i).put("all_number",new BigDecimal(0));
+                list.get(i).put("now_number",new BigDecimal(0));
+                list.get(i).put("likucun",new BigDecimal(0));
+                //修改进货单详情剩余数量
+                SupplierOrderPro supplierOrderPro = new SupplierOrderPro();
+                supplierOrderPro.setProductId(Double.valueOf(list.get(i).get("product_id").toString()).longValue());
+                supplierOrderPro.setSupplierOrderInfoId(Long.valueOf(supplier_order_info_id));
+                supplierOrderPro.setNum(new BigDecimal(list.get(i).get("num").toString()));
+                supplierOrderPro.setType(2);
+                supplieresService.update(supplierOrderPro);
                 list.get(i).put("store_id",store_id);
                 list.get(i).put("product_id",list.get(i).get("product_id").toString());
                 List<PageData> lists=kunCunService.findList(list.get(i));
                 String kucun=list.get(i).get("num").toString();
                 if(lists!=null&&lists.size()!=0){
                     for (int j=0;j<lists.size();j++){
-                        int in=(new Double(kucun)).intValue();
-                        if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){
+                        /*int in=(new Double(kucun)).intValue();*/
+                        BigDecimal in = new BigDecimal(kucun);
+                        /*if(Integer.valueOf(lists.get(j).get("nums").toString())>=in){*/
+                        if(new BigDecimal(lists.get(j).get("nums").toString()).compareTo(in)>-1){
                             kucun="0";
-                            lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-Integer.valueOf(in));
+                            /*lists.get(j).put("nums",Integer.valueOf(lists.get(j).get("nums").toString())-Integer.valueOf(in));*/
+                            lists.get(j).put("nums",new BigDecimal(lists.get(j).get("nums").toString()).subtract(in));
                             kunCunService.editNum(lists.get(j));
                         }else{
                             if(j==lists.size()-1){
@@ -1126,7 +1159,8 @@ public class AppSupplierController extends BaseController{
                                 lists.get(j).put("nums","0");
                                 kunCunService.editNum(lists.get(j));
                             }else{
-                                Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(lists.get(j).get("nums").toString());
+                                /*Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(lists.get(j).get("nums").toString());*/
+                                BigDecimal kuncuns = in.subtract(new BigDecimal(lists.get(j).get("nums").toString()));
                                 kucun=kuncuns.toString();
                                 lists.get(j).put("nums","0");
                                 kunCunService.editNum(lists.get(j));
@@ -1137,6 +1171,7 @@ public class AppSupplierController extends BaseController{
                 productService.editNum(list.get(i));
                 list.get(i).put("return_supplier_order_info_id",pd_s.get("return_supplier_order_info_id").toString());
                 returnSupplierOrderProService.save(list.get(i));
+
             }
             kunCunService.batchSavess(list,store_id,DateUtil.getTime(),"4",pd_s.get("supplier_id").toString(),pd_s.get("supplier_order_info_id").toString(),"1",pd_s.get("return_supplier_order_info_id").toString());
             pd.clear();
@@ -1213,6 +1248,11 @@ public class AppSupplierController extends BaseController{
         return str;
     }
 
+    /**
+     * 撤销进货退货账单
+     * @param return_supplier_order_info_id
+     * @return
+     */
     @RequestMapping(value = "RevokesRetrunSupplierOrderInfo",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String RevokesRetrunSupplierOrderInfo(String return_supplier_order_info_id){
@@ -1221,14 +1261,43 @@ public class AppSupplierController extends BaseController{
         try {
             pd.put("revokes","1");
             PageData pdReturn=returnSupplierOrderInfoService.findById(pd);
+
             returnSupplierOrderInfoService.editRevokes(pd);
             List<PageData> list=returnSupplierOrderProService.findList(pd);
             for(int i=0;i<list.size();i++){
+                SupplierOrderPro supplierOrderPro = new SupplierOrderPro();
+                supplierOrderPro.setSupplierOrderInfoId(Double.valueOf(pdReturn.get("supplier_order_info_id").toString()).longValue());
+                supplierOrderPro.setProductId(Double.valueOf(list.get(i).get("product_id").toString()).longValue());
+                supplierOrderPro.setNum(new BigDecimal(list.get(i).get("num").toString()));
+                supplierOrderPro.setType(1);
+                supplieresService.update(supplierOrderPro);
+
                 list.get(i).put("supplier_order_info_id",pdReturn.get("supplier_order_info_id").toString());
                 list.get(i).put("id",return_supplier_order_info_id);
-                PageData pdKuCun=kunCunService.findReturnSupplierProduct(list.get(i));
+                /*PageData pdKuCun=kunCunService.findReturnSupplierProduct(list.get(i));
                 pdKuCun.put("nums",Integer.valueOf(pdKuCun.get("nums").toString())+Integer.valueOf(list.get(i).get("num").toString()));
-                kunCunService.editJiaNums(pdKuCun);
+                pdKuCun.put("nums",new BigDecimal(pdKuCun.get("nums").toString()).add(new BigDecimal(list.get(i).get("num").toString())));*/
+                PageData data= new PageData();
+                /*data.put("")
+                kunCunService.editJiaNums(pdKuCun);*/
+                PageData pageData = new PageData();
+                pageData.put("product_id",list.get(i).get("product_id").toString());
+                pageData.put("order_info_id",pdReturn.get("supplier_order_info_id").toString());
+                KuCun kuCun = new KuCun();
+                kuCun.setOrderInfoId(Double.valueOf(pdReturn.get("supplier_order_info_id").toString()).longValue());
+                kuCun.setProductId(Double.valueOf(list.get(i).get("product_id").toString()).longValue());
+                kuCun.setRevokes("0");
+                kuCun.setJia("0");
+                kuCun.setStatus("2");
+                KuCun kuCunBean = kuCunNewService.selectKuCun(kuCun);
+                if(kuCunBean==null){
+                    throw new ServiceException(-103,"库存信息不存在",null);
+                }
+                KuCun upkucun = new KuCun();
+                upkucun.setKuncunId(kuCunBean.getKuncunId());
+                upkucun.setNums(kuCunBean.getNums().add(new BigDecimal(list.get(i).get("num").toString())));
+                kuCunNewService.updateNums(upkucun);
+                list.get(i).put("now_number",new BigDecimal(0));
                 productService.editJiaNums(list.get(i));
             }
             pd.clear();

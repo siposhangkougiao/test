@@ -37,6 +37,7 @@
                 replace(product_name,"XINg"," ") as product_name,
                 product_price,
                 num,
+                nums,
                 total,
                 orde_by,
                 norms1,
@@ -57,6 +58,7 @@
             product_name,
             product_price,
             num,
+            nums,
             total,
             orde_by,
             norms1,
@@ -65,7 +67,8 @@
             product_id
         )VALUE
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{supplier_order_info_id},#{item.product_name},#{item.product_price},#{item.num},#{item.total},"0",#{item.norms1},#{item.norms2},#{item.norms3},#{item.product_id})
+            (#{supplier_order_info_id},#{item.product_name},#{item.product_price}
+            ,#{item.num},#{item.nums},#{item.total},"0",#{item.norms1},#{item.norms2},#{item.norms3},#{item.product_id})
         </foreach>
     </insert>
 

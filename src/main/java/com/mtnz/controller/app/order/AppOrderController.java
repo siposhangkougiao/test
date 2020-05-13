@@ -1282,7 +1282,6 @@ public class AppOrderController extends BaseController{
                     }
                     kunCunService.editJiaNums(lists.get(j));
                 }
-                PageData pageData = new PageData();
                 productService.editJiaNums(list.get(i));
             }
             pd.clear();
@@ -1331,7 +1330,7 @@ public class AppOrderController extends BaseController{
                              String total_money, String money, String discount_money,
                              String owe_money, String data, String customer_id, String store_id,
                              String medication_date, String remarks, String uid, String open_bill, String date, Integer isli
-                , BigDecimal integral, Long open_user, String remark, BigDecimal balance,String orderGifts){
+                , BigDecimal integral, Long open_user, String remark, BigDecimal balance,String orderGifts,Integer lose){
         PageData pd=new PageData();
         String str="";
         try {
@@ -1348,7 +1347,7 @@ public class AppOrderController extends BaseController{
             }
             str=orderKuncunService.saveOrder(name,phone,status,total_money,money,discount_money,
                     owe_money,data.trim(),customer_id,store_id,
-                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance,orderGift);
+                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance,orderGift,lose);
             return str;
         }catch (Exception e){
             pd.clear();

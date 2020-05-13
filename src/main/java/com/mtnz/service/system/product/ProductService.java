@@ -1,15 +1,25 @@
 package com.mtnz.service.system.product;
 
-import com.mtnz.dao.DaoSupport;
+import com.github.pagehelper.PageInfo;
+import com.mtnz.controller.app.product.model.ProductImg;
+import com.mtnz.controller.app.supplier.model.Supplier;
 import com.mtnz.entity.Page;
+import com.mtnz.controller.app.product.model.Product;
+import com.mtnz.dao.DaoSupport;
+
+import com.mtnz.service.system.supplier.SupplierService;
+import com.mtnz.service.system.supplier.SupplieresService;
+import com.mtnz.sql.system.mysql.ProductMapper;
+import com.mtnz.sql.system.product.ProductImgMapper;
+import com.mtnz.sql.system.product.ProductNewMapper;
 import com.mtnz.util.PageData;
 import org.apache.commons.collections.map.HashedMap;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 /*
     Created by xxj on 2018\3\21 0021.
@@ -208,5 +218,69 @@ public class ProductService {
         Map map = new HashedMap();
         map.put("list",xx);
         daoSupport.update("ProductMapper.editProductallxx",map);
+    }
+
+    @Resource
+    ProductNewMapper productNewMapper;
+
+    @Resource
+    ProductImgMapper productImgMapper;
+
+    @Resource
+    SupplieresService supplieresService;
+
+    public PageInfo selectList(Product product) {
+        Product bean = new Product();
+        bean.setStatus(0);
+        bean.setStoreId(product.getStoreId());
+        List<Product> list = productNewMapper.select(bean);
+        Integer total = list.size();
+        for (int i = 0; i < list.size(); i++) {
+            Integer number = productNewMapper.selectOrderCount(list.get(i).getProductId());
+            if(number==null){
+                number=0;
+            }
+            list.get(i).setCount(number);
+        }
+        list.sort(Comparator.comparing(Product::getCount).reversed());
+        //计算当前需要显示的数据下标起始值
+        int startIndex = (product.getPageNumber() - 1) * product.getPageSize();
+        int endIndex = Math.min(startIndex + product.getPageSize(),list.size());
+        list = list.subList(startIndex,endIndex);
+        for (int i = 0; i < list.size(); i++) {
+            ProductImg productImg = new ProductImg();
+            productImg.setProductId(list.get(i).getProductId());
+            List<ProductImg> imgs = productImgMapper.select(productImg);
+            list.get(i).setImgs(imgs);
+
+            //计算库存
+            BigDecimal a = list.get(i).getLikucun();
+            BigDecimal b = new BigDecimal(1);
+            try {
+                b = new BigDecimal(list.get(i).getNorms1());
+            }catch (Exception e){
+            }
+            BigDecimal c = null;
+            try {
+                c = a.divide(b,4);
+            } catch (Exception e) {
+                c= new BigDecimal(0);
+            }
+            BigDecimal kus = list.get(i).getKucun().add(c);
+            list.get(i).setKucun(kus);
+
+            //查询供货商
+            Supplier supplierbean = new Supplier();
+            supplierbean.setSupplierId(list.get(i).getSupplierId());
+            Supplier supplier = supplieresService.selectSupplier(supplierbean);
+            list.get(i).setSupplier(supplier);
+        }
+        //创建Page类
+        com.github.pagehelper.Page page = new com.github.pagehelper.Page(product.getPageNumber(), product.getPageSize());
+        page.setTotal(total);
+        page.addAll(list);
+        PageInfo pageInfo = new PageInfo<>(page);
+
+        return pageInfo;
     }
 }

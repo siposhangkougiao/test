@@ -351,7 +351,7 @@
             supplier_id,
             jia
         FROM kuncun
-        WHERE order_info_id=#{supplier_order_info_id} and product_id=#{product_id} and status='4' and jia='0'
+        WHERE order_info_id=#{supplier_order_info_id} and product_id=#{product_id} and status='4' and jia='1'
     </select>
 
 

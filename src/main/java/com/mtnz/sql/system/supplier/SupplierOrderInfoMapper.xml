@@ -17,6 +17,9 @@
             gname,
             open_bill,
             status
+            <if test="discount_money !=null">
+                ,discount_money
+            </if>
         )VALUES (
             #{supplier_id},
             #{store_id},
@@ -32,6 +35,9 @@
             #{gname},
             #{open_bill},
             #{status}
+        <if test="discount_money !=null">
+            ,#{discount_money}
+        </if>
         )
     </insert>
 
@@ -134,7 +140,8 @@
                 gname,
                 status,
                 revokes,
-                open_bill
+                open_bill,
+                discount_money
             FROM supplier_order_info
             WHERE supplier_order_info_id=#{supplier_order_info_id}
             ORDER BY date DESC

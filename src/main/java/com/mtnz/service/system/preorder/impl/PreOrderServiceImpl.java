@@ -67,7 +67,7 @@ public class PreOrderServiceImpl implements PreOrderService {
         BigDecimal total_price = new BigDecimal(0);
         List<PreOrder> listprice  = preOrderMapper.selectlist(preOrder);
         for (int i = 0; i < listprice.size(); i++) {
-            PreOrder poder = preOrderMapper.selectByPrimaryKey(list.get(i).getId());
+            PreOrder poder = preOrderMapper.selectByPrimaryKey(listprice.get(i).getId());
             total_price = total_price.add(poder.getPrice());
         }
         SelectListBean selectListBean = new SelectListBean();
