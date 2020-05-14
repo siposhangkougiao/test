@@ -894,6 +894,24 @@ public class AppSupplierController extends BaseController{
                 }else{
                    list.get(i).put("money","0.0");
                }
+
+                //计算库存
+                BigDecimal a = new BigDecimal(list.get(i).get("likucun").toString());
+                BigDecimal b = new BigDecimal(1);
+                try {
+                    b = new BigDecimal(list.get(i).get("norms1").toString());
+                }catch (Exception e){
+                }
+                BigDecimal c = null;
+                try {
+                    c = a.divide(b,4);
+                } catch (Exception e) {
+                    c= new BigDecimal(0);
+                }
+                //BigDecimal kus = list.get(i).getKucun().add(c);
+                BigDecimal kus = new BigDecimal(list.get(i).get("kucun").toString()).add(c);
+
+                list.get(i).put("kucun",kus);
             }
             Map<String, Object> map = new HashedMap();
             map.put("object",list);
