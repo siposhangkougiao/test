@@ -32,7 +32,7 @@
           <element id="library" level="project" name="Maven: org.aspectj:aspectjweaver:1.7.4" />
           <element id="library" level="project" name="Maven: cglib:cglib:3.1" />
           <element id="library" level="project" name="Maven: org.ow2.asm:asm:4.2" />
-          <element id="library" level="project" name="Maven: com.qiniu:qiniu-java-sdk:7.2.28" />
+          <element id="library" level="project" name="Maven: com.qiniu:qiniu-java-sdk:7.2.29" />
           <element id="library" level="project" name="Maven: com.squareup.okhttp3:okhttp:3.14.4" />
           <element id="library" level="project" name="Maven: com.squareup.okio:okio:1.17.2" />
           <element id="library" level="project" name="Maven: javax.validation:validation-api:2.0.1.Final" />

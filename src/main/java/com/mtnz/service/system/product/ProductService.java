@@ -283,4 +283,9 @@ public class ProductService {
 
         return pageInfo;
     }
+
+    public List<PageData> selectproductList(PageData pd) throws Exception {
+
+        return (List<PageData>) daoSupport.findForList("ProductMapper.selectproductList",pd);
+    }
 }

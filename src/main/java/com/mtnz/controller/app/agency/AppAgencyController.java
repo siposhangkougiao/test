@@ -1,9 +1,11 @@
 package com.mtnz.controller.app.agency;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mtnz.controller.app.store.model.StoreLose;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.service.system.agency.AgencyService;
 import com.mtnz.service.system.banner.BannerService;
+import com.mtnz.service.system.store.StoreService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.util.DateUtil;
 import com.mtnz.util.PageData;
@@ -33,6 +35,8 @@ public class AppAgencyController extends BaseController{
     private BannerService bannerService;
     @Resource(name = "sysAppUserService")
     private SysAppUserService sysAppUserService;
+    @Resource
+    private StoreService storeService;
 
 
     /**
@@ -331,7 +335,16 @@ public class AppAgencyController extends BaseController{
                 PageData pd_c=agencyService.findCount(pd);
                 List<PageData> list=bannerService.findList(pd);
                 PageData pd_s=sysAppUserService.findBySId(pd);
+                StoreLose storeLose = new StoreLose();
+                storeLose.setStoreId(Long.valueOf(store_id));
+                StoreLose selectLose = storeService.selectLose(storeLose);
                 pd.clear();
+                if(selectLose!=null){
+                    pd.put("lose",selectLose);
+                }else {
+                    storeLose.setStatus(1);
+                    pd.put("lose",storeLose);
+                }
                 pd.put("code","1");
                 pd.put("message","正确返回数据!");
                 pd.put("count",pd_c.get("count").toString());
@@ -345,6 +358,7 @@ public class AppAgencyController extends BaseController{
                 pd.put("street",pd_s.getString("street"));
                 pd.put("phone",pd_s.getString("sphone"));
                 pd.put("openid",pd_s.getString("openid"));
+
                 if(pd_s.getString("qr_code")==null){
                     pd.put("qr_code","");
                 }else {

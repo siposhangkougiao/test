@@ -123,6 +123,44 @@
         LEFT JOIN supplier s on s.supplier_id=p.supplier_id
     </select>
 
+    <select id="selectproductList" parameterType="pd" resultType="pd">
+        SELECT
+        p.*,
+        s.`name`,
+        s.gname
+        FROM(
+        SELECT
+        product_id,
+        store_id,
+        product_name,
+        product_price,
+        purchase_price,
+        production_enterprise,
+        product_img,
+        date,
+        norms1,
+        norms2,
+        norms3,
+        kucun,
+        type,
+        bar_code,
+        bar_code_number,
+        supplier_id,
+        number as numbers,
+        url,
+        status,
+        type2,
+        likucun
+        FROM product
+        WHERE store_id=#{store_id} and status='0'
+        <if test="type !=null and type !=''">
+            and type = #{type}
+        </if>
+        ORDER BY date DESC
+        ) p
+        LEFT JOIN supplier s on s.supplier_id=p.supplier_id
+    </select>
+
 
     <!--  修改商品 -->
     <update id="updateProduct" parameterType="pd">

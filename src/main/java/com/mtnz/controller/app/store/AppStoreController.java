@@ -4,6 +4,7 @@ package com.mtnz.controller.app.store;
     Created by xxj on 2018\4\18 0018.  
  */
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mtnz.controller.app.store.model.StoreLose;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.already.AlreadyService;
@@ -799,6 +800,16 @@ public class AppStoreController extends BaseController{
         try{
             //查询关联表
             List<PageData> list=storeService.findstorListById(pd);
+            for (int i = 0; i < list.size(); i++) {
+                StoreLose storeLose = new StoreLose();
+                storeLose.setStoreId(Long.valueOf(list.get(i).get("store_id").toString()));
+                StoreLose selectLose = storeService.selectLose(storeLose);
+                if(selectLose!=null){
+                    list.get(i).put("lose",selectLose.getStatus());
+                }else {
+                    list.get(i).put("lose",1);
+                }
+            }
             pd.clear();
             pd.put("code","1");
             pd.put("message","正确返回数据!");
@@ -1035,6 +1046,14 @@ public class AppStoreController extends BaseController{
                 pageData.put("status",0);
                 pageData.put("ismr",1);
                 storeService.saveStoreUser(pageData);
+                StoreLose storeLose = new StoreLose();
+                storeLose.setStoreId(Long.valueOf(list.get(i).get("store_id").toString()));
+                StoreLose selectLose = storeService.selectLose(storeLose);
+                if(selectLose!=null){
+                    list.get(i).put("lose",selectLose.getStatus());
+                }else {
+                    list.get(i).put("lose",1);
+                }
             }
             pd.clear();
             pd.put("code","1");

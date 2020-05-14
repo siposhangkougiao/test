@@ -456,7 +456,9 @@ public class AppCustomerController extends BaseController{
                 pd.clear();
                 pd.put("code",status);
                 pd.put("message",message);
-                pd.put("customer",pageData.get(pageData.size()-1).get("customer_id").toString());
+                if(pageData.size()>0){
+                    pd.put("customer",pageData.get(pageData.size()-1).get("customer_id").toString());
+                }
             }catch (Exception e){
                 pd.clear();
                 pd.put("code","2");

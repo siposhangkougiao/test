@@ -776,6 +776,15 @@ public class AppProductController extends BaseController{
         return str;
     }
 
+    public static void main(String[] args) {
+        int startIndex = 0;
+        int endIndex = Math.min(startIndex ,3);
+        List<String> list = new ArrayList<>();
+        list.add("1");
+        list.add("12");
+        list.add("13");
+        list = list.subList(startIndex,endIndex);
+    }
     /**
      * 查询商品
      * @param store_id 店铺ID
@@ -794,6 +803,9 @@ public class AppProductController extends BaseController{
             pd.put("message","缺少参数");
         }else{
             try{
+                if(pd.containsKey("pageSize")){
+                    pd.remove("pageSize");
+                }
                 String message="正确返回数据!";
                 if (pageNum == null || pageNum.length() == 0) {
                     pageNum = "1";
@@ -804,7 +816,7 @@ public class AppProductController extends BaseController{
                 Integer pageNumber = Integer.valueOf(pageNum);
                 Integer pageSize = 10;
                 //PageHelper.startPage(pageNumber,pageSize);
-                List<PageData> lista=productService.findProductxx(pd);
+                List<PageData> lista=productService.selectproductList(pd);
                 int startIndex = (pageNumber - 1) * pageSize;
                 int endIndex = Math.min(startIndex + pageSize,lista.size());
                 List<PageData> list = lista.subList(startIndex,endIndex);
@@ -1359,19 +1371,26 @@ public class AppProductController extends BaseController{
             pd_p.put("status","3");
             pd_p.put("supplier_id","0");
             pd_p.put("customer_id","0");
-            Integer cc = 0;//这是实际操作的差值
-            if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){
-                pd_p.put("num",Integer.valueOf(pd_p.get("kucun").toString())-Integer.valueOf(kucun));
+            BigDecimal cc = new BigDecimal(0);//这是实际操作的差值
+            /*if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){*/
+            if(new BigDecimal(pd_p.get("kucun").toString()).compareTo(new BigDecimal(kucun))==1){
+                //pd_p.put("num",Integer.valueOf(pd_p.get("kucun").toString())-Integer.valueOf(kucun));
+                pd_p.put("num",new BigDecimal(pd_p.get("kucun").toString()).subtract(new BigDecimal(kucun)));
                 pd_p.put("jia","1");
                 pd_p.put("total","0");
                 pd_p.put("money","0");
-                cc = Integer.valueOf(pd_p.get("kucun").toString())-Integer.valueOf(kucun);
+                //cc = Integer.valueOf(pd_p.get("kucun").toString())-Integer.valueOf(kucun);
+                cc = new BigDecimal(pd_p.get("kucun").toString()).subtract(new BigDecimal(kucun));
             }else{
-                pd_p.put("num",Integer.valueOf(kucun)-Integer.valueOf(pd_p.get("kucun").toString()));
-                pd_p.put("money",Double.valueOf(pd_p.getString("purchase_price"))*Integer.valueOf(pd_p.get("num").toString()));
-                pd_p.put("total",Double.valueOf(pd_p.getString("purchase_price"))*Integer.valueOf(pd_p.get("num").toString()));
+                //pd_p.put("num",Integer.valueOf(kucun)-Integer.valueOf(pd_p.get("kucun").toString()));
+                pd_p.put("num",new BigDecimal(kucun).subtract(new BigDecimal(pd_p.get("kucun").toString())));
+                //pd_p.put("money",Double.valueOf(pd_p.getString("purchase_price"))*Integer.valueOf(pd_p.get("num").toString()));
+                pd_p.put("money",new BigDecimal(pd_p.get("purchase_price").toString()).multiply(new BigDecimal(pd_p.get("num").toString())).setScale(2,BigDecimal.ROUND_HALF_UP));
+                //pd_p.put("total",Double.valueOf(pd_p.getString("purchase_price"))*Integer.valueOf(pd_p.get("num").toString()));
+                pd_p.put("total",new BigDecimal(pd_p.get("purchase_price").toString()).multiply(new BigDecimal(pd_p.get("num").toString())).setScale(2,BigDecimal.ROUND_HALF_UP));
                 pd_p.put("jia","0");
-                cc = Integer.valueOf(kucun)-Integer.valueOf(pd_p.get("kucun").toString());
+                //cc = Integer.valueOf(kucun)-Integer.valueOf(pd_p.get("kucun").toString());
+                cc = new BigDecimal(kucun).subtract(new BigDecimal(pd_p.get("kucun").toString()));
             }
             pd_p.put("date",DateUtil.getTime());
             pd_p.put("order_info_id","0");
@@ -1387,24 +1406,30 @@ public class AppProductController extends BaseController{
 
             //查询进货单
             List<PageData> list=kunCunService.findListjin(pd);
-            if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){//这是减库存了
+            //if(Integer.valueOf(pd_p.get("kucun").toString())>Integer.valueOf(kucun)){//这是减库存了
+            if(new BigDecimal(pd_p.get("kucun").toString()).compareTo(new BigDecimal(kucun))==1){//这是减库存了
                 /*int in=cc;//实际操作的差值*/
-                int in = Integer.valueOf(pd_p.get("kucun").toString()) - Integer.valueOf(kucun);
+                //int in = Integer.valueOf(pd_p.get("kucun").toString()) - Integer.valueOf(kucun);
+                BigDecimal in = new BigDecimal(pd_p.get("kucun").toString()).subtract(new BigDecimal(kucun));
                 for(int i=0;i<list.size();i++){
-                    if(in>Integer.valueOf(list.get(i).get("nums").toString())){
-                        Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(list.get(i).get("nums").toString());
+                    //if(in>Integer.valueOf(list.get(i).get("nums").toString())){
+                    if(in.compareTo(new BigDecimal(list.get(i).get("nums").toString()))==1){
+                        //Integer kuncuns=Integer.valueOf(in)-Integer.valueOf(list.get(i).get("nums").toString());
+                        BigDecimal kuncuns=in.subtract(new BigDecimal(list.get(i).get("nums").toString()));
                         list.get(i).put("nums","0");
                         kunCunService.editNum(list.get(i));
                         in=kuncuns;
                     }else {
-                        list.get(i).put("nums",Integer.valueOf(list.get(i).get("nums").toString())-Integer.valueOf(in));
+                        //list.get(i).put("nums",Integer.valueOf(list.get(i).get("nums").toString())-Integer.valueOf(in));
+                        list.get(i).put("nums",new BigDecimal(list.get(i).get("nums").toString()).subtract(in));
                         kunCunService.editNum(list.get(i));
                     }
                 }
             }else {//这个地方加库存
                 if(list.size()>0){
                     PageData pageData = list.get(list.size()-1);
-                    pageData.put("nums",Integer.valueOf(pageData.get("nums").toString()) + Integer.valueOf(cc));
+                    //pageData.put("nums",Integer.valueOf(pageData.get("nums").toString()) + Integer.valueOf(cc));
+                    pageData.put("nums",new BigDecimal(pageData.get("nums").toString()).add(cc));
                     kunCunService.editNum(pageData);
                 }
             }
