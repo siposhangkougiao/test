@@ -922,7 +922,7 @@ public class AppProductController extends BaseController{
     public String saveProduct(String store_id,String product_name,String product_price,String norms1,String norms2,String norms3,String purchase_price,
                               String production_enterprise,String product_img,String status,String kucun,String type,String bar_code_number,
                               String supplier_id,String number,String url,String number_tow,String type2){
-        logBefore(logger,"添加商品");
+        logBefore(logger,"添加商品1");
         PageData pd=this.getPageData();
         ObjectMapper mapper=new ObjectMapper();
         String str="";
