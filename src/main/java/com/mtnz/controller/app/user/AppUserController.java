@@ -371,6 +371,136 @@ public class AppUserController extends BaseController {
 
 
     /**
+     * @param username 用户名
+     * @param password 密码
+     * @return
+     */
+    @RequestMapping(value = "login/admin", produces = "text/html;charset=UTF-8")
+    @ResponseBody
+    public String loginadmin(String username, String password,Integer type) {
+
+        logBefore(logger, "用户登录");
+        PageData pd = this.getPageData();
+        Map<String, Object> map = new HashMap();
+        if (username == null || username.length() == 0 || password == null || password.length() == 0) {
+            pd.clear();
+            pd.put("code", "2");
+            pd.put("message", "缺少参数");
+        } else {
+            try {
+                if(type==null){
+                    pd.put("type",0);// 0表示是pc登录的  1表示是app登录的
+                }
+                System.out.println("登录账号密码："+pd.toString());
+                PageData pd_u = sysAppUserService.findUserName(pd);   //根据用户名查询用户是否存在
+                if (pd_u != null) {
+                    if ("1".equals(pd_u.get("diedstatus").toString())) {
+                        pd.clear();
+                        pd.put("code", "2");
+                        pd.put("message", "此用已被弃用！！！");
+                        ObjectMapper mapper = new ObjectMapper();
+                        String str = "";
+                        try {
+                            str = mapper.writeValueAsString(pd);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return str;
+                    }
+                    /*String pad = MD5.md5(MD5.md5(password) + pd_u.getString("salt"));
+                    pd.put("password", pad);*/
+                    pd_u = sysAppUserService.loginadmin(pd);
+                    if (pd_u != null) {
+                        map.put("username", pd_u.getString("username"));
+                        map.put("sname", pd_u.getString("sname"));
+                        map.put("address", pd_u.getString("address"));
+                        map.put("saddress", pd_u.getString("saddress"));
+                        map.put("uid", pd_u.get("uid"));
+                        map.put("store_id", pd_u.get("store_id"));
+                        map.put("status", pd_u.getString("status"));
+                        map.put("province", pd_u.getString("province"));
+                        map.put("city", pd_u.getString("city"));
+                        map.put("district", pd_u.getString("district"));
+                        map.put("phone", pd_u.getString("phone"));
+                        map.put("name", pd_u.getString("name"));
+                        map.put("identity", pd_u.get("identity").toString());
+                        pd_u.put("login_date", DateUtil.getTime());
+                        PageData userpage = new PageData();
+                        userpage.put("user_id",pd_u.get("uid"));
+                        PageData user = integralService.findIntegralSetup(userpage);
+                        if(user!=null){
+                            map.put("integral", user.get("number"));
+                        }else {
+                            map.put("integral", new BigDecimal(0));
+                        }
+                        sysAppUserService.editLoginDate(pd_u);
+                        //查询店铺是否审核通过
+                        PageData pageData = myStoreService.selectResult(pd_u);
+                        map.put("is_pass",pageData.get("is_pass"));
+                        /*if(type ==null||type!=1){
+                            PageData pdx = new PageData();
+                            pdx.put("phoneTow",username);
+                            PageData pageData = storeService.findStoreOneByUId(pdx);
+                            map.put("store_id", pageData.get("store_id"));
+                            map.put("saddress", pageData.getString("address"));
+                            map.put("sname", pageData.getString("name"));
+                            map.put("phone", pageData.getString("phone"));
+                        }*/
+                        pd.clear();
+                        pd.put("code", "1");
+                        pd.put("message", "正确返回数据!");
+                        pd.put("data", map);
+                        //给前端返回token
+                        String salt = "Nsakj";
+                        String token = Md5Util.md5(pd_u.get("store_id").toString(),salt);
+                        pd.put("token",token);
+                        System.out.println(">>>>>>返回的token："+token);
+                        /*Long tokenId = Long.valueOf(pd_u.get("store_id").toString());
+                        LoginSalt loginSalt = loginSaltService.select(pd_u.get("store_id").toString());
+                        if(loginSalt==null){
+                            String salt = GetStrings.getRandomNickname(4);
+                            loginSaltService.insert(tokenId,salt);
+                            String token = Md5Util.md5(tokenId.toString(),salt);
+                            pd.put("token",token);
+                            System.out.println(">>>>>>返回的token："+token);
+                        }else {
+                            String token = Md5Util.md5(tokenId.toString(),loginSalt.getSalt());
+                            pd.put("token",token);
+                            System.out.println(">>>>>>返回的token："+token);
+                        }*/
+                        //loginSaltService.delete(tokenId);
+
+                        //记录登录次数
+                        statisticalService.insertLogin(Long.valueOf(pd_u.get("uid").toString()));
+                    } else {
+                        pd.clear();
+                        pd.put("code", "2");
+                        pd.put("message", "密码不正确");
+                    }
+                } else {
+                    pd.clear();
+                    pd.put("code", "2");
+                    pd.put("message", "用户不存在!");
+                }
+            } catch (Exception e) {
+                pd.clear();
+                pd.put("code", "2");
+                pd.put("message", "程序出错,请联系管理员!");
+                e.printStackTrace();
+            }
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        String str = "";
+        try {
+            str = mapper.writeValueAsString(pd);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
+
+    /**
      * 添加员工账号
      * @return
      */

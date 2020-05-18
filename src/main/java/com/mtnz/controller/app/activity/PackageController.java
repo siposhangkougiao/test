@@ -96,7 +96,7 @@ public class PackageController extends BaseController{
         } catch (Exception e) {
             result.setMsg("系统错误");
             result.setCode(-101);
-            logger.error("系统错误");
+            logger.error("系统错误",e);
         }
         return result;
     }

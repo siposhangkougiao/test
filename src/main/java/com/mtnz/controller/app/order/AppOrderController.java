@@ -541,7 +541,7 @@ public class AppOrderController extends BaseController{
     @RequestMapping(value = "findOrderInfo",produces = "text/html;charset=UTF-8")
     @ResponseBody
     public String findOrderInfo(String store_id,String pageNum,String status,
-                                String startTime,String endTime,String remarks,String phone){
+                                String startTime,String endTime,String remarks,String phone,Long customer_id){
        logBefore(logger,"查询账单");
        PageData pd=this.getPageData();
        Page page=new Page();
@@ -561,6 +561,7 @@ public class AppOrderController extends BaseController{
                 page.setCurrentPage(Integer.parseInt(pageNum));
                 List<PageData> list=orderInfoService.datalistPage(page);
                 for(int i=0;i<list.size();i++){
+
                     List<PageData> list_pro=orderProService.findList(list.get(i));
                     list.get(i).put("order_pro",list_pro);
                     PageData pbalance = balanceService.findBalanceDetailByOrderId(list.get(i));
@@ -628,6 +629,9 @@ public class AppOrderController extends BaseController{
                 pd.put("return_goods","0");
                 List<PageData> list=orderInfoService.findLikeOrderInfo(pd);
                 for(int i=0;i<list.size();i++){
+                    if(name!=null&&!name.equals("")){
+                        list.get(i).put("findname",name);
+                    }
                     List<PageData> list_pro=orderProService.findList(list.get(i));
                     list.get(i).put("order_pro",list_pro);
                 }

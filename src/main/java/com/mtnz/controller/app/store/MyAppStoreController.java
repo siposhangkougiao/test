@@ -107,7 +107,7 @@ public class MyAppStoreController extends BaseController{
 
             SmsBao sms = new SmsBao();
             String context = "验证码是【" + yzm + "】有效时间:5分钟";
-            String result = sms.sendSMS(phone, context);
+            String result = sms.sendSMS(str[0], context);
             if ("0".equals(result.split(",")[0])) {
                 map.put("YZM", yzm);
             } else {

@@ -106,6 +106,9 @@
                 now_number
             FROM order_pro
             WHERE order_info_id=#{order_info_id}
+            <if test="findname !=null and findname!=''">
+                and product_name like concat('%',#{findname},'%')
+            </if>
             ORDER BY orde_by
         ) op
         LEFT JOIN product p on op.product_id=p.product_id

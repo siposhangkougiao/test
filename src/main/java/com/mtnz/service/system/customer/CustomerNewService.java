@@ -14,4 +14,11 @@ public interface CustomerNewService {
      * @return
      */
     Long insert(Customer customer);
+
+    /**
+     * 根据编号查询客户信息
+     * @param customer
+     * @return
+     */
+    Customer selectByNumber(Customer customer);
 }

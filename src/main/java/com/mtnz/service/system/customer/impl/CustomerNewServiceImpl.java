@@ -3,6 +3,7 @@ package com.mtnz.service.system.customer.impl;
 import com.mtnz.controller.app.customer.model.Customer;
 import com.mtnz.service.system.customer.CustomerNewService;
 import com.mtnz.sql.system.customer.CustomerMapper;
+import com.mtnz.util.NumberUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -38,7 +39,28 @@ public class CustomerNewServiceImpl implements CustomerNewService {
         in.setOwe("0");
         in.setStatus("0");
         in.setUid(customer.getUid());
+        while (true){
+            Integer number = NumberUtil.getNumber();
+            Customer customerbean = new Customer();
+            customerbean.setNumber(number);
+            Customer bean = customerMapper.selectOne(customer);
+            if(bean==null){
+                in.setNumber(number);
+                break;
+            }
+        }
         customerMapper.insertSelective(in);
         return in.getCustomerId();
+    }
+
+    /**
+     * 根据编号查询客户信息
+     * @param customer
+     * @return
+     */
+    @Override
+    public Customer selectByNumber(Customer customer) {
+
+        return customerMapper.selectOne(customer);
     }
 }

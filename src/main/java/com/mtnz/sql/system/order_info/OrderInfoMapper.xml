@@ -105,10 +105,13 @@
             and revokes=#{pd.revokes}
         </if>
         <if test="pd.remarks!=null and pd.remarks!=''">
-            and remarks like concat('%',#{remarks},'%')
+            and remarks like concat('%',#{pd.remarks},'%')
         </if>
         <if test="pd.phone!=null and pd.phone!=''">
             and phone = #{phone}
+        </if>
+        <if test="pd.customer_id !=null">
+            and customer_id = #{pd.customer_id}
         </if>
         <if test="pd.status==null or pd.status==0">
             ORDER BY date DESC

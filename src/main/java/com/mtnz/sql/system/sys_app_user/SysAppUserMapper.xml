@@ -147,6 +147,34 @@
           where username=#{username} and password=#{password} AND diedstatus = 0 and is_delete =0
     </select>
 
+    <select id="loginadmin" parameterType="pd" resultType="pd">
+        SELECT
+              s.uid,
+              s.username,
+              s.password,
+              s.salt,
+              s.name,
+              s.openid,
+              s.unionid,
+              s.status,
+              s.store_id,
+              s.province,
+              s.city,
+              s.district,
+              s.phone,
+              s.identity,
+              s.diedstatus,
+              s.address,
+              s.corp,
+              st.name sname,
+              st.address as saddress,
+              st.number,
+              st.phone
+          FROM sys_app_user s
+          LEFT JOIN store st on st.store_id=s.store_id
+          where username=#{username} AND diedstatus = 0 and is_delete =0
+    </select>
+
     <update id="editPassword" parameterType="pd">
         UPDATE sys_app_user
         SET password=#{password}

@@ -118,7 +118,7 @@ public class QiniuUtils {
         //publicFile("abc.jpg","C:\\Users\\Dell\\Desktop\\工作\\uploadImgs\\20180521\\d7f9722f56c64f43acfffeee1c726f49.jpg");
         //upload("xkd/2020048/abc.jpg","C:\\Users\\Dell\\Desktop\\工作\\uploadImgs\\20180521\\d7f9722f56c64f43acfffeee1c726f49.jpg");
         //System.out.println(publicFile("xkd/2020048/abc.jpg","http://img.nongshoping.com/"));
-        /*ArrayList<String> listFilePath = new ArrayList<String>();
+        ArrayList<String> listFilePath = new ArrayList<String>();
         ArrayList<String> listFileName = new ArrayList<String>();
         getAllFileName("C:\\Users\\Dell\\Desktop\\uploadImgs\\",listFilePath,listFileName);
         for (int i = 0; i < listFilePath.size(); i++) {
@@ -126,13 +126,13 @@ public class QiniuUtils {
             if(name.contains(".jpg")){
                 //upload("xkd/2020048/abc.jpg","C:\\Users\\Dell\\Desktop\\工作\\uploadImgs\\20180521\\d7f9722f56c64f43acfffeee1c726f49.jpg");
                 String aa = "xkd" + listFileName.get(i);
-                upload(aa,name);
+                //upload(aa,name);
                 //System.out.println(name);
-                //System.out.println(aa);
+                System.out.println(aa);
             }
         }
         System.out.println(listFilePath.size());
-        System.out.println(listFileName.size());*/
+        System.out.println(listFileName.size());
     }
 
     public static void getAllFileName(String path, ArrayList<String> listFilePath,ArrayList<String> listFileName){

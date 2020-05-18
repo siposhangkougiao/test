@@ -22,6 +22,9 @@
             identity,
             remarks,
             role
+            <if test="number !=null">
+                ,number
+            </if>
         )VALUE (
             #{store_id},
             #{name},
@@ -43,6 +46,9 @@
             #{remarks},
         <if test="role ==null">0</if>
         <if test="role !=null">#{role}</if>
+        <if test="number !=null">
+            ,#{number}
+        </if>
         )
     </insert>
 
@@ -126,6 +132,7 @@
     <select id="pageinfo" parameterType="pd" resultType="pd">
         SELECT
             c.customer_id,
+            c.number,
             c.store_id,
             c.name,
             c.phone,
@@ -349,7 +356,9 @@
           OR
           POSITION(#{name} IN c.crop)
           OR
-          POSITION(#{name} IN getPY(c.name))
+          POSITION(#{name} IN getPY(c.name)
+          OR
+          POSITION(#{name} IN c.number))
         )
           ORDER BY c.status,c.input_date DESC
     </select>

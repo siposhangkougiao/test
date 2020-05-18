@@ -10,6 +10,9 @@ public class Customer {
   @Column(name = "customer_id")
   private Long customerId;
 
+  @Column(name = "number")
+  private Integer number;
+
   @Column(name = "store_id")
   private Long storeId;
 
@@ -72,6 +75,14 @@ public class Customer {
 
   @Column(name = "role")
   private Integer role;
+
+  public Integer getNumber() {
+    return number;
+  }
+
+  public void setNumber(Integer number) {
+    this.number = number;
+  }
 
   public Long getCustomerId() {
     return customerId;

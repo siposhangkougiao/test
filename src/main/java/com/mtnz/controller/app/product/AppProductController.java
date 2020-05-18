@@ -776,15 +776,6 @@ public class AppProductController extends BaseController{
         return str;
     }
 
-    public static void main(String[] args) {
-        int startIndex = 0;
-        int endIndex = Math.min(startIndex ,3);
-        List<String> list = new ArrayList<>();
-        list.add("1");
-        list.add("12");
-        list.add("13");
-        list = list.subList(startIndex,endIndex);
-    }
     /**
      * 查询商品
      * @param store_id 店铺ID

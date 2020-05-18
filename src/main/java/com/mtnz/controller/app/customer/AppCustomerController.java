@@ -6,10 +6,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.mtnz.controller.app.customer.model.Customer;
 import com.mtnz.controller.base.BaseController;
 import com.mtnz.entity.Page;
 import com.mtnz.service.system.agency.AgencyService;
 import com.mtnz.service.system.balance.BalanceService;
+import com.mtnz.service.system.customer.CustomerNewService;
 import com.mtnz.service.system.customer.CustomerService;
 import com.mtnz.service.system.integral.IntegralService;
 import com.mtnz.service.system.order_info.OrderInfoService;
@@ -46,6 +48,8 @@ public class AppCustomerController extends BaseController{
     private IntegralService integralService;
     @Resource(name = "balanceService")
     private BalanceService balanceService;
+    @Resource
+    private CustomerNewService customerNewService;
 
 
     /**
@@ -447,6 +451,16 @@ public class AppCustomerController extends BaseController{
                 pd.put("img",img);
                 if(identity==null||identity.length()==0){
                     pd.put("identity","");
+                }
+                while (true){
+                    Integer number = NumberUtil.getNumber();
+                    Customer customer = new Customer();
+                    customer.setNumber(number);
+                    Customer bean = customerNewService.selectByNumber(customer);
+                    if(bean==null){
+                        pd.put("number",number);
+                        break;
+                    }
                 }
                 customerService.save(pd);
                 PageData pda = new PageData();

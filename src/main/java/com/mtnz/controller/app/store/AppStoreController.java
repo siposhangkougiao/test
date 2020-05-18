@@ -687,7 +687,7 @@ public class AppStoreController extends BaseController{
                 pd.put("message","用户名已存在");
             }else{
                 PageData pd_s=new PageData();
-                pd_s.put("name",storename);
+                pd_s.put("name",storename+"的店");
                 pd_s.put("number","200");
                 pd_s.put("address","");
                 pd_s.put("qr_code","");

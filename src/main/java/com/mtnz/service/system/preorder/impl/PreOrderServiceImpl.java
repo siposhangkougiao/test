@@ -73,6 +73,7 @@ public class PreOrderServiceImpl implements PreOrderService {
         SelectListBean selectListBean = new SelectListBean();
         selectListBean.setTotal_price(total_price);
         selectListBean.setPageInfo(pageInfo);
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         System.out.println(JSONObject.toJSONString(selectListBean));
         return selectListBean;
     }
