@@ -13,6 +13,9 @@ public class Customer {
   @Column(name = "number")
   private Integer number;
 
+  @Column(name = "level")
+  private Integer level;
+
   @Column(name = "store_id")
   private Long storeId;
 
@@ -75,6 +78,14 @@ public class Customer {
 
   @Column(name = "role")
   private Integer role;
+
+  public Integer getLevel() {
+    return level;
+  }
+
+  public void setLevel(Integer level) {
+    this.level = level;
+  }
 
   public Integer getNumber() {
     return number;

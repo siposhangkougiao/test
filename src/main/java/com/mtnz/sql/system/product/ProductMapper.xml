@@ -24,6 +24,15 @@
             url,
             number_tow,
             type2
+            <if test="level1_price !=null">
+                ,level1_price
+            </if>
+            <if test="level2_price !=null">
+                ,level2_price
+            </if>
+            <if test="level3_price !=null">
+                ,level3_price
+            </if>
         )VALUE (
             #{store_id},
             #{product_name},
@@ -44,6 +53,15 @@
             #{url},
             #{number_tow},
             #{type2}
+        <if test="level1_price !=null">
+            ,#{level1_price}
+        </if>
+        <if test="level2_price !=null">
+            ,#{level2_price}
+        </if>
+        <if test="level3_price !=null">
+            ,#{level3_price}
+        </if>
         )
     </insert>
 
@@ -70,7 +88,10 @@
             url,
             status,
             type2,
-            likucun
+            likucun,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE product_id=#{product_id}
     </select>
@@ -112,7 +133,10 @@
                 url,
                 status,
                 type2,
-                likucun
+                likucun,
+                level1_price,
+                level2_price,
+                level3_price
             FROM product
             WHERE store_id=#{store_id} and status='0'
             <if test="type !=null and type !=''">
@@ -150,7 +174,10 @@
         url,
         status,
         type2,
-        likucun
+        likucun,
+        level1_price,
+        level2_price,
+        level3_price
         FROM product
         WHERE store_id=#{store_id} and status='0'
         <if test="type !=null and type !=''">
@@ -183,6 +210,15 @@
             </if>
             <if test="type2!=null and type2!=''">
                 type2=#{type2},
+            </if>
+            <if test="level1_price!=null">
+                level1_price=#{level1_price},
+            </if>
+            <if test="level2_price!=null">
+                level2_price=#{level2_price},
+            </if>
+            <if test="level3_price!=null">
+                level3_price=#{level3_price},
             </if>
              norms3=#{norms3},
              production_enterprise=#{production_enterprise},
@@ -224,7 +260,10 @@
                 number as numbers,
                 url,
                 status,
-                type2
+                type2,
+                level1_price,
+                level2_price,
+                level3_price
             FROM product
         WHERE
         store_id=#{store_id}
@@ -402,7 +441,10 @@
             number as numbers,
             url,
             status,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{store_id} and status='0' and bar_code_number=#{bar_code_number}
         limit 1
@@ -432,7 +474,10 @@
             number as numbers,
             url,
             status,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{store_id} and status='0' and bar_code_number=#{bar_code_number}
         ORDER BY date DESC
@@ -493,7 +538,10 @@
             number as numbers,
             url,
             status,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{store_id} and status='0'
         <if test="type!=null and type!=''">
@@ -556,7 +604,10 @@
                 number as numbers,
                 url,
                 status,
-                type2
+                type2,
+                level1_price,
+                level2_price,
+                level3_price
             FROM product
             WHERE status='0' and store_id=#{store_id}
             <if test="supplier_id!=null and supplier_id!=''">
@@ -601,7 +652,10 @@
             number as numbers,
             url,
             status,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{pd.store_id} and status='0' and supplier_id='0'
         ORDER BY date DESC
@@ -629,7 +683,10 @@
             number as numbers,
             url,
             status,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{pd.store_id} and status='0' and supplier_id='0'
         and POSITION(#{name} IN `product_name`)
@@ -659,7 +716,10 @@
             url,
             status,
             number_tow,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{store_id} and status='0'
         <if test="statuss==1">
@@ -696,7 +756,10 @@
             url,
             status,
             number_tow,
-            type2
+            type2,
+            level1_price,
+            level2_price,
+            level3_price
         FROM product
         WHERE store_id=#{store_id} and status='0'
         <if test="statuss==1">

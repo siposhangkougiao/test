@@ -318,8 +318,10 @@ public class MyTimesUtil {
         return new Date(calendar.getTimeInMillis());
     }
 
-
-    //获取本周的开始时间
+    /**
+     * 获取本周的开始时间
+     * @return
+     */
     public static Date getBeginDayOfWeek() {
         Date date = new Date();
         if (date == null) {
@@ -335,7 +337,10 @@ public class MyTimesUtil {
         return getDayStartTime(cal.getTime());
     }
 
-    //获取本周的结束时间
+    /**
+     * 获取本周的结束时间
+     * @return
+     */
     public static Date getEndDayOfWeek(){
         Calendar cal = Calendar.getInstance();
         cal.setTime(getBeginDayOfWeek());

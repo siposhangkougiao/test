@@ -25,6 +25,9 @@
             <if test="number !=null">
                 ,number
             </if>
+        <if test="level !=null">
+            ,level
+        </if>
         )VALUE (
             #{store_id},
             #{name},
@@ -48,6 +51,9 @@
         <if test="role !=null">#{role}</if>
         <if test="number !=null">
             ,#{number}
+        </if>
+        <if test="level !=null">
+            ,#{level}
         </if>
         )
     </insert>
@@ -101,7 +107,8 @@
             identity,
             remarks,
             status,
-            role
+            role,
+            level
         FROM customer
         where customer_id=#{customer_id}
     </select>
@@ -152,7 +159,8 @@
             c.img,
             c.identity,
             c.remarks,
-            c.role
+            c.role,
+            c.level
         FROM customer c
         where c.store_id=#{store_id} and c.status!='2' and c.status!='3'
         <if test="state1 !=null and state1 !='' and state1==1">
@@ -223,7 +231,8 @@
         img,
         identity,
         role,
-        remarks
+        remarks,
+        level
         FROM customer
         where  store_id=#{pd.store_id} and status!='2' and status!='3'
         <if test="pd.status==0">
@@ -290,7 +299,8 @@
             img,
             role,
             identity,
-            remarks
+            remarks,
+            level
         FROM customer
         where store_id=#{store_id} and status!='3' and status!='2' and name=#{name} and phone=#{phone}
     </select>
@@ -332,6 +342,7 @@
             c.role,
             c.identity,
             c.remarks,
+            c.level,
             IFNULL(
             (
                 SELECT
@@ -387,7 +398,8 @@
             img,
         role,
             identity,
-            remarks
+            remarks,
+        level
         FROM
           customer
         WHERE store_id=#{store_id} and status!='2' and status!='3'
@@ -424,6 +436,7 @@
           c.role,
           c.identity,
           c.remarks,
+          c.level,
 	      IFNULL(
 		    (
 			    SELECT
@@ -463,6 +476,7 @@
             c.role,
             c.identity,
             c.remarks,
+            c.level,
             IFNULL(
 		    (
 			    SELECT
@@ -615,7 +629,8 @@
             img,
             identity,
         role,
-            remarks
+            remarks,
+        level
         FROM customer
         where store_id=#{store_id} and status!='2' and status!='3'
         <if test="cstatus==1">
@@ -701,7 +716,8 @@ FROM
             img,
             identity,
         role,
-            remarks
+            remarks,
+        level
         FROM customer
         WHERE store_id=#{store_id} and status!='2' and status!='3' and name=#{name}
         <if test="customer_id!=null and customer_id!=''">
@@ -732,7 +748,8 @@ FROM
             img,
             identity,
         role,
-            remarks
+            remarks,
+        level
         FROM customer
         WHERE store_id=#{store_id} and status!='3' and status!='2' and phone=#{phone}
         <if test="customer_id!=null and customer_id!=''">

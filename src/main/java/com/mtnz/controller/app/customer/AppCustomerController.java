@@ -386,7 +386,7 @@ public class AppCustomerController extends BaseController{
     @ResponseBody
     public String saveCustomer(String name,String phone,String address,String crop,String area,
                                String store_id,String uid,String province,String city,
-                               String county,String street,String img,String identity,String remarks){
+                               String county,String street,String img,String identity,String remarks,Integer level){
         logBefore(logger,"新增客户");
         PageData pd=this.getPageData();
         String status="1";
