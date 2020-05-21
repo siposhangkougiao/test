@@ -93,7 +93,7 @@ public class AppReturnController extends BaseController{
                     pdr.put("integral",integral);
                     pdr.put("user_id",customer_id);
                     pdr.put("type",1);
-                    pdr.put("open_user",open_bill);
+                    pdr.put("open_user",inorder.get("open_user"));
                     integralService.saveIntegralReturn(pdr);
                 }
             }
@@ -558,7 +558,7 @@ public class AppReturnController extends BaseController{
             pd.put("is_pass",0);
             pd.put("order_info_id",pdReturn.get("order_info_id"));
             Integer aax = integralService.findIntegralDetailsCountByOrderId(pd);
-            if(aax<0){
+            if(aax>0){
                 PageData pad = integralService.findIntegralDetailByOrderIdAndType(pd);
                 pad.put("status",2);
                 pad.put("customer_id",pad.get("user_id"));

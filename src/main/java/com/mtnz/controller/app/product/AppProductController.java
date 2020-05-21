@@ -87,7 +87,7 @@ public class AppProductController extends BaseController{
             pd.put("data",list);
             pd.put("pageTotal",list.size());
             pd.put("pageNumber",pageNumber);
-            pd.put("pageNumber",pageSize);
+            pd.put("pageSize",pageSize);
         }catch (Exception e){
             pd.clear();
             pd.put("code","2");

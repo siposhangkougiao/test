@@ -127,7 +127,12 @@ public class StoreService {
     }
 
     public StoreLose selectLose(StoreLose storeLose) {
-
-        return storeLoseMapper.selectOne(storeLose);
+        StoreLose bean = storeLoseMapper.selectOne(storeLose);
+        if(bean==null){
+            bean = new StoreLose();
+            bean.setStatus(1);
+            bean.setStoreId(storeLose.getStoreId());
+        }
+        return bean;
     }
 }

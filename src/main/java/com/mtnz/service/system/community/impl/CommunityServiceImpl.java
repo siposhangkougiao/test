@@ -4,13 +4,19 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.app.community.model.Community;
 import com.mtnz.controller.app.community.model.CommunityComments;
+import com.mtnz.controller.app.community.model.CommunityReport;
+import com.mtnz.controller.app.community.model.CommunityUser;
 import com.mtnz.controller.app.user.model.SysAppUser;
+import com.mtnz.controller.base.ServiceException;
 import com.mtnz.service.system.community.CommunityService;
 import com.mtnz.sql.system.community.CommunityCommentsMapper;
 import com.mtnz.sql.system.community.CommunityMapper;
+import com.mtnz.sql.system.community.CommunityReportMapper;
+import com.mtnz.sql.system.community.CommunityUserMapper;
 import com.mtnz.sql.system.user.SysAppUserNewMapper;
 import com.mtnz.util.QiniuUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -32,6 +38,12 @@ public class CommunityServiceImpl implements CommunityService {
     @Resource
     SysAppUserNewMapper sysAppUserNewMapper;
 
+    @Resource
+    CommunityUserMapper communityUserMapper;
+
+    @Resource
+    CommunityReportMapper communityReportMapper;
+
     /**
      * 查询生意圈列表
      * @param community
@@ -40,9 +52,7 @@ public class CommunityServiceImpl implements CommunityService {
     @Override
     public PageInfo select(Community community) {
         PageHelper.startPage(community.getPageNumber(),community.getPageSize());
-        Example examplec = new Example(Community.class);
-        examplec.and().andEqualTo("isDelete",0);
-        List<Community> list = communityMapper.selectByExample(examplec);
+        List<Community> list = communityMapper.selectByCommunity(community);
         List<Long> ulist = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             if(!ulist.contains(list.get(i).getUserId())){
@@ -61,12 +71,14 @@ public class CommunityServiceImpl implements CommunityService {
             SysAppUser sysAppUser =sysAppUserNewMapper.selectByPrimaryKey(list.get(i).getUserId());
             list.get(i).setReleaseName(sysAppUser.getName());
         }
-        Example example = new Example(SysAppUser.class);
-        example.and().andIn("uid",ulist);
-        List<SysAppUser> sysAppUsers = sysAppUserNewMapper.selectByExample(example);
         Map<Long,String> map = new HashMap();
-        for (int i = 0; i < sysAppUsers.size(); i++) {
-            map.put(sysAppUsers.get(i).getUid(),sysAppUsers.get(i).getName());
+        if(ulist.size()>0){
+            Example example = new Example(SysAppUser.class);
+            example.and().andIn("uid",ulist);
+            List<SysAppUser> sysAppUsers = sysAppUserNewMapper.selectByExample(example);
+            for (int i = 0; i < sysAppUsers.size(); i++) {
+                map.put(sysAppUsers.get(i).getUid(),sysAppUsers.get(i).getName());
+            }
         }
         for (int i = 0; i < list.size(); i++) {
             if(map.containsKey(list.get(i).getUserId())){
@@ -77,6 +89,20 @@ public class CommunityServiceImpl implements CommunityService {
                 if(map.containsKey(comments.getUserId())){
                     list.get(i).getCommentsList().get(j).setCommentsName(map.get(comments.getUserId()));
                 }
+            }
+            CommunityUser communityUser = new CommunityUser();
+            communityUser.setCommunityId(list.get(i).getId());
+            communityUser.setUserId(community.getUserId());
+            List<CommunityUser> communityUsers = communityUserMapper.select(communityUser);
+            for (int j = 0; j < communityUsers.size(); j++) {
+                if(communityUsers.get(j).getType()==1){
+                    list.get(i).setIspraise(1);
+                }else if(communityUsers.get(j).getType()==2){
+                    list.get(i).setIsget(1);
+                }else if(communityUsers.get(j).getType()==3){
+                    list.get(i).setIstalk(1);
+                }
+
             }
         }
         PageInfo pageInfo = new PageInfo(list);
@@ -102,6 +128,59 @@ public class CommunityServiceImpl implements CommunityService {
         if(community.getPraise()!=null){
             Community community1 = communityMapper.selectByPrimaryKey(community.getId());
             community.setPraise(community.getPraise() + community1.getPraise());
+            if(community.getPraise()>0){//加赞
+                CommunityUser communitybean = new CommunityUser();
+                communitybean.setStatus(1);
+                communitybean.setType(1);
+                communitybean.setUserId(community.getMakerId());
+                communitybean.setCommunityId(community.getId());
+                if(communityUserMapper.selectCount(communitybean)>0){
+                    throw new ServiceException(-103,"不可重复点赞",null);
+                }
+                CommunityUser communityUser = new CommunityUser();
+                communityUser.setUserId(community.getMakerId());
+                communityUser.setType(1);
+                communityUser.setStatus(1);
+                communityUser.setCommunityId(community.getId());
+                communityUserMapper.insertSelective(communityUser);
+            }else {//减赞
+                CommunityUser communityUser = new CommunityUser();
+                communityUser.setUserId(community.getMakerId());
+                communityUser.setStatus(1);
+                communityUser.setType(1);
+                communityUser.setCommunityId(community.getId());
+                communityUserMapper.delete(communityUser);
+            }
+
+        }
+        //修改收藏数量
+        if(community.getCollection()!=null){
+            Community community1 = communityMapper.selectByPrimaryKey(community.getId());
+            community.setCollection(community.getCollection() + community1.getCollection());
+            if(community.getCollection()>0){//加收藏
+                CommunityUser communitybean = new CommunityUser();
+                communitybean.setStatus(1);
+                communitybean.setType(2);
+                communitybean.setUserId(community.getMakerId());
+                communitybean.setCommunityId(community.getId());
+                if(communityUserMapper.selectCount(communitybean)>0){
+                    throw new ServiceException(-103,"不可重复收藏",null);
+                }
+                CommunityUser communityUser = new CommunityUser();
+                communityUser.setUserId(community.getMakerId());
+                communityUser.setType(2);
+                communityUser.setStatus(1);
+                communityUser.setCommunityId(community.getId());
+                communityUserMapper.insertSelective(communityUser);
+            }else {//减收藏
+                CommunityUser communityUser = new CommunityUser();
+                communityUser.setUserId(community.getMakerId());
+                communityUser.setStatus(1);
+                communityUser.setType(2);
+                communityUser.setCommunityId(community.getId());
+                communityUserMapper.delete(communityUser);
+            }
+
         }
         communityMapper.updateByPrimaryKeySelective(community);
     }
@@ -112,6 +191,13 @@ public class CommunityServiceImpl implements CommunityService {
      */
     @Override
     public void insertcomments(CommunityComments communityComments) {
+        CommunityUser communityUser = new CommunityUser();
+        communityUser.setUserId(communityComments.getUserId());
+        communityUser.setType(3);
+        communityUser.setStatus(1);
+        communityUser.setCommunityId(communityComments.getCommunityId());
+        communityUserMapper.insertSelective(communityUser);
+
         communityCommentsMapper.insertSelective(communityComments);
     }
 
@@ -124,6 +210,22 @@ public class CommunityServiceImpl implements CommunityService {
         if(communityComments.getPraise()!=null){
             CommunityComments comments = communityCommentsMapper.selectByPrimaryKey(communityComments.getId());
             communityComments.setPraise(comments.getPraise()+communityComments.getPraise());
+
+            //修改点赞数量
+            if(communityComments.getPraise()>0){//加赞
+                CommunityUser communityUser = new CommunityUser();
+                communityUser.setUserId(communityComments.getMakerId());
+                communityUser.setType(1);
+                communityUser.setStatus(2);
+                communityUser.setCommunityId(communityComments.getCommunityId());
+                communityUserMapper.insertSelective(communityUser);
+            }else {//减赞
+                CommunityUser communityUser = new CommunityUser();
+                communityUser.setUserId(communityComments.getMakerId());
+                communityUser.setStatus(2);
+                communityUser.setType(1);
+                communityUserMapper.delete(communityUser);
+            }
         }
         communityCommentsMapper.updateByPrimaryKeySelective(communityComments);
     }
@@ -136,5 +238,73 @@ public class CommunityServiceImpl implements CommunityService {
     public String getoken() {
 
         return QiniuUtils.getUpToken();
+    }
+
+    /**
+     * 查询详情
+     * @param bean
+     * @return
+     */
+    @Override
+    public Community selectdetail(Community bean) {
+        Community community = communityMapper.selectByPrimaryKey(bean.getId());
+        CommunityComments comments = new CommunityComments();
+        comments.setIsDelete(0);
+        comments.setCommunityId(bean.getId());
+        CommunityUser userBean = new CommunityUser();
+        userBean.setUserId(bean.getMakerId());
+        userBean.setCommunityId(bean.getId());
+        userBean.setStatus(1);
+        List<CommunityUser> userList = communityUserMapper.select(userBean);
+        for (int i = 0; i < userList.size(); i++) {
+            if(userList.get(i).getType()==1){
+                community.setIspraise(1);
+            }else if(userList.get(i).getType()==2){
+                community.setIsget(1);
+            }else if(userList.get(i).getType()==3){
+                community.setIstalk(1);
+            }
+        }
+        PageHelper.startPage(bean.getPageNumber(),bean.getPageSize());
+        List<CommunityComments> list = communityCommentsMapper.select(comments);
+        SysAppUser sysAppUser1 = sysAppUserNewMapper.selectByPrimaryKey(community.getUserId());
+        community.setReleaseName(sysAppUser1.getName());
+        for (int i = 0; i < list.size(); i++) {
+            SysAppUser sysAppUser2 = sysAppUserNewMapper.selectByPrimaryKey(list.get(i).getUserId());
+            list.get(i).setCommentsName(sysAppUser2.getName());
+            CommunityUser communityUser= new CommunityUser();
+            communityUser.setUserId(list.get(i).getUserId());
+            communityUser.setStatus(2);
+            communityUser.setType(1);
+            if(communityUserMapper.selectCount(communityUser)>0){
+                list.get(i).setIspraise(1);
+            }
+        }
+        PageInfo pageInfo = new PageInfo(list);
+        community.setCommentsList(list);
+        community.setPageInfo(pageInfo);
+        return community;
+    }
+
+    /**
+     * 投诉添加
+     * @param communityReport
+     */
+    @Override
+    @Transactional
+    public void insertReport(CommunityReport communityReport) {
+        CommunityReport communityReport1 = new CommunityReport();
+        communityReport1.setUserId(communityReport.getUserId());
+        communityReport1.setType(communityReport.getType());
+        if(communityReport.getType()==1){
+            communityReport1.setCommunityId(communityReport.getCommunityId());
+        }
+        if (communityReport.getType()==2){
+            communityReport1.setCommentsId(communityReport.getCommentsId());
+        }
+        if(communityReportMapper.selectCount(communityReport1)>0){
+            throw new ServiceException(-103,"已举报，无需重复举报",null);
+        }
+        communityReportMapper.insertSelective(communityReport);
     }
 }

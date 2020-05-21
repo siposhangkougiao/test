@@ -1,6 +1,8 @@
 package com.mtnz.controller.app.community.model;
 
 
+import com.github.pagehelper.PageInfo;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,11 +28,41 @@ public class Community {
   @Column(name = "praise")
   private Integer praise;
 
+  @Column(name = "collection")
+  private Integer collection;
+
   @Column(name = "creat_time")
   private Date creatTime;
 
   @Column(name = "is_delete")
   private Integer isDelete;
+
+  @Column(name = "talk_type")
+  private Integer talkType;
+
+  /**
+   * 参与人
+   */
+  @Transient
+  private Long makerId;
+
+  /**
+   * 是否评论
+   */
+  @Transient
+  private Integer istalk=0;
+
+  /**
+   * 是否收藏
+   */
+  @Transient
+  private Integer isget=0;
+
+  /**
+   * 是否点赞
+   */
+  @Transient
+  private Integer ispraise=0;
 
   @Transient
   private Integer pageNumber=1;
@@ -45,7 +77,79 @@ public class Community {
   private String releaseName;
 
   @Transient
+  private Integer type;
+
+  @Transient
   private List<CommunityComments> commentsList = new ArrayList<>();
+
+  @Transient
+  private PageInfo<CommunityComments> pageInfo =new PageInfo<>();
+
+  public Integer getType() {
+    return type;
+  }
+
+  public void setType(Integer type) {
+    this.type = type;
+  }
+
+  public PageInfo<CommunityComments> getPageInfo() {
+    return pageInfo;
+  }
+
+  public void setPageInfo(PageInfo<CommunityComments> pageInfo) {
+    this.pageInfo = pageInfo;
+  }
+
+  public Integer getCollection() {
+    return collection;
+  }
+
+  public void setCollection(Integer collection) {
+    this.collection = collection;
+  }
+
+  public Long getMakerId() {
+    return makerId;
+  }
+
+  public void setMakerId(Long makerId) {
+    this.makerId = makerId;
+  }
+
+  public Integer getIstalk() {
+    return istalk;
+  }
+
+  public void setIstalk(Integer istalk) {
+    this.istalk = istalk;
+  }
+
+  public Integer getIsget() {
+    return isget;
+  }
+
+  public void setIsget(Integer isget) {
+    this.isget = isget;
+  }
+
+  public Integer getIspraise() {
+    return ispraise;
+  }
+
+  public void setIspraise(Integer ispraise) {
+    this.ispraise = ispraise;
+  }
+
+  public Integer getTalkType() {
+    return talkType;
+  }
+
+  public void setTalkType(Integer talkType) {
+    this.talkType = talkType;
+  }
+
+
 
   public String getReleaseName() {
     return releaseName;

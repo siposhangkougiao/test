@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mtnz.sql.system.community.CommunityMapper">
 
+    <select id="selectByCommunity" resultType="com.mtnz.controller.app.community.model.Community">
+        SELECT id id,user_id userId,content content,imges imges,praise praise,
+        collection collection,creat_time creatTime,is_delete isDelete,talk_type talkType
+        from community a
+        <if test="type !=null">
+            where
+            (select count(1) from community_user b where b.type=#{type} and b.user_id = #{userId} and a.id = b.community_id) >0
+            and a.user_id = #{userId}
+        </if>
+        order by a.id desc
+    </select>
 </mapper>

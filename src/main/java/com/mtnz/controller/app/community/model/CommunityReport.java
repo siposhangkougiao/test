@@ -3,8 +3,8 @@ package com.mtnz.controller.app.community.model;
 import javax.persistence.*;
 import java.util.Date;
 
-@Table(name = "community_comments")
-public class CommunityComments {
+@Table(name = "community_report")
+public class CommunityReport {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,56 +14,39 @@ public class CommunityComments {
   @Column(name = "community_id")
   private Long communityId;
 
+  @Column(name = "comments_id")
+  private Long commentsId;
+
   @Column(name = "user_id")
   private Long userId;
 
   @Column(name = "content")
   private String content;
 
-  @Column(name = "praise")
-  private Integer praise;
-
   @Column(name = "creat_time")
   private Date creatTime;
 
-  @Column(name = "is_delete")
-  private Integer isDelete;
+  @Column(name = "type")
+  private Integer type;
 
-  @Transient
-  private String commentsName;
-
-  @Transient
-  private Long makerId;
-
-  @Transient
-  private Integer ispraise=0;
-
-  public Integer getIspraise() {
-    return ispraise;
+  public Integer getType() {
+    return type;
   }
 
-  public void setIspraise(Integer ispraise) {
-    this.ispraise = ispraise;
-  }
-
-  public Long getMakerId() {
-    return makerId;
-  }
-
-  public void setMakerId(Long makerId) {
-    this.makerId = makerId;
-  }
-
-  public String getCommentsName() {
-    return commentsName;
-  }
-
-  public void setCommentsName(String commentsName) {
-    this.commentsName = commentsName;
+  public void setType(Integer type) {
+    this.type = type;
   }
 
   public Long getId() {
     return id;
+  }
+
+  public Long getCommentsId() {
+    return commentsId;
+  }
+
+  public void setCommentsId(Long commentsId) {
+    this.commentsId = commentsId;
   }
 
   public void setId(Long id) {
@@ -94,27 +77,11 @@ public class CommunityComments {
     this.content = content;
   }
 
-  public Integer getPraise() {
-    return praise;
-  }
-
-  public void setPraise(Integer praise) {
-    this.praise = praise;
-  }
-
   public Date getCreatTime() {
     return creatTime;
   }
 
   public void setCreatTime(Date creatTime) {
     this.creatTime = creatTime;
-  }
-
-  public Integer getIsDelete() {
-    return isDelete;
-  }
-
-  public void setIsDelete(Integer isDelete) {
-    this.isDelete = isDelete;
   }
 }

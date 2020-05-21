@@ -4,6 +4,7 @@ package com.mtnz.service.system.community;
 import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.app.community.model.Community;
 import com.mtnz.controller.app.community.model.CommunityComments;
+import com.mtnz.controller.app.community.model.CommunityReport;
 
 public interface CommunityService {
 
@@ -43,4 +44,17 @@ public interface CommunityService {
      * @return
      */
     String getoken();
+
+    /**
+     * 查询详情
+     * @param id
+     * @return
+     */
+    Community selectdetail(Community id);
+
+    /**
+     * 投诉添加
+     * @param communityReport
+     */
+    void insertReport(CommunityReport communityReport);
 }
