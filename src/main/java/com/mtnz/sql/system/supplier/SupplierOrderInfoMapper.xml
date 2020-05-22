@@ -51,6 +51,7 @@
             money,
             owe_money,
             total_money,
+        discount_money,
             date,
             remarks,
             phone,

@@ -851,7 +851,7 @@ public class AppStoreController extends BaseController{
         try{
             PageData pd_s=new PageData();
             pd_s.put("name",storename);
-            pd_s.put("number","200");
+            pd_s.put("number","0");
             pd_s.put("address",address);
             pd_s.put("qr_code",qr_code);
             pd_s.put("phone",phone);
@@ -903,7 +903,7 @@ public class AppStoreController extends BaseController{
      */
     @RequestMapping(value = "editStoreDetail",produces = "text/html;charset=UTF-8")
     @ResponseBody
-    public String saveOtherStore(String storename,String province,String city,String county,String address,
+    public String editStoreDetail(String storename,String province,String city,String county,String address,
                                  String phone,String qr_code,Long store_id){
         logBefore(logger,"修改店铺信息");
         PageData pd=this.getPageData();

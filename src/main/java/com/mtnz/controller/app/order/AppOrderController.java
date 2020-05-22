@@ -26,10 +26,13 @@ import com.mtnz.service.system.store.MyStoreService;
 import com.mtnz.service.system.supplier.SupplierOrderProService;
 import com.mtnz.service.system.sys_app_user.SysAppUserService;
 import com.mtnz.util.*;
+import javafx.application.Application;
 import org.apache.commons.collections.map.HashedMap;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.support.XmlWebApplicationContext;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -155,6 +158,7 @@ public class AppOrderController extends BaseController{
                 pd.put("code","2");
                 pd.put("message","程序出错,请联系管理员!");
                 e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
         ObjectMapper mapper=new ObjectMapper();
@@ -1334,7 +1338,7 @@ public class AppOrderController extends BaseController{
                              String total_money, String money, String discount_money,
                              String owe_money, String data, String customer_id, String store_id,
                              String medication_date, String remarks, String uid, String open_bill, String date, Integer isli
-                , BigDecimal integral, Long open_user, String remark, BigDecimal balance,String orderGifts,Integer lose){
+                , BigDecimal integral, Long open_user, String remark, BigDecimal balance,String orderGifts,Integer lose,Integer isfast){
         PageData pd=new PageData();
         String str="";
         try {
@@ -1351,7 +1355,7 @@ public class AppOrderController extends BaseController{
             }
             str=orderKuncunService.saveOrder(name,phone,status,total_money,money,discount_money,
                     owe_money,data.trim(),customer_id,store_id,
-                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance,orderGift,lose);
+                    medication_date,remarks,uid,open_bill,date,isli,integral,open_user,remark,balance,orderGift,lose,isfast);
             return str;
         }catch (Exception e){
             pd.clear();

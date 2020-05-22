@@ -104,7 +104,7 @@ public class OrderKuncunService extends BaseController{
                             String owe_money,String data,String customer_id,String store_id,
                             String medication_date,String remarks,String uid,String open_bill ,String date
             ,Integer isli,BigDecimal integral,Long open_user,String remark,BigDecimal balance,
-                            List<OrderGift> orderGifts,Integer lose) throws Exception {
+                            List<OrderGift> orderGifts,Integer lose,Integer isfast) throws Exception {
         logBefore(logger,"销售开单");
         java.text.DecimalFormat df = new java.text.DecimalFormat("########.00");
         PageData pd=this.getPageData();
@@ -149,7 +149,12 @@ public class OrderKuncunService extends BaseController{
             SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmssSSS");
             String s = String.valueOf((int) ((Math.random() * 9 + 1) * 100));
             // 订单号
-            String no = s + sdf1.format(now).substring(2);
+            String no = "";
+            if(isfast!=null&&isfast==1){//计算开单的订单
+                no = "FA" + s + sdf1.format(now).substring(2);
+            }else {
+                no = s + sdf1.format(now).substring(2);
+            }
             PageData pd_o=new PageData();
             pd_o.put("store_id",store_id);
             pd_o.put("customer_id",customer_id);

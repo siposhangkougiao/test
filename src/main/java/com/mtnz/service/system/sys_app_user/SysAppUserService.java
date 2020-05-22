@@ -1,6 +1,7 @@
 package com.mtnz.service.system.sys_app_user;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.mtnz.controller.app.user.model.SysAppUser;
 import com.mtnz.controller.app.user.model.ValidationYzm;
 import com.mtnz.controller.base.ServiceException;
@@ -143,11 +144,12 @@ public class SysAppUserService {
         }
         long aa = new Date().getTime();
         long bb = Long.valueOf(str[1]);
-        if(aa-bb>3000){
+        if(aa-bb>10000){
             throw new ServiceException(-106,"非法请求",null);
         }
+        System.out.println(">>>>>"+ JSONObject.toJSONString(str));
         if(!isMobileNO(str[0])){
-            throw new ServiceException(-101,"非法请求",null);
+            throw new ServiceException(-101,"手机号码格式不正确",null);
         }
         /*pd.put("username",str[0]);
         PageData pd_u=sysAppUserService.findUserName(pd);

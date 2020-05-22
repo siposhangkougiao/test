@@ -239,7 +239,7 @@ public class AppSupplierController extends BaseController{
                     }
 
                 }
-                axx.setScale(2,BigDecimal.ROUND_HALF_UP);
+                axx = axx.setScale(2,BigDecimal.ROUND_HALF_UP);
                 Map<String, Object> map = new HashedMap();
                 if (page.getCurrentPage() == Integer.parseInt(pageNum)) {
                     map.put("data", list);
@@ -691,6 +691,15 @@ public class AppSupplierController extends BaseController{
             for(int i=0;i<list.size();i++){
                 List<PageData> list_pro=supplierOrderProService.findList(list.get(i));
                 list.get(i).put("order_pro",list_pro);
+                SupplierBalanceOrder supplierBalanceOrder = new SupplierBalanceOrder();
+                supplierBalanceOrder.setOrderId(Long.valueOf(list.get(i).get("supplier_order_info_id").toString()));
+                supplierBalanceOrder.setIsBack(0);
+                SupplierBalanceOrder bean = supplierBalanceOrderMapper.selectOne(supplierBalanceOrder);
+                if(bean!=null){
+                    list.get(i).put("balance_price",bean.getPrice());
+                }else {
+                    list.get(i).put("balance_price",0);
+                }
             }
             PageData pd_c=supplierOrderInfoService.findCounts(pd);
             String totalMoney="0.0";
