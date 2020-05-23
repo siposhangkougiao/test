@@ -1,5 +1,6 @@
 package com.mtnz.service.system.product;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.mtnz.controller.app.product.model.ProductImg;
 import com.mtnz.controller.app.supplier.model.Supplier;
@@ -234,27 +235,29 @@ public class ProductService {
         Product bean = new Product();
         bean.setStatus(0);
         bean.setStoreId(product.getStoreId());
+        PageHelper.startPage(product.getPageNumber(),product.getPageSize());
         List<Product> list = productNewMapper.select(bean);
-        Integer total = list.size();
+        /*Integer total = list.size();
         for (int i = 0; i < list.size(); i++) {
             Integer number = productNewMapper.selectOrderCount(list.get(i).getProductId());
             if(number==null){
                 number=0;
             }
             list.get(i).setCount(number);
-        }
-        list.sort(Comparator.comparing(Product::getCount).reversed());
+        }*/
+        /*list.sort(Comparator.comparing(Product::getCount).reversed());
         //计算当前需要显示的数据下标起始值
         int startIndex = (product.getPageNumber() - 1) * product.getPageSize();
         int endIndex = Math.min(startIndex + product.getPageSize(),list.size());
-        list = list.subList(startIndex,endIndex);
+        list = list.subList(startIndex,endIndex);*/
+
         for (int i = 0; i < list.size(); i++) {
             ProductImg productImg = new ProductImg();
             productImg.setProductId(list.get(i).getProductId());
             List<ProductImg> imgs = productImgMapper.select(productImg);
             list.get(i).setImgs(imgs);
 
-            //计算库存
+            /*//计算库存
             BigDecimal a = list.get(i).getLikucun();
             BigDecimal b = new BigDecimal(1);
             try {
@@ -268,7 +271,7 @@ public class ProductService {
                 c= new BigDecimal(0);
             }
             BigDecimal kus = list.get(i).getKucun().add(c);
-            list.get(i).setKucun(kus);
+            list.get(i).setKucun(kus);*/
 
             //查询供货商
             Supplier supplierbean = new Supplier();
@@ -277,10 +280,11 @@ public class ProductService {
             list.get(i).setSupplier(supplier);
         }
         //创建Page类
-        com.github.pagehelper.Page page = new com.github.pagehelper.Page(product.getPageNumber(), product.getPageSize());
+        /*com.github.pagehelper.Page page = new com.github.pagehelper.Page(product.getPageNumber(), product.getPageSize());
         page.setTotal(total);
         page.addAll(list);
-        PageInfo pageInfo = new PageInfo<>(page);
+        PageInfo pageInfo = new PageInfo<>(page);*/
+        PageInfo pageInfo = new PageInfo(list);
 
         return pageInfo;
     }
