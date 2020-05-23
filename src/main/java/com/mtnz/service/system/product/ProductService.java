@@ -230,6 +230,7 @@ public class ProductService {
     SupplieresService supplieresService;
 
     public PageInfo selectList(Product product) {
+        product.setPageSize(5);
         Product bean = new Product();
         bean.setStatus(0);
         bean.setStoreId(product.getStoreId());
